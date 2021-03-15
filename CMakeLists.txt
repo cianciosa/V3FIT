@@ -7,6 +7,7 @@ add_executable (xv3fit)
 add_dependencies (xv3fit siesta)
 target_link_libraries (xv3fit siesta)
 target_include_directories (xv3fit PUBLIC $<TARGET_PROPERTY:siesta,BINARY_DIR>)
+target_include_directories (xv3fit PUBLIC $<TARGET_PROPERTY:vmec,BINARY_DIR>)
 
 add_subdirectory (Sources)
 
