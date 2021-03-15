@@ -2937,114 +2937,130 @@
      &    ASSOCIATED(this%te_grid) .or.                                        &
      &    ASSOCIATED(this%ze_grid) .or.                                        &
      &    ASSOCIATED(this%sxrem_grid)) THEN
-         status = nf_def_dim(result_ncid, 'model_grid_size',                   &
-     &                       SIZE(this%ne_grid),                               &
-     &                       model_grid_size_dim_id)
+         status = nf90_def_dim(result_ncid, 'model_grid_size',                 &
+     &                         SIZE(this%ne_grid),                             &
+     &                         model_grid_size_dim_id)
       ELSE
-         status = nf_def_dim(result_ncid, 'model_grid_size', 1,                &
-     &                       model_grid_size_dim_id)
+         status = nf90_def_dim(result_ncid, 'model_grid_size', 1,              &
+     &                         model_grid_size_dim_id)
       END IF
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%sxrem_type)) THEN
-         status = nf_def_dim(result_ncid, 'model_num_sxrem',                   &
-     &                       SIZE(this%sxrem_type, 1),                         &
-     &                       model_num_sxrem_dim_id)
+         status = nf90_def_dim(result_ncid, 'model_num_sxrem',                 &
+     &                         SIZE(this%sxrem_type, 1),                       &
+     &                         model_num_sxrem_dim_id)
       END IF
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%coosig_wgts)) THEN
-         status = nf_def_dim(result_ncid, 'model_num_coosig',                  &
-     &                       SIZE(this%coosig_wgts, 1),                        &
-     &                       model_num_coosig_w_dim_id)
+         status = nf90_def_dim(result_ncid, 'model_num_coosig',                &
+     &                         SIZE(this%coosig_wgts, 1),                      &
+     &                         model_num_coosig_w_dim_id)
       END IF
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !  Define variables
-      status = nf_def_var(result_ncid, 'model_ne_type', nf_char, 1,            &
-     &                    (/ string_len_dim_id /), ne_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'model_ne_type', nf90_char,           &
+     &                      dimids=(/ string_len_dim_id /),                    &
+     &                      varid=ne_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'model_te_type', nf_char, 1,            &
-     &                    (/ string_len_dim_id /), te_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'model_te_type', nf90_char,           &
+     &                      dimids=(/ string_len_dim_id /),                    &
+     &                      varid=te_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'model_ti_type', nf_char, 1,            &
-     &                    (/ string_len_dim_id /), ti_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'model_ti_type', nf90_char,           &
+     &                      dimids=(/ string_len_dim_id /),                    &
+     &                      varid=ti_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'model_ze_type', nf_char, 1,            &
-     &                    (/ string_len_dim_id /), ze_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'model_ze_type', nf90_char,           &
+     &                      dimids=(/ string_len_dim_id /),                    &
+     &                      varid=ze_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%sxrem_type)) THEN
-         status = nf_def_var(result_ncid, 'model_sxrem_type', nf_char,         &
-     &                       2, (/ string_len_dim_id,                          &
-     &                             model_num_sxrem_dim_id /),                  &
-     &                       sxrem_type_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(result_ncid, 'model_sxrem_type',                &
+     &                         nf90_char,                                      &
+     &                         dimids=(/ string_len_dim_id,                    &
+     &                                   model_num_sxrem_dim_id /),            &
+     &                         varid=sxrem_type_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      status = nf_def_var(result_ncid, 'ne_unit', nf_double, 1,                &
-     &                    (/ maxnsteps_dim_id /), ne_unit_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'ne_unit', nf90_double,               &
+     &                      dimids=(/ maxnsteps_dim_id /),                     &
+     &                      varid=ne_unit_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'ne_min', nf_double, 1,                 &
-     &                    (/ maxnsteps_dim_id /), ne_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'ne_min', nf90_double,                &
+     &                      dimids=(/ maxnsteps_dim_id /),                     &
+     &                      varid=ne_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'te_min', nf_double, 1,                 &
-     &                    (/ maxnsteps_dim_id /), te_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'te_min', nf90_double,                &
+     &                      dimids=(/ maxnsteps_dim_id /),                     &
+     &                      varid=te_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'ti_min', nf_double, 1,                 &
-     &                    (/ maxnsteps_dim_id /), ti_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'ti_min', nf90_double,                &
+     &                      dimids=(/ maxnsteps_dim_id /),                     &
+     &                      varid=ti_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'ze_min', nf_double, 1,                 &
-     &                    (/ maxnsteps_dim_id /), ze_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'ze_min', nf90_double,                &
+     &                      dimids=(/ maxnsteps_dim_id /),                     &
+     &                      varid=ze_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'pressure_fraction', nf_double,         &
-     &                    1, (/ maxnsteps_dim_id /),                           &
-     &                    pressure_fraction_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'pressure_fraction',                  &
+     &                      nf90_double, dimids=(/ maxnsteps_dim_id /),        &
+     &                      varid=pressure_fraction_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%ne_grid)) THEN
-         status = nf_def_var(result_ncid, 'ne_grid', nf_double, 2,             &
-     &                       (/ model_grid_size_dim_id,                        &
-     &                          maxnsteps_dim_id /), ne_grid_var_id)
+         status = nf90_def_var(result_ncid, 'ne_grid', nf90_double,            &
+     &                         dimids=(/ model_grid_size_dim_id,               &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=ne_grid_var_id)
       END IF
 
       IF (ASSOCIATED(this%te_grid)) THEN
-         status = nf_def_var(result_ncid, 'te_grid', nf_double, 2,             &
-     &                       (/ model_grid_size_dim_id,                        &
-     &                          maxnsteps_dim_id /), te_grid_var_id)
+         status = nf90_def_var(result_ncid, 'te_grid', nf90_double,            &
+     &                         dimids=(/ model_grid_size_dim_id,               &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=te_grid_var_id)
       END IF
 
       IF (ASSOCIATED(this%te_grid)) THEN
-         status = nf_def_var(result_ncid, 'ti_grid', nf_double, 2,             &
-     &                       (/ model_grid_size_dim_id,                        &
-     &                          maxnsteps_dim_id /), ti_grid_var_id)
+         status = nf90_def_var(result_ncid, 'ti_grid', nf90_double,            &
+     &                         dimids=(/ model_grid_size_dim_id,               &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=ti_grid_var_id)
       END IF
 
       IF (ASSOCIATED(this%ze_grid)) THEN
-         status = nf_def_var(result_ncid, 'ze_grid', nf_double, 2,             &
-     &                       (/ model_grid_size_dim_id,                        &
-     &                          maxnsteps_dim_id /), ze_grid_var_id)
+         status = nf90_def_var(result_ncid, 'ze_grid', nf90_double,            &
+     &                         dimids=(/ model_grid_size_dim_id,               &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=ze_grid_var_id)
       END IF
 
       IF (ASSOCIATED(this%sxrem_grid)) THEN
-         status = nf_def_var(result_ncid, 'sxrem_grid', nf_double, 3,          &
-     &                       (/ model_grid_size_dim_id,                        &
-     &                          model_num_sxrem_dim_id,                        &
-     &                          maxnsteps_dim_id /), sxrem_grid_var_id)
+         status = nf90_def_var(result_ncid, 'sxrem_grid', nf90_double,         &
+     &                         dimids=(/ model_grid_size_dim_id,               &
+     &                                   model_num_sxrem_dim_id,               &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=sxrem_grid_var_id)
       END IF
 
       IF (ASSOCIATED(this%coosig_wgts)) THEN
-         status = nf_def_var(result_ncid, 'coosig_wgts', nf_double, 2,         &
-     &                       (/ model_num_coosig_w_dim_id,                     &
-     &                          maxnsteps_dim_id /), coosig_w_var_id)
+         status = nf90_def_var(result_ncid, 'coosig_wgts', nf90_double,        &
+     &                         dimids=(/ model_num_coosig_w_dim_id,            &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=coosig_w_var_id)
       END IF
 
       CALL equilibrium_def_result(this%equilibrium, result_ncid,               &
@@ -3083,43 +3099,43 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'model_ne_type',                      &
-     &                      ne_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_text(result_ncid, ne_type_var_id,                    &
-     &                         model_get_ne_type(this))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'model_ne_type',                    &
+     &                        ne_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ne_type_var_id,                       &
+     &                      model_get_ne_type(this))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'model_te_type',                      &
-     &                      te_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_text(result_ncid, te_type_var_id,                    &
-     &                         model_get_te_type(this))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'model_te_type',                    &
+     &                        te_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, te_type_var_id,                       &
+     &                      model_get_te_type(this))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'model_ti_type',                      &
-     &                      ti_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_text(result_ncid, ti_type_var_id,                    &
-     &                         model_get_ti_type(this))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'model_ti_type',                    &
+     &                        ti_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ti_type_var_id,                       &
+     &                      model_get_ti_type(this))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'model_ze_type',                      &
-     &                      ze_type_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_text(result_ncid, ze_type_var_id,                    &
-     &                         model_get_ze_type(this))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'model_ze_type',                    &
+     &                        ze_type_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ze_type_var_id,                       &
+     &                      model_get_ze_type(this))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%sxrem_type)) THEN
-         status = nf_inq_varid(result_ncid, 'model_sxrem_type',                &
-     &                         sxrem_type_var_id)
+         status = nf90_inq_varid(result_ncid, 'model_sxrem_type',              &
+     &                           sxrem_type_var_id)
          DO i = 1, SIZE(this%sxrem_type)
-            status = nf_put_vara_text(result_ncid, sxrem_type_var_id,          &
-     &                                (/ 1, i /),                              &
-     &                                (/ data_name_length, 1 /),               &
-     &                                model_get_sxrem_type(this, i))
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(result_ncid, sxrem_type_var_id,              &
+     &                            model_get_sxrem_type(this, i),               &
+     &                            start=(/ 1, i /),                            &
+     &                            count=(/ data_name_length, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          END DO
       END IF
 
@@ -3165,104 +3181,104 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'ne_unit', ne_unit_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, ne_unit_var_id,                 &
-     &                            current_step, this%ne_unit)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ne_unit', ne_unit_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ne_unit_var_id, this%ne_unit,         &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ne_min', ne_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, ne_min_var_id,                  &
-     &                            current_step, this%ne_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ne_min', ne_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ne_min_var_id, this%ne_min,           &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'te_min', te_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, te_min_var_id,                  &
-     &                            current_step, this%te_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'te_min', te_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, te_min_var_id, this%te_min,           &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ti_min', ti_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, ti_min_var_id,                  &
-     &                            current_step, this%ti_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ti_min', ti_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ti_min_var_id, this%ti_min,           &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ze_min', ze_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, ze_min_var_id,                  &
-     &                            current_step, this%ze_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ze_min', ze_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, ze_min_var_id, this%ze_min,           &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'pressure_fraction',                  &
-     &                      pressure_fraction_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, pressure_fraction_var_id,       &
-     &                            current_step, this%pressure_fraction)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'pressure_fraction',                &
+     &                        pressure_fraction_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, pressure_fraction_var_id,             &
+     &                      this%pressure_fraction, start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%ne_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ne_grid', ne_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, ne_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ne_grid), 1 /),              &
-     &                               this%ne_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ne_grid', ne_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, ne_grid_var_id,                    &
+     &                         this%ne_grid,                                   &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ne_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%te_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'te_grid', te_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, te_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%te_grid), 1 /),              &
-     &                               this%te_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'te_grid', te_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, te_grid_var_id,                    &
+     &                         this%te_grid
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%te_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%ti_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ti_grid', ti_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, ti_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ti_grid), 1 /),              &
-     &                               this%ti_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ti_grid', ti_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, ti_grid_var_id,                    &
+     &                         this%ti_grid,                                   &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ti_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%ze_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ze_grid', ze_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, ze_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ze_grid), 1 /),              &
-     &                               this%ze_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ze_grid', ze_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, ze_grid_var_id,                    &
+     &                         this%ze_grid,                                   &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ze_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%sxrem_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'sxrem_grid',                      &
-     &                         sxrem_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, sxrem_grid_var_id,           &
-     &                               (/ 1, 1, current_step /),                 &
-     &                               (/ SIZE(this%sxrem_grid, 1),              &
-     &                                  SIZE(this%sxrem_grid, 2), 1 /),        &
-     &                               this%sxrem_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'sxrem_grid',                    &
+     &                           sxrem_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, sxrem_grid_var_id,                 &
+     &                         this%sxrem_grid,                                &
+     &                         start=(/ 1, 1, current_step /),                 &
+     &                         count=(/ SIZE(this%sxrem_grid, 1),              &
+     &                                  SIZE(this%sxrem_grid, 2), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%coosig_wgts)) THEN
-         status = nf_inq_varid(result_ncid, 'coosig_wgts',                     &
-     &                         coosig_w_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_vara_double(result_ncid, coosig_w_var_id,             &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%coosig_wgts), 1 /),          &
-     &                               this%coosig_wgts)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'coosig_wgts',                   &
+     &                           coosig_w_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, coosig_w_var_id,                   &
+     &                         this%coosig_wgts,                               &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%coosig_wgts), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       CALL equilibrium_write_step_data(this%equilibrium, result_ncid,          &
@@ -3310,104 +3326,105 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'ne_unit', ne_unit_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, ne_unit_var_id,                 &
-     &                            current_step, this%ne_unit)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ne_unit', ne_unit_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, ne_unit_var_id, this%ne_unit,         &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ne_min', ne_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, ne_min_var_id,                  &
-     &                            current_step, this%ne_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ne_min', ne_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, ne_min_var_id, this%ne_min,           &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'te_min', te_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, te_min_var_id,                  &
-     &                            current_step, this%te_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'te_min', te_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, te_min_var_id, this%te_min,           &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ti_min', ti_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, ti_min_var_id,                  &
-     &                            current_step, this%ti_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ti_min', ti_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, ti_min_var_id, this%ti_min,           &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'ze_min', ze_min_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, ze_min_var_id,                  &
-     &                            current_step, this%ze_min)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'ze_min', ze_min_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, ze_min_var_id, this%ze_min,           &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'pressure_fraction',                  &
-     &                      pressure_fraction_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, pressure_fraction_var_id,       &
-     &                            current_step, this%pressure_fraction)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'pressure_fraction',                &
+     &                        pressure_fraction_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, pressure_fraction_var_id,             &
+     &                      this%pressure_fraction,                            &
+     &                      start=(/current_step/))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%ne_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ne_grid', ne_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, ne_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ne_grid), 1 /),              &
-     &                               this%ne_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ne_grid', ne_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, ne_grid_var_id,                    &
+     &                         this%ne_grid,      &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ne_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%te_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'te_grid', te_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, te_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%te_grid), 1 /),              &
-     &                               this%te_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'te_grid', te_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, te_grid_var_id,                    &
+     &                         this%te_grid,                                   &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%te_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%ti_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ti_grid', ti_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, ti_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ti_grid), 1 /),              &
-     &                               this%ti_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ti_grid', ti_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, ti_grid_var_id,                    &
+     &                         this%ti_grid,                                   &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ti_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%ze_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'ze_grid', ze_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, ze_grid_var_id,              &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%ze_grid), 1 /),              &
-     &                               this%ze_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'ze_grid', ze_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, ze_grid_var_id,                    &
+     &                         this%ze_grid,
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%ze_grid), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%sxrem_grid)) THEN
-         status = nf_inq_varid(result_ncid, 'sxrem_grid',                      &
-     &                         sxrem_grid_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, sxrem_grid_var_id,           &
-     &                               (/ 1, 1, current_step /),                 &
-     &                               (/ SIZE(this%sxrem_grid, 1),              &
-     &                                  SIZE(this%sxrem_grid, 2), 1 /),        &
-     &                               this%sxrem_grid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'sxrem_grid',                    &
+     &                           sxrem_grid_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, sxrem_grid_var_id,                 &
+     &                         this%sxrem_grid,                                &
+     &                         start=(/ 1, 1, current_step /),                 &
+     &                         count=(/ SIZE(this%sxrem_grid, 1),              &
+     &                                  SIZE(this%sxrem_grid, 2), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%coosig_wgts)) THEN
-         status = nf_inq_varid(result_ncid, 'coosig_wgts',                     &
-     &                         coosig_w_var_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_get_vara_double(result_ncid, coosig_w_var_id,             &
-     &                               (/ 1, current_step /),                    &
-     &                               (/ SIZE(this%coosig_wgts), 1 /),          &
-     &                               this%coosig_wgts)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'coosig_wgts',                   &
+     &                           coosig_w_var_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_get_var(result_ncid, coosig_w_var_id,                   &
+     &                         this%coosig_wgts,                               &
+     &                         start=(/ 1, current_step /),                    &
+     &                         count=(/ SIZE(this%coosig_wgts), 1 /))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       CALL equilibrium_restart(this%equilibrium, result_ncid,                  &
