@@ -5765,70 +5765,78 @@
       start_time = profiler_get_start_time()
 
 !  Define dimensions.
-      status = nf_def_dim(result_ncid, 'vmec_xc_dim', SIZE(xc),                &
-     &                    vmec_xc_dim_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_dim(result_ncid, 'vmec_xc_dim', SIZE(xc),              &
+     &                      vmec_xc_dim_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (nextcur .gt. 0) THEN
-         status = nf_def_dim(result_ncid, 'vmec_nextcur', nextcur,             &
-     &                       vmec_nextcur_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(result_ncid, 'vmec_nextcur', nextcur,           &
+     &                         vmec_nextcur_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      status = nf_def_dim(result_ncid, 'vmec_boundary_m', mpol1 + 1,           &
-     &                    vmec_boundary_m_dim_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_dim(result_ncid, 'vmec_boundary_m', mpol1 + 1,         &
+     &                      vmec_boundary_m_dim_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_dim(result_ncid, 'vmec_boundary_n', 2*ntor + 1,          &
-     &                    vmec_boundary_n_dim_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_dim(result_ncid, 'vmec_boundary_n', 2*ntor + 1,        &
+     &                      vmec_boundary_n_dim_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !  Define variables.
-      status = nf_def_var(result_ncid, 'vmec_xc', nf_double, 1,                &
-     &                    (/ vmec_xc_dim_id /), vmec_xc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_xc', nf90_double,               &
+     &                      dimids=(/ vmec_xc_dim_id /),                       &
+     &                      varid=vmec_xc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (nextcur .gt. 0) THEN
-         status = nf_def_var(result_ncid, 'vmec_extcur', nf_double, 1,         &
-     &                       (/ vmec_nextcur_dim_id /), vmec_extcur_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(result_ncid, 'vmec_extcur', nf90_double,        &
+     &                         dimids=(/ vmec_nextcur_dim_id /),               &
+     &                         varid=vmec_extcur_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      status = nf_def_var(result_ncid, 'vmec_curtor', nf_double, 0, 0,         &
-     &                    vmec_curtor_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_curtor', nf90_double,           &
+     &                      varid=vmec_curtor_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_pres_scale', nf_double, 0,        &
-     &                    0, vmec_pres_scale_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_pres_scale', nf90_double,       &
+     &                      varid=vmec_pres_scale_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_rbc', nf_double, 2,               &
-     &                    (/ vmec_boundary_n_dim_id,                           &
-     &                       vmec_boundary_m_dim_id /), vmec_rbc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_rbc', nf90_double,              &
+     &                      dimids=(/ vmec_boundary_n_dim_id,                  &
+     &                                vmec_boundary_m_dim_id /),               &
+     &                      varid=vmec_rbc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_rbs', nf_double, 2,               &
-     &                    (/ vmec_boundary_n_dim_id,                           &
-     &                       vmec_boundary_m_dim_id /), vmec_rbs_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_rbs', nf90_double,              &
+     &                      dimids=(/ vmec_boundary_n_dim_id,                  &
+     &                                vmec_boundary_m_dim_id /),               &
+     &                      varid=vmec_rbs_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_zbc', nf_double, 2,               &
-     &                    (/ vmec_boundary_n_dim_id,                           &
-     &                       vmec_boundary_m_dim_id /), vmec_zbc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_zbc', nf90_double,              &
+     &                      dimids=(/ vmec_boundary_n_dim_id,                  &
+     &                                vmec_boundary_m_dim_id /),               &
+     &                      varid=vmec_zbc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_zbs', nf_double, 2,               &
-     &                    (/ vmec_boundary_n_dim_id,                           &
-     &                       vmec_boundary_m_dim_id /), vmec_zbs_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_zbs', nf90_double,              &
+     &                      dimids=(/ vmec_boundary_n_dim_id,                  &
+     &                                vmec_boundary_m_dim_id /),               &
+     &                      varid=vmec_zbs_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_l_sub_i', nf_double, 1,           &
-     &                    (/ maxnsetps_dim_id /), vmec_l_sub_i_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_l_sub_i', nf90_double,          &
+     &                      dimids=(/ maxnsetps_dim_id /),                     &
+     &                      varid=vmec_l_sub_i_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(result_ncid, 'vmec_kappa_p', nf_double, 1,           &
-     &                    (/ maxnsetps_dim_id /), vmec_kappa_p_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(result_ncid, 'vmec_kappa_p', nf90_double,          &
+     &                      dimids=(/ maxnsetps_dim_id /),                     &
+     &                      varid=vmec_kappa_p_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('vmec_def_result', start_time)
 
@@ -5857,7 +5865,6 @@
 
 !  Local variables
       INTEGER                       :: status
-      INTEGER, DIMENSION(2)         :: boundary_size
       INTEGER                       :: vmec_extcur_id
       INTEGER                       :: vmec_curtor_id
       INTEGER                       :: vmec_pres_scale_id
@@ -5871,57 +5878,48 @@
       start_time = profiler_get_start_time()
 
       IF (nextcur .gt. 0) THEN
-         status = nf_inq_varid(result_ncid, 'vmec_extcur',                     &
-     &                         vmec_extcur_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_var_double(result_ncid, vmec_extcur_id,               &
-     &                           extcur(1:nextcur))
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(result_ncid, 'vmec_extcur',                   &
+     &                           vmec_extcur_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(result_ncid, vmec_extcur_id,                    &
+     &                         extcur(1:nextcur))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      status = nf_inq_varid(result_ncid, 'vmec_curtor', vmec_curtor_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_double(result_ncid, vmec_curtor_id,                  &
-     &                           curtor)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_curtor', vmec_curtor_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_curtor_id, curtor)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_pres_scale',                    &
-     &                      vmec_pres_scale_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_double(result_ncid, vmec_pres_scale_id,              &
-     &                           pres_scale)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_pres_scale',                  &
+     &                        vmec_pres_scale_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_pres_scale_id, pres_scale)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      boundary_size(1) = 2*ntor + 1
-      boundary_size(2) = mpol1 + 1
+      status = nf90_inq_varid(result_ncid, 'vmec_rbc', vmec_rbc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_rbc_id,                          &
+     &                      rbc(-ntor:ntor,0:mpol1))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_rbc', vmec_rbc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_vara_double(result_ncid, vmec_rbc_id,                    &
-     &                            (/ 1, 1 /), boundary_size,                   &
-     &                            rbc(-ntor:ntor,0:mpol1))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_rbs', vmec_rbs_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_rbs_id,                          &
+     &                      rbs(-ntor:ntor,0:mpol1))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_rbs', vmec_rbs_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_vara_double(result_ncid, vmec_rbs_id,                    &
-     &                            (/ 1, 1 /), boundary_size,                   &
-     &                            rbs(-ntor:ntor,0:mpol1))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_zbc', vmec_zbc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_zbc_id,                          &
+     &                      zbc(-ntor:ntor,0:mpol1))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_zbc', vmec_zbc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_vara_double(result_ncid, vmec_zbc_id,                    &
-     &                            (/ 1, 1 /), boundary_size,                   &
-     &                            zbc(-ntor:ntor,0:mpol1))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-
-      status = nf_inq_varid(result_ncid, 'vmec_zbs', vmec_zbs_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_vara_double(result_ncid, vmec_zbs_id,                    &
-     &                            (/ 1, 1 /), boundary_size,                   &
-     &                            zbs(-ntor:ntor,0:mpol1))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_zbs', vmec_zbs_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_zbs_id,                          &
+     &                      zbs(-ntor:ntor,0:mpol1))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL vmec_write_step_data(this, result_ncid, 1)
 
@@ -5960,25 +5958,24 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'vmec_xc', vmec_xc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_vara_double(result_ncid, vmec_xc_id,                     &
-     &                            (/ 1 /), (/ SIZE(xc) /), xc)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_xc', vmec_xc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_xc_id, xc)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_l_sub_i',                       &
-     &                      vmec_l_sub_i_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, vmec_l_sub_i_id,                &
-     &                            current_step, vvc_smaleli)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_l_sub_i',                     &
+     &                        vmec_l_sub_i_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_l_sub_i_id, vvc_smaleli,         &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_kappa_p',                       &
-     &                      vmec_kappa_p_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var1_double(result_ncid, vmec_kappa_p_id,                &
-     &                            current_step, vvc_kappa_p)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_kappa_p',                     &
+     &                        vmec_kappa_p_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(result_ncid, vmec_kappa_p_id, vvc_kappa_p,         &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('vmec_write_step_data', start_time)
 
@@ -6015,25 +6012,24 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'vmec_xc', vmec_xc_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_vara_double(result_ncid, vmec_xc_id,                     &
-     &                            (/ 1 /), (/ SIZE(xc) /), xc)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_xc', vmec_xc_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, vmec_xc_id, xc)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_l_sub_i',                       &
-     &                      vmec_l_sub_i_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, vmec_l_sub_i_id,                &
-     &                            current_step, vvc_smaleli)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_l_sub_i',                     &
+     &                        vmec_l_sub_i_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, vmec_l_sub_i_id, vvc_smaleli,         &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_inq_varid(result_ncid, 'vmec_kappa_p',                       &
-     &                      vmec_kappa_p_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var1_double(result_ncid, vmec_kappa_p_id,                &
-     &                            current_step, vvc_kappa_p)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'vmec_kappa_p',                     &
+     &                        vmec_kappa_p_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, vmec_kappa_p_id, vvc_kappa_p,         &
+     &                      start=current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('vmec_restart', start_time)
 
