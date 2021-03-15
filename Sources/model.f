@@ -3184,38 +3184,39 @@
       status = nf90_inq_varid(result_ncid, 'ne_unit', ne_unit_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ne_unit_var_id, this%ne_unit,         &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'ne_min', ne_min_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ne_min_var_id, this%ne_min,           &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'te_min', te_min_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, te_min_var_id, this%te_min,           &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'ti_min', ti_min_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ti_min_var_id, this%ti_min,           &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'ze_min', ze_min_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ze_min_var_id, this%ze_min,           &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'pressure_fraction',                &
      &                        pressure_fraction_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, pressure_fraction_var_id,             &
-     &                      this%pressure_fraction, start=current_step)
+     &                      this%pressure_fraction,                            &
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%ne_grid)) THEN
@@ -3232,7 +3233,7 @@
          status = nf90_inq_varid(result_ncid, 'te_grid', te_grid_var_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          status = nf90_put_var(result_ncid, te_grid_var_id,                    &
-     &                         this%te_grid
+     &                         this%te_grid,                                   &
      &                         start=(/ 1, current_step /),                    &
      &                         count=(/ SIZE(this%te_grid), 1 /))
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
@@ -3368,7 +3369,7 @@
          status = nf90_inq_varid(result_ncid, 'ne_grid', ne_grid_var_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          status = nf90_get_var(result_ncid, ne_grid_var_id,                    &
-     &                         this%ne_grid,      &
+     &                         this%ne_grid,                                   &
      &                         start=(/ 1, current_step /),                    &
      &                         count=(/ SIZE(this%ne_grid), 1 /))
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
