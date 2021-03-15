@@ -1354,10 +1354,10 @@
      &                           param_value_id, param_sigma_id,               &
      &                           param_corr_id)
 
-      status = nf_put_vara_double(result_ncid, param_sem_id,                   &
-     &                            (/ 1, index, current_step /),                &
-     &                            (/ SIZE(this%recon%sem), 1, 1 /),            &
-     &                            this%recon%sem)
+      status = nf90_put_var(result_ncid, param_sem_id,                         &
+     &                      this%recon%sem,                                    &
+     &                      start=(/ 1, index, current_step /),                &
+     &                      count=(/ SIZE(this%recon%sem), 1, 1 /))
 
       CALL profiler_set_stop_time('param_write_step_data_1', start_time)
 
@@ -1408,21 +1408,20 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_put_var1_double(result_ncid, param_value_id,                 &
-     &                            (/ index, current_step /),                   &
-     &                            param_get_value(this, a_model))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, param_value_id,                       &
+     &                      param_get_value(this, a_model),                    &
+     &                      start=(/ index, current_step /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_put_var1_double(result_ncid, param_sigma_id,                 &
-     &                            (/ index, current_step /),                   &
-     &                            this%sigma)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, param_sigma_id, this%sigma,           &
+     &                      start=(/ index, current_step /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_put_vara_double(result_ncid, param_corr_id,                  &
-     &                            (/ 1, index, current_step /),                &
-     &                            (/ SIZE(this%correlation), 1, 1 /),          &
-     &                            this%correlation)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, param_corr_id,                        &
+     &                      this%correlation,                                  &
+     &                      start=(/ 1, index, current_step /),                &
+     &                      count=(/ SIZE(this%correlation), 1, 1 /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('param_write_step_data_2', start_time)
 
@@ -1477,22 +1476,21 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_get_var1_double(result_ncid, param_value_id,                 &
-     &                            (/ index, current_step /), temp_value)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_get_var(result_ncid, param_value_id, temp_value,           &
+     &                      start=(/ index, current_step /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       CALL param_set_value(this, a_model, temp_value, eq_comm,                 &
      &                     is_central)
 
-      status = nf_put_var1_double(result_ncid, param_sigma_id,                 &
-     &                            (/ index, current_step /),                   &
-     &                            this%sigma)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, param_sigma_id, this%sigma,           &
+     &                      start=(/ index, current_step /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_put_vara_double(result_ncid, param_corr_id,                  &
-     &                            (/ 1, index, current_step /),                &
-     &                            (/ SIZE(this%correlation), 1, 1 /),          &
-     &                            this%correlation)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, param_corr_id,                        &
+     &                      this%correlation,                                  &
+     &                      start=(/ 1, index, current_step /),                &
+     &                      count=(/ SIZE(this%correlation), 1, 1 /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('param_restart', start_time)
 
