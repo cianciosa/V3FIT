@@ -2574,14 +2574,13 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      status = nf_inq_varid(result_ncid, 'signal_model_value',                 &
-     &                      temp_var_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_vara_double(result_ncid, temp_var_id,                    &
-     &                            (/ 1, 1, current_step /),                    &
-     &                            (/ 4, SIZE(signals), 1 /),                   &
-     &                            this%last_values)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(result_ncid, 'signal_model_value',               &
+     &                        temp_var_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(result_ncid, temp_var_id, this%last_values,        &
+     &                      start=(/ 1, 1, current_step /),                    &
+     &                      count=(/ 4, SIZE(signals), 1 /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !$OMP PARALLEL DO
 !$OMP& SCHEDULE(DYNAMIC)
