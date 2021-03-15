@@ -9,7 +9,6 @@ target_sources(xv3fit
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/emission.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/equilibrium.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/extcurz.f>
-               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/feedback.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/guassian_process.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/intpol.f>
                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ipch_dot.f>
