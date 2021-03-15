@@ -981,15 +981,16 @@
       modeled_signal = this%get_modeled_signal(a_model, modeled_sigma,         &
      &                                         .true., dummy_value)
 
-      status = nf_put_vara_double(result_ncid, signal_model_value_id,          &
-     &                            (/ 1, index, current_step /),                &
-     &                            (/ 4, 1, 1 /), modeled_signal)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, signal_model_value_id,                &
+     &                      modeled_signal,                                    &
+     &                      start=(/ 1, index, current_step /),                &
+     &                      count=(/ 4, 1, 1 /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_put_var1_double(result_ncid, signal_sigma_value_id,          &
-     &                            (/ index, current_step /),                   &
-     &                            SQRT(this%get_sigma2()))
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_put_var(result_ncid, signal_sigma_value_id,                &
+     &                      SQRT(this%get_sigma2()),                           &
+     &                      start=(/ index, current_step /))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !  Feedback signals change the observed signal. Write the current observed
 !  value at eash step.
@@ -999,14 +1000,15 @@
       SELECT CASE(this%type)
 
          CASE (signal_feedback_type)
-            status = nf_inq_varid(result_ncid, 'signal_observed_value',        &
-     &                            varid)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_inq_varid(result_ncid,                               &
+     &                              'signal_observed_value', varid)
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
             status =                                                           &
-     &         nf_put_var1_double(result_ncid, varid, index,                   &
-     &                            this%get_observed_signal(a_model))
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+     &         nf90_put_var(result_ncid, varid,                                &
+     &                      this%get_observed_signal(a_model),                 &
+     &                      start=index)
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       END SELECT
 #endif
