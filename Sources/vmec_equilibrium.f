@@ -5886,7 +5886,8 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      status = nf90_inq_varid(result_ncid, 'vmec_curtor', vmec_curtor_id)
+      status = nf90_inq_varid(result_ncid, 'vmec_curtor',                      &
+     &                        vmec_curtor_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, vmec_curtor_id, curtor)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
@@ -5967,14 +5968,14 @@
      &                        vmec_l_sub_i_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, vmec_l_sub_i_id, vvc_smaleli,         &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'vmec_kappa_p',                     &
      &                        vmec_kappa_p_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, vmec_kappa_p_id, vvc_kappa_p,         &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('vmec_write_step_data', start_time)
@@ -6021,14 +6022,14 @@
      &                        vmec_l_sub_i_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_get_var(result_ncid, vmec_l_sub_i_id, vvc_smaleli,         &
-     &                      start=current_step)
+     &                      start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'vmec_kappa_p',                     &
      &                        vmec_kappa_p_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_get_var(result_ncid, vmec_kappa_p_id, vvc_kappa_p,         &
-     &                      start=current_step)
+     &                     start=(/current_step/))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('vmec_restart', start_time)
