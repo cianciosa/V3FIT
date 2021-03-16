@@ -385,14 +385,14 @@
      &    recon_rank .eq. 0) THEN
          filename = commandline_parser_get_string(this%cl_parser,              &
      &                                            '-restart')
-         status = nf_open(filename, NF_WRITE, this%result_ncid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_open(filename, NF90_WRITE, this%result_ncid)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       ELSE
 !  Create a result file.
-         status = nf_create('result.' // TRIM(filename_base(filename))         &
-     &                      // '.nc', nf_clobber,                              &
-     &                      this%result_ncid)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_create('result.' // TRIM(filename_base(filename))       &
+     &                        // '.nc', nf090_clobber,                         &
+     &                        this%result_ncid)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       WRITE (this%runlog_iou, *) 'V3FITA RUN'
@@ -433,8 +433,8 @@
       CLOSE(this%runlog_iou)
       CLOSE(this%recout_iou)
 
-      status = nf_close(this%result_ncid)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_close(this%result_ncid)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('v3fit_context_close_files',                 &
      &                            start_time)
@@ -849,178 +849,194 @@
       start_time = profiler_get_start_time()
 
 !  Define dimensions
-      status = nf_noerr
+      status = nf90_noerr
 
       IF (ASSOCIATED(this%recon)) THEN
-         status = nf_def_dim(this%result_ncid, 'maxnsteps',                    &
-     &                       nf_unlimited, maxnsteps_dim_id)
+         status = nf90_def_dim(this%result_ncid, 'maxnsteps',                  &
+     &                         nf90_unlimited, maxnsteps_dim_id)
       ELSE
-         status = nf_def_dim(this%result_ncid, 'maxnsteps',                    &
-     &                       1, maxnsteps_dim_id)
+         status = nf90_def_dim(this%result_ncid, 'maxnsteps', 1,               &
+     &                         maxnsteps_dim_id)
       END IF
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%params)  .or.                                        &
      &    ASSOCIATED(this%signals) .or.                                        &
      &    ASSOCIATED(this%model)) THEN
-         status = nf_def_dim(this%result_ncid, 'string_len',                   &
-     &                       data_name_length, string_len_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'string_len',                 &
+     &                         data_name_length, string_len_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%derived_params) .and.                                &
      &    SIZE(this%derived_params) .gt. 0) THEN
-         status = nf_def_dim(this%result_ncid, 'ndparam',                      &
-     &                       SIZE(this%derived_params),                        &
-     &                       ndparam_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'ndparam',                    &
+     &                         SIZE(this%derived_params),                      &
+     &                         ndparam_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%params)) THEN
-         status = nf_def_dim(this%result_ncid, 'nparam',                       &
-     &                       SIZE(this%params), nparam_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'nparam',                     &
+     &                         SIZE(this%params), nparam_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_dim(this%result_ncid, 'nparamindex',                  &
-     &                       2, nparamindex_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'nparamindex',                &
+     &                         2, nparamindex_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%signals)) THEN
-         status = nf_def_dim(this%result_ncid, 'nsignal',                      &
-     &                       SIZE(this%signals), nsignal_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'nsignal',                    &
+     &                         SIZE(this%signals), nsignal_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%signals)) THEN
-         status = nf_def_dim(this%result_ncid, 'n_sig_models', 4,              &
-     &                       n_sig_models_dim_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_dim(this%result_ncid, 'n_sig_models', 4,            &
+     &                         n_sig_models_dim_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
 !  Define variables
-      status = nf_def_var(this%result_ncid, 'nsteps', nf_int, 0, 0,            &
-     &                    nsteps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(this%result_ncid, 'nsteps', nf90_int,              &
+     &                      varid=nsteps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      status = nf_def_var(this%result_ncid, 'eq_steps', nf_int, 0, 0,          &
-     &                    eq_steps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_def_var(this%result_ncid, 'eq_steps', nf90_int,            &
+     &                      varid=eq_steps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%recon)) THEN
-         status = nf_def_var(this%result_ncid, 'g2', nf_double, 1,             &
-     &                       (/ maxnsteps_dim_id /), g2_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'g2', nf90_double,            &
+     &                         dimids=(/ maxnsteps_dim_id /),                  &
+     &                         varid=g2_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
 !  Define derived parameter variables.
       IF (ASSOCIATED(this%derived_params) .and.                                &
      &    SIZE(this%derived_params) .gt. 0) THEN
-         status = nf_def_var(this%result_ncid, 'derived_param_name',           &
-     &                       nf_char, 2, (/ string_len_dim_id,                 &
-     &                                      ndparam_dim_id /),                 &
-     &                       derived_param_name_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'derived_param_name',         &
+     &                         nf90_char,                                      &
+     &                         dimids=(/ string_len_dim_id,                    &
+     &                                   ndparam_dim_id /),                    &
+     &                         varid=derived_param_name_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'derived_param_index',          &
-     &                       nf_int, 2, (/ nparamindex_dim_id,                 &
-     &                                     ndparam_dim_id /),                  &
-     &                       derived_param_index_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'derived_param_index',        &
+     &                         nf90_int,                                       &
+     &                         dimids=(/ nparamindex_dim_id,                   &
+     &                                   ndparam_dim_id /),                    &
+     &                         varid=derived_param_index_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'derived_param_value',          &
-     &                       nf_double, 2, (/ ndparam_dim_id,                  &
-     &                                        maxnsteps_dim_id /),             &
-     &                       derived_param_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'derived_param_value',        &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ ndparam_dim_id,                       &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=derived_param_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'derived_param_sigma',          &
-     &                       nf_double, 2, (/ ndparam_dim_id,                  &
-     &                                        maxnsteps_dim_id /),             &
-     &                       derived_param_sigma_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'derived_param_sigma',        &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ ndparam_dim_id,                       &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=derived_param_sigma_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'derived_param_corr',           &
-     &                       nf_double, 3, (/ ndparam_dim_id,                  &
-     &                                        ndparam_dim_id,                  &
-     &                                        maxnsteps_dim_id /),             &
-     &                       derived_param_corr_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'derived_param_corr',         &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ ndparam_dim_id,                       &
+     &                                   ndparam_dim_id,                       &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=derived_param_corr_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
 !  Define reconstruction parameter variables.
       IF (ASSOCIATED(this%params)) THEN
-         status = nf_def_var(this%result_ncid, 'param_name', nf_char,          &
-     &                       2, (/ string_len_dim_id,                          &
-     &                             nparam_dim_id /), param_name_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'param_name',                 &
+     &                         nf90_char, dimids=(/ string_len_dim_id,         &
+     &                                              nparam_dim_id /),          &
+     &                         varid=param_name_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'param_index', nf_int,          &
-     &                       2, (/ nparamindex_dim_id,                         &
-     &                             nparam_dim_id /), param_index_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'param_index',                &
+     &                         nf90_int, dimids=(/ nparamindex_dim_id,         &
+     &                                             nparam_dim_id /),           &
+     &                         varid=param_index_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'param_value', nf_double,       &
-     &                       2, (/ nparam_dim_id,                              &
-     &                             maxnsteps_dim_id /),                        &
-     &                       param_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'param_value',                &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ nparam_dim_id,                        &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=param_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'param_sigma', nf_double,       &
-     &                       2, (/ nparam_dim_id,                              &
-     &                             maxnsteps_dim_id /),                        &
-     &                       param_sigma_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'param_sigma',                &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ nparam_dim_id,                        &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=param_sigma_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'param_corr',                   &
-     &                       nf_double, 3, (/ nparam_dim_id,                   &
-     &                                        nparam_dim_id,                   &
-     &                                        maxnsteps_dim_id /),             &
-     &                       param_corr_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'param_corr',                 &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ nparam_dim_id,                        &
+     &                                   nparam_dim_id,                        &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=param_corr_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_eff_matrix',            &
-     &                       nf_double, 3, (/ nsignal_dim_id,                  &
-     &                                        nparam_dim_id,                   &
-     &                                        maxnsteps_dim_id /),             &
-     &                       param_sem_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_eff_matrix',          &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ nsignal_dim_id,                       &
+     &                                   nparam_dim_id,                        &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=param_sem_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
 !  Define signal variables.
       IF (ASSOCIATED(this%signals)) THEN
-         status = nf_def_var(this%result_ncid, 'signal_name', nf_char,         &
-     &                       2, (/ string_len_dim_id,                          &
-     &                             nsignal_dim_id /), signal_name_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_name',                &
+     &                         nf90_char, dimids=(/ string_len_dim_id,         &
+     &                                              nsignal_dim_id /),         &
+     &                         varid=signal_name_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_type', nf_char,         &
-     &                       2, (/ string_len_dim_id,                          &
-     &                             nsignal_dim_id /), signal_type_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_type',                &
+     &                         nf90_char, dimids=(/ string_len_dim_id,         &
+     &                                              nsignal_dim_id /),         &
+     &                         varid=signal_type_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_weight',                &
-     &                       nf_double, 1, (/ nsignal_dim_id /),               &
-     &                       signal_weight_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_weight',              &
+     &                         nf90_double, dimids=(/ nsignal_dim_id /),       &
+     &                         varid=signal_weight_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_observed_value',        &
-     &                       nf_double, 1, (/ nsignal_dim_id /),               &
-     &                       signal_observed_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_observed_value',      &
+     &                         nf90_double, dimids=(/ nsignal_dim_id /),       &
+     &                         varid=signal_observed_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_model_value',           &
-     &                       nf_double, 3, (/ n_sig_models_dim_id,             &
-     &                                        nsignal_dim_id,                  &
-     &                                        maxnsteps_dim_id /),             &
-     &                       signal_model_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_model_value',         &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ n_sig_models_dim_id,                  &
+     &                                   nsignal_dim_id,                       &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=signal_model_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_def_var(this%result_ncid, 'signal_sigma',                 &
-     &                       nf_double, 2, (/ nsignal_dim_id,                  &
-     &                                        maxnsteps_dim_id /),             &
-     &                       signal_sigma_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_def_var(this%result_ncid, 'signal_sigma',               &
+     &                         nf90_double,                                    &
+     &                         dimids=(/ nsignal_dim_id,                       &
+     &                                   maxnsteps_dim_id /),                  &
+     &                         varid=signal_sigma_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%model)) THEN
@@ -1029,40 +1045,42 @@
       END IF
 
 ! Finished defining netcdf file. Exit out of define mode.
-      status = nf_enddef(this%result_ncid)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_enddef(this%result_ncid)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%derived_params)) THEN
          DO i = 1, SIZE(this%derived_params)
-            status = nf_put_vara_text(this%result_ncid,                        &
-     &                  derived_param_name_id, (/ 1, i /),                     &
-     &                  (/ data_name_length, 1 /),                             &
+            status = nf90_put_var(this%result_ncid,                            &
+     &                  derived_param_name_id,                                 &
      &                  param_get_name(this%derived_params(i)%p,               &
-     &                                 this%model))
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+     &                                 this%model),                            &
+     &                  start=(/ 1, i /),                                      &
+     &                  count=(/ data_name_length, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-            status = nf_put_vara_int(this%result_ncid,                         &
-     &                               derived_param_index_id,                   &
-     &                               (/ 1, i /), (/ 2, 1 /),                   &
-     &                               this%derived_params(i)%p%indices)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid,                            &
+     &                            derived_param_index_id,                      &
+     &                            this%derived_params(i)%p%indices,            &
+     &                            start=(/ 1, i /),                            &
+     &                            count=(/ 2, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          END DO
       END IF
 
       IF (ASSOCIATED(this%params)) THEN
          DO i = 1, SIZE(this%params)
-            status = nf_put_vara_text(this%result_ncid, param_name_id,         &
-     &                                (/ 1, i /),                              &
-     &                                (/ data_name_length, 1 /),               &
-     &                                param_get_name(this%params(i)%p,         &
-     &                                               this%model))
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid, param_name_id,             &
+     &                            param_get_name(this%params(i)%p,             &
+     &                                               this%model),              &
+     &                            start=(/ 1, i /),                            &
+     &                            count=(/ data_name_length, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-            status = nf_put_vara_int(this%result_ncid,                         &
-     &                               param_index_id,                           &
-     &                               (/ 1, i /), (/ 2, 1 /),                   &
-     &                               this%params(i)%p%indices)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid, param_index_id,            &
+     &                            this%params(i)%p%indices,                    &
+     &                            start=(/ 1, i /),                            &
+     &                            count=(/ 2, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          END DO
       END IF
 
@@ -1070,27 +1088,28 @@
          DO i = 1, SIZE(this%signals)
             temp_signal => this%signals(i)%p
 
-            status = nf_put_vara_text(this%result_ncid, signal_name_id,        &
-     &                                (/ 1, i /),                              &
-     &                                (/ data_name_length, 1 /),               &
-     &                                this%signals(i)%p%s_name)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid, signal_name_id,            &
+     &                            this%signals(i)%p%s_name,                    &
+     &                            start=(/ 1, i /),                              &
+     &                            count=(/ data_name_length, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-            status = nf_put_vara_text(this%result_ncid, signal_type_id,        &
-     &                                (/ 1, i /),                              &
-     &                                (/ data_name_length, 1 /),               &
-     &                                temp_signal%get_type())
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid, signal_type_id,            &
+     &                            temp_signal%get_type(),                      &
+     &                            start=(/ 1, i /),                            &
+     &                            count=(/ data_name_length, 1 /))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-            status = nf_put_var1_double(this%result_ncid,                      &
-     &                                  signal_weight_id, i,                   &
-     &                                  this%signals(i)%p%weight)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid,                            &
+     &                            signal_weight_id,                            &
+     &                            this%signals(i)%p%weight, start=(/i/))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-            status = nf_put_var1_double(this%result_ncid,                      &
-     &                                  signal_observed_value_id, i,           &
-     &                                  this%signals(i)%p%observed)
-            CALL assert_eq(status, nf_noerr, nf_strerror(status))
+            status = nf90_put_var(this%result_ncid,                            &
+     &                            signal_observed_value_id,                    &
+     &                            this%signals(i)%p%observed,                  &
+     &                            start=(/i/))
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          END DO
       END IF
 
@@ -1151,59 +1170,57 @@
       start_time = profiler_get_start_time()
 
 !  Update number of steps taken.
-      status = nf_inq_varid(this%result_ncid, 'nsteps', nsteps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(this%result_ncid, 'nsteps', nsteps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       IF (first_step) THEN
-         status = nf_put_var_int(this%result_ncid, nsteps_id, 0)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_put_var(this%result_ncid, nsteps_id, 0)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          current_step = 1
       ELSE
-         status = nf_get_var_int(this%result_ncid, nsteps_id,                  &
-     &                           current_step)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_get_var(this%result_ncid, nsteps_id, current_step)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          current_step = current_step + 1
-         status = nf_put_var_int(this%result_ncid, nsteps_id,                  &
-     &                           current_step)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_put_var(this%result_ncid, nsteps_id, current_step)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !  Use current_step as an array index. The Netcdf arrays start at 1 so this
 !  needs to be incremented to point to the correct index.
          current_step = current_step + 1
       END IF
 
-      status = nf_inq_varid(this%result_ncid, 'eq_steps', eq_steps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_put_var_int(this%result_ncid, eq_steps_id, eq_steps)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(this%result_ncid, 'eq_steps', eq_steps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_put_var(this%result_ncid, eq_steps_id, eq_steps)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL model_write_step_data(this%model, this%result_ncid,                 &
      &                           current_step)
 
       IF (ASSOCIATED(this%recon)) THEN
-         status = nf_inq_varid(this%result_ncid, 'g2', g2_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
-         status = nf_put_var1_double(this%result_ncid, g2_id,                  &
-     &                               current_step,                             &
-     &                               reconstruction_get_g2(this%recon))
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'g2', g2_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         status = nf90_put_var(this%result_ncid, g2_id,                        &
+     &                         reconstruction_get_g2(this%recon)
+     &                         start=(/current_step/))
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
       IF (ASSOCIATED(this%derived_params) .and.                                &
      &    SIZE(this%derived_params) .gt. 0) THEN
-         status = nf_inq_varid(this%result_ncid,                               &
-     &                         'derived_param_value',                          &
-     &                         derived_param_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid,                             &
+     &                           'derived_param_value',                        &
+     &                           derived_param_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid,                               &
-     &                         'derived_param_sigma',                          &
-     &                         derived_param_sigma_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid,                             &
+     &                           'derived_param_sigma',                        &
+     &                           derived_param_sigma_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid,                               &
-     &                         'derived_param_corr',                           &
-     &                         derived_param_corr_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid,                             &
+     &                           'derived_param_corr',                         &
+     &                           derived_param_corr_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%derived_params)
             CALL param_write_step_data(this%derived_params(i)%p,               &
@@ -1216,21 +1233,21 @@
       END IF
 
       IF (ASSOCIATED(this%params)) THEN
-         status = nf_inq_varid(this%result_ncid, 'param_value',                &
-     &                         param_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_value',              &
+     &                           param_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'param_sigma',                &
-     &                         param_sigma_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_sigma',              &
+     &                           param_sigma_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'param_corr',                 &
-     &                         param_corr_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_corr',               &
+     &                           param_corr_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'signal_eff_matrix',          &
-     &                         param_sem_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'signal_eff_matrix',        &
+     &                           param_sem_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%params)
             CALL param_write_step_data(this%params(i)%p, this%model,           &
@@ -1243,13 +1260,13 @@
       END IF
 
       IF (ASSOCIATED(this%signals)) THEN
-         status = nf_inq_varid(this%result_ncid, 'signal_model_value',         &
-     &                         signal_model_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'signal_model_value',       &
+     &                           signal_model_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'signal_sigma',               &
-     &                         signal_sigma_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'signal_sigma',             &
+     &                           signal_sigma_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%signals)
             temp_signal => this%signals(i)%p
@@ -1264,8 +1281,8 @@
 
 !  Flush the step data to disk. This ensures that data is recorded in the event
 !  of a fatal error that stops v3fit execution.
-      status = nf_sync(this%result_ncid)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_sync(this%result_ncid)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('v3fit_context_write_step_data',             &
      &                            start_time)
@@ -1305,25 +1322,24 @@
 
 !  The current step starts at zero but the NetCDF file starts at 1. Increment
 !  the current step when passing it into subroutines.
-      status = nf_inq_varid(this%result_ncid, 'nsteps', nsteps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var_int(this%result_ncid, nsteps_id,                  &
-     &                           current_step)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(this%result_ncid, 'nsteps', nsteps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(this%result_ncid, nsteps_id, current_step)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       current_step = current_step + 1
 
       IF (ASSOCIATED(this%params)) THEN
-         status = nf_inq_varid(this%result_ncid, 'param_value',                &
-     &                         param_value_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_value',              &
+     &                           param_value_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'param_sigma',                &
-     &                         param_sigma_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_sigma',              &
+     &                           param_sigma_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf_inq_varid(this%result_ncid, 'param_corr',                 &
-     &                      param_corr_id)
-         CALL assert_eq(status, nf_noerr, nf_strerror(status))
+         status = nf90_inq_varid(this%result_ncid, 'param_corr',               &
+     &                           param_corr_id)
+         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%params)
             CALL param_restart(this%params(i)%p, this%model,                   &
@@ -1344,11 +1360,11 @@
 
       END IF
 
-      status = nf_inq_varid(this%result_ncid, 'eq_steps', eq_steps_id)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
-      status = nf_get_var_int(this%result_ncid, eq_steps_id,                    &
-     &                        v3fit_context_restart)
-      CALL assert_eq(status, nf_noerr, nf_strerror(status))
+      status = nf90_inq_varid(this%result_ncid, 'eq_steps', eq_steps_id)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+      status = nf90_get_var(this%result_ncid, eq_steps_id,                     &
+     &                      v3fit_context_restart)
+      CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('v3fit_context_restart', start_time)
 
