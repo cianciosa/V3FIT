@@ -337,6 +337,7 @@
          ALLOCATE(context(context_length))
          context = TRANSFER(sxr_context, context)
 
+         sxrem_emiss_get_modeled_signal = 0.0
          sxrem_emiss_get_modeled_signal(1) =                                   &
      &      path_integrate(a_model%int_params, this%chord_path,                &
      &                     sxr_function, context)*this%geo

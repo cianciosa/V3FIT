@@ -259,6 +259,8 @@
      &    BTEST(a_model%state_flags, model_state_te_flag)     .or.             &
      &    BTEST(a_model%state_flags, model_state_shift_flag)  .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
+
+         thomson_te_get_modeled_signal = 0.0
          thomson_te_get_modeled_signal(1) = model_get_te(a_model,              &
      &                                                   this%xcart)
 
@@ -311,6 +313,8 @@
      &    BTEST(a_model%state_flags, model_state_ne_flag)     .or.             &
      &    BTEST(a_model%state_flags, model_state_shift_flag)  .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
+
+         thomson_ne_get_modeled_signal = 0.0
          thomson_ne_get_modeled_signal(1) = model_get_ne(a_model,              &
      &                                                   this%xcart)
 
@@ -362,6 +366,8 @@
      &    BTEST(a_model%state_flags, model_state_siesta_flag) .or.             &
      &    BTEST(a_model%state_flags, model_state_shift_flag)  .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
+
+         thomson_p_get_modeled_signal = 0.0
          thomson_p_get_modeled_signal(1) =                                     &
      &      equilibrium_get_p(a_model%equilibrium, this%xcart)
 
