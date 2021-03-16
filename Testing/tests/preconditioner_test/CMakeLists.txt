@@ -15,8 +15,8 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/intpol.dot
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/magnetic.dot
                 ${CMAKE_CURRENT_BINARY_DIR}/magnetic.dot
                 COPYONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/v3rfun.dot
-                ${CMAKE_CURRENT_BINARY_DIR}/v3rfun.dot
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/v3rfun.in
+                ${CMAKE_CURRENT_BINARY_DIR}/v3rfun.in
                 COPYONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
                 ${CMAKE_CURRENT_BINARY_DIR}/input.test.vmec

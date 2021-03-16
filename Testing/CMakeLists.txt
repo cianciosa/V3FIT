@@ -4,4 +4,3 @@ find_package (PythonInterp)
 set (TEST_SCRIPT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test_utilities)
 
 add_subdirectory (tests)
-add_subdirectory (test_utilities)

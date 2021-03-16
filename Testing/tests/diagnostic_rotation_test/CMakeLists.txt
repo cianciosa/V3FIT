@@ -15,8 +15,8 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sxrem_rot.dot
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/intpol_rot.dot
                 ${CMAKE_CURRENT_BINARY_DIR}/intpol_rot.dot
                 COPYONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/v3rfun.dot
-                ${CMAKE_CURRENT_BINARY_DIR}/v3rfun.dot
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/v3rfun.in
+                ${CMAKE_CURRENT_BINARY_DIR}/v3rfun.in
                 COPYONLY)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.unrot
                 ${CMAKE_CURRENT_BINARY_DIR}/input.unrot
