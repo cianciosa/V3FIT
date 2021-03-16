@@ -512,6 +512,8 @@
       SUBROUTINE task_child_recon(context)
       USE v3fit_context
 
+      IMPLICIT NONE
+
 !  Declare Arguments
       TYPE (v3fit_context_class), INTENT(inout) :: context
 
@@ -600,6 +602,8 @@
       SUBROUTINE task_child_equilibrium(context)
       USE v3fit_context
 
+      IMPLICIT NONE
+
 !  Declare Arguments
       TYPE (v3fit_context_class), INTENT(inout) :: context
 
@@ -608,6 +612,7 @@
       INTEGER                                   :: task
       LOGICAL                                   :: result
       INTEGER                                   :: eq_steps
+      INTEGER                                   :: error
 
 !  Start of executable code
       eq_steps = 1
