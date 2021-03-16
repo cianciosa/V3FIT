@@ -390,7 +390,7 @@
       ELSE
 !  Create a result file.
          status = nf90_create('result.' // TRIM(filename_base(filename))       &
-     &                        // '.nc', nf090_clobber,                         &
+     &                        // '.nc', nf90_clobber,                          &
      &                        this%result_ncid)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
@@ -1018,7 +1018,8 @@
      &                         varid=signal_weight_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf90_def_var(this%result_ncid, 'signal_observed_value',      &
+         status = nf90_def_var(this%result_ncid,                               &
+     &                         'signal_observed_value',                        &
      &                         nf90_double, dimids=(/ nsignal_dim_id /),       &
      &                         varid=signal_observed_value_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
@@ -1177,10 +1178,12 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          current_step = 1
       ELSE
-         status = nf90_get_var(this%result_ncid, nsteps_id, current_step)
+         status = nf90_get_var(this%result_ncid, nsteps_id,                    &
+     &                         current_step)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          current_step = current_step + 1
-         status = nf90_put_var(this%result_ncid, nsteps_id, current_step)
+         status = nf90_put_var(this%result_ncid, nsteps_id,                    &
+     &                         current_step)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
 !  Use current_step as an array index. The Netcdf arrays start at 1 so this
@@ -1200,7 +1203,7 @@
          status = nf90_inq_varid(this%result_ncid, 'g2', g2_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          status = nf90_put_var(this%result_ncid, g2_id,                        &
-     &                         reconstruction_get_g2(this%recon)
+     &                         reconstruction_get_g2(this%recon),              &
      &                         start=(/current_step/))
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
