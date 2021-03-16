@@ -372,6 +372,7 @@
          ALLOCATE(context(context_length))
          context = TRANSFER(a_model, context)
 
+         intpol_pol_get_modeled_signal = 0.0
          intpol_pol_get_modeled_signal(1) =                                    &
      &      intpol_polar_constant*(this%wavelength**2.0_dp) *                  &
      &      path_integrate(a_model%int_params, this%chord_path,                &
