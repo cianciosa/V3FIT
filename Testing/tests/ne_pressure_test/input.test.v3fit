@@ -1,0 +1,45 @@
+&v3fit_main_nli
+my_task = 'v3post',
+vmec_nli_filename = 'input.test.vmec',
+
+thscte_dot_filename = 'thomson.dot',
+
+model_ne_type = 'pp_te_p',
+e_pressure_fraction = 0.75
+
+model_te_type = 'pp_te'
+pp_te_ptype = 'line_segment',
+pp_te_as = 0.0, 0.5, 1.0,
+pp_te_af = 15.0, 15.0, 15.0,
+
+nrstep = 20,
+dg2_stop = 0.1,
+cut_svd = 2.0E-5,
+cut_eff = 1.0E-4,
+cut_marg_eff = 0.0,
+cut_delta_a = 0.0,
+cut_dg2 = 0.0,
+astep_max = 100.0,
+step_type = 'seg',
+
+sdo_data_a(1:4) = 15.0, 15.0, 15.0, 15.0,
+sdo_s_spec_imin(1) = 1,
+sdo_s_spec_imax(1) = 4,
+sdo_s_spec_floor(1) = 0.01,
+sdo_s_spec_fraction(1) = 0.001,
+
+sdo_data_a(5:8) = 1.24E20, 1.24E20, 1.24E20, 1.24E20,
+sdo_s_spec_imin(2) = 5,
+sdo_s_spec_imax(2) = 8,
+sdo_s_spec_floor(2) = 1.0E18,
+sdo_s_spec_fraction(2) = 0.01,
+
+sdo_data_a(9:12) = 400, 400, 400, 400,
+sdo_s_spec_imin(3) = 9,
+sdo_s_spec_imax(3) = 12,
+sdo_s_spec_floor(3) = 0.1,
+sdo_s_spec_fraction(3) = 0.01,
+
+n_sdata_o = 12,
+
+&END

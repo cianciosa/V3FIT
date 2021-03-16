@@ -1,0 +1,85 @@
+&v3fit_main_nli
+my_task = 'reconstruct',
+vmec_nli_filename = 'input.unrot',
+
+mdsig_list_filename = 'diagnostic_rot.dot_mdsig.LIST'
+sxrch_dot_filename = 'sxrem_rot.dot',
+ipch_dot_filename = 'intpol_rot.dot',
+thscte_dot_filename = 'thomson_rot.dot'
+
+num_sxrem_p = 2
+
+model_sxrem_type_a(1) = 'pp_sxrem'
+pp_sxrem_ptype_a(1) = 'line_segment'
+pp_sxrem_as_a(1,:) = 0.0, 1.0, 2.0,
+pp_sxrem_af_a(1,:) = 1.0, 0.0, 0.0,
+
+model_sxrem_type_a(2) = 'pp_sxrem'
+pp_sxrem_ptype_a(2) = 'line_segment'
+pp_sxrem_as_a(2,:) = 0.0, 1.0, 2.0,
+pp_sxrem_af_a(2,:) = 2.0, 0.0, 0.0,
+
+model_ne_type = 'pp_ne',
+pp_ne_ptype = 'line_segment',
+pp_ne_as(:) = 0.0, 1.0, 2.0,
+pp_ne_af(:) = 1.0, 0.0, 0.0,
+
+model_te_type = 'pp_te',
+pp_te_ptype = 'line_segment',
+pp_te_as(:) = 0.0, 1.0, 2.0,
+pp_te_af(:) = 1.0, 0.0, 0.0,
+
+nrstep = 20,
+dg2_stop = 0.1,
+cut_svd = 2.0E-5,
+cut_eff = 1.0E-4,
+cut_marg_eff = 0.0,
+cut_delta_a = 0.0,
+cut_dg2 = 0.0,
+astep_max = 100.0,
+step_type = 'lm',
+
+n_rp = 1,
+
+rp_type(1) = 'phi_offset',
+rp_vrnc(1) = 0.1,
+
+sdo_data_a(1:16) = 3.58221E-02, 3.90367E-02, 4.61179E-02, 5.89272E-02, 8.09124E-02, 1.17088E-01, 1.69119E-01, 2.17039E-01, 2.17054E-01, 1.69144E-01, 1.17040E-01, 8.07000E-02, 5.85630E-02, 4.57087E-02, 3.87192E-02, 3.57029E-02,
+sdo_s_spec_imin(1) = 1,
+sdo_s_spec_imax(1) = 16,
+sdo_s_spec_floor(1) = 0.0001,
+sdo_s_spec_fraction(1) = 0.01,
+
+sdo_data_a(17:38) = 0.00000E+00, 9.95972E-02, 2.97075E-01, 4.95247E-01, 5.56473E-01, 5.20261E-01, 4.43595E-01, 3.30723E-01, 1.95389E-01, 7.17220E-02, 0.00000E+00, 0.00000E+00, 1.55271E-01, 4.40241E-01, 7.75622E-01, 1.00244E+00, 1.06977E+00, 1.00244E+00, 7.75622E-01, 4.40241E-01, 1.55271E-01, 0.00000E+00,
+sdo_s_spec_imin(2) = 17,
+sdo_s_spec_imax(2) = 38,
+sdo_s_spec_floor(2) = 0.001,
+sdo_s_spec_fraction(2) = 0.01,
+
+sdo_data_a(39:60) = 0.00000E+00, 4.88825E+16, 1.51908E+17, 2.81535E+17, 4.13178E+17, 5.10915E+17, 5.62082E+17, 5.33973E+17, 3.67597E+17, 1.38362E+17, 3.75820E+15, 0.00000E+00, 2.68606E+01, 9.72057E+01, 1.71208E+02, 1.31166E+02, 2.31037E+01, -5.91601E+01, -8.16086E+01, -6.07958E+01, -2.55584E+01, 6.73698E-01,
+sdo_s_spec_imin(3) = 39,
+sdo_s_spec_imax(3) = 49,
+sdo_s_spec_floor(3) = 1.0E16,
+sdo_s_spec_fraction(3) = 0.01,
+sdo_s_spec_imin(4) = 50,
+sdo_s_spec_imax(4) = 60,
+sdo_s_spec_floor(4) = 0.1,
+sdo_s_spec_fraction(4) = 0.01,
+
+sdo_data_a(61:93) = 0.00000E+00, 0.00000E+00, 1.24406E-01, 4.50143E-01, 7.28813E-01, 7.28283E-01, 7.40172E-01, 6.02481E-01, 2.05839E-01, 0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00, 1.46350E+17, 6.35727E+17, 9.82824E+17, 8.18319E+17, 6.11743E+17, 4.08268E+17, 1.54274E+17, 0.00000E+00, 0.00000E+00, 2.00000E+00, 2.00000E+00, -1.49043E+01, 9.98300E+02, 1.12746E+03, 1.14093E+03, 1.04516E+03, 9.90299E+02, 4.70456E+01, 2.00000E+00, 2.00000E+00,
+sdo_s_spec_imin(5) = 61,
+sdo_s_spec_imax(5) = 71,
+sdo_s_spec_floor(5) = 0.01,
+sdo_s_spec_fraction(5) = 0.01,
+sdo_s_spec_imin(6) = 72,
+sdo_s_spec_imax(6) = 82,
+sdo_s_spec_floor(6) = 1.0E16,
+sdo_s_spec_fraction(6) = 0.01,
+sdo_s_spec_imin(7) = 83,
+sdo_s_spec_imax(7) = 93,
+sdo_s_spec_floor(7) = 0.1,
+sdo_s_spec_fraction(7) = 0.01, 
+
+n_sdata_o = 93,
+
+&END

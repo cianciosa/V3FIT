@@ -1,0 +1,122 @@
+ip_chord_RPhiDegZ_int
+int001
+1.0 0.0 0.5
+1.0 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int002
+1.1 0.0 0.5
+1.1 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int003
+1.2 0.0 0.5
+1.2 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int004
+1.3 0.0 0.5
+1.3 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int005
+1.4 0.0 0.5
+1.4 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int006
+1.5 0.0 0.5
+1.5 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int007
+1.6 0.0 0.5
+1.6 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int008
+1.7 0.0 0.5
+1.7 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int009
+1.8 0.0 0.5
+1.8 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int010
+1.9 0.0 0.5
+1.9 0.0 -0.5
+
+ip_chord_RPhiDegZ_int
+int011
+2.0 0.0 -0.5
+2.0 0.0 0.5
+
+ip_chord_RPhiDegZ_pol_deg
+pol001
+1.0 27.0 0.5
+1.0 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol002
+1.1 27.0 0.5
+1.1 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol003
+1.2 27.0 0.5
+1.2 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol004
+1.3 27.0 0.5
+1.3 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol005
+1.4 27.0 0.5
+1.4 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol006
+1.5 27.0 0.5
+1.5 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol007
+1.6 27.0 0.5
+1.6 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol008
+1.7 27.0 0.5
+1.7 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol009
+1.8 27.0 0.5
+1.8 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol010
+1.9 27.0 0.5
+1.9 27.0 -0.5
+1.0E-2
+
+ip_chord_RPhiDegZ_pol_deg
+pol011
+2.0 27.0 -0.5
+2.0 27.0 0.5
+1.0E-2
+
+end_of_file

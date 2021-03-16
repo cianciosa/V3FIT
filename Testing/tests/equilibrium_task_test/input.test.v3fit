@@ -1,0 +1,4 @@
+&v3fit_main_nli
+my_task = 'equilibrium',
+vmec_nli_filename = 'input.test.vmec'
+&END

@@ -1,0 +1,113 @@
+sxr_chord_RPhiDegZ
+sxr1-001
+2.0 0.0 0.5
+1.0 0.0 0.5
+
+sxr_chord_RPhiDegZ
+sxr1-002
+2.0 0.0 0.4
+1.0 0.0 0.4
+
+sxr_chord_RPhiDegZ
+sxr1-003
+2.0 0.0 0.3
+1.0 0.0 0.3
+
+sxr_chord_RPhiDegZ
+sxr1-004
+2.0 0.0 0.2
+1.0 0.0 0.2
+
+sxr_chord_RPhiDegZ
+sxr1-005
+2.0 0.0 0.1
+1.0 0.0 0.1
+
+sxr_chord_RPhiDegZ
+sxr1-006
+2.0 0.0 0.0
+1.0 0.0 0.0
+
+sxr_chord_RPhiDegZ
+sxr1-007
+2.0 0.0 -0.1
+1.0 0.0 -0.1
+
+sxr_chord_RPhiDegZ
+sxr1-008
+2.0 0.0 -0.2
+1.0 0.0 -0.2
+
+sxr_chord_RPhiDegZ
+sxr1-009
+2.0 0.0 -0.3
+1.0 0.0 -0.3
+
+sxr_chord_RPhiDegZ
+sxr1-010
+2.0 0.0 -0.4
+1.0 0.0 -0.4
+
+sxr_chord_RPhiDegZ
+sxr1-011
+2.0 0.0 -0.5
+1.0 0.0 -0.5
+
+sxr_new_profile
+
+sxr_chord_RPhiDegZ
+sxr2-001
+2.0 27.0 0.5
+1.0 27.0 0.5
+
+sxr_chord_RPhiDegZ
+sxr2-002
+2.0 27.0 0.4
+1.0 27.0 0.4
+
+sxr_chord_RPhiDegZ
+sxr2-003
+2.0 27.0 0.3
+1.0 27.0 0.3
+
+sxr_chord_RPhiDegZ
+sxr2-004
+2.0 27.0 0.2
+1.0 27.0 0.2
+
+sxr_chord_RPhiDegZ
+sxr2-005
+2.0 27.0 0.1
+1.0 27.0 0.1
+
+sxr_chord_RPhiDegZ
+sxr2-006
+2.0 27.0 0.0
+1.0 27.0 0.0
+
+sxr_chord_RPhiDegZ
+sxr2-007
+2.0 27.0 -0.1
+1.0 27.0 -0.1
+
+sxr_chord_RPhiDegZ
+sxr2-008
+2.0 27.0 -0.2
+1.0 27.0 -0.2
+
+sxr_chord_RPhiDegZ
+sxr2-009
+2.0 27.0 -0.3
+1.0 27.0 -0.3
+
+sxr_chord_RPhiDegZ
+sxr2-010
+2.0 27.0 -0.4
+1.0 27.0 -0.4
+
+sxr_chord_RPhiDegZ
+sxr2-011
+2.0 27.0 -0.5
+1.0 27.0 -0.5
+
+end_of_file

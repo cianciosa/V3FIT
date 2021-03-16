@@ -1,0 +1,133 @@
+thscte_RPhiDegZ_te
+te001
+1.0 0.0 0.5
+
+thscte_RPhiDegZ_te
+te002
+1.1 0.0 0.4
+
+thscte_RPhiDegZ_te
+te003
+1.2 0.0 0.3
+
+thscte_RPhiDegZ_te
+te004
+1.3 0.0 0.2
+
+thscte_RPhiDegZ_te
+te005
+1.4 0.0 0.1
+
+thscte_RPhiDegZ_te
+te006
+1.5 0.0 0.0
+
+thscte_RPhiDegZ_te
+te007
+1.6 0.0 -0.1
+
+thscte_RPhiDegZ_te
+te008
+1.7 0.0 -0.2
+
+thscte_RPhiDegZ_te
+te009
+1.8 0.0 -0.3
+
+thscte_RPhiDegZ_te
+te010
+1.9 0.0 -0.4
+
+thscte_RPhiDegZ_te
+te011
+2.0 0.0 -0.5
+
+thscte_RPhiDegZ_ne
+ne001
+1.0 15.0 0.5
+
+thscte_RPhiDegZ_ne
+ne002
+1.1 15.0 0.4
+
+thscte_RPhiDegZ_ne
+ne003
+1.2 15.0 0.3
+
+thscte_RPhiDegZ_ne
+ne004
+1.3 15.0 0.2
+
+thscte_RPhiDegZ_ne
+ne005
+1.4 15.0 0.1
+
+thscte_RPhiDegZ_ne
+ne006
+1.5 15.0 0.0
+
+thscte_RPhiDegZ_ne
+ne007
+1.6 15.0 -0.1
+
+thscte_RPhiDegZ_ne
+ne008
+1.7 15.0 -0.2
+
+thscte_RPhiDegZ_ne
+ne009
+1.8 15.0 -0.3
+
+thscte_RPhiDegZ_ne
+ne010
+1.9 15.0 -0.4
+
+thscte_RPhiDegZ_ne
+ne011
+2.0 15.0 -0.5
+
+thscte_RPhiDegZ_pres
+p001
+1.0 27.0 0.5
+
+thscte_RPhiDegZ_pres
+p002
+1.1 27.0 0.4
+
+thscte_RPhiDegZ_pres
+p003
+1.2 27.0 0.3
+
+thscte_RPhiDegZ_pres
+p004
+1.3 27.0 0.2
+
+thscte_RPhiDegZ_pres
+p005
+1.4 27.0 0.1
+
+thscte_RPhiDegZ_pres
+p006
+1.5 27.0 0.0
+
+thscte_RPhiDegZ_pres
+p007
+1.6 27.0 -0.1
+
+thscte_RPhiDegZ_pres
+p008
+1.7 27.0 -0.2
+
+thscte_RPhiDegZ_pres
+p009
+1.8 27.0 -0.3
+
+thscte_RPhiDegZ_pres
+p010
+1.9 27.0 -0.4
+
+thscte_RPhiDegZ_pres
+p011
+2.0 27.0 -0.5
+
+end_of_file

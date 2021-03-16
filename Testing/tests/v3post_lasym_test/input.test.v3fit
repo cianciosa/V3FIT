@@ -1,0 +1,44 @@
+&v3fit_main_nli
+my_task = 'v3post',
+vmec_nli_filename = 'input.test.vmec',
+
+sxrch_dot_filename = 'sxrem.dot',
+ipch_dot_filename = 'intpol.dot',
+thscte_dot_filename = 'thomson.dot',
+
+model_ne_type = 'pp_ne',
+ne_pp_unit = 1.0E18,
+ne_min = 0,
+pp_ne_ptype = 'line_segment',
+pp_ne_as = 0.0, 0.5, 1.0,
+pp_ne_af = 1.0, 1.0, 1.0,
+
+model_sxrem_type_a(1) = 'pp_sxrem'
+pp_sxrem_ptype_a(1) = 'line_segment'
+pp_sxrem_as_a(1,:) = 0.0, 0.5, 1.0,
+pp_sxrem_af_a(1,:) = 1.0, 1.0, 1.0,
+
+model_te_type = 'pp_te'
+pp_te_ptype = 'line_segment'
+pp_te_as = 0.0, 0.5, 1.0,
+pp_te_af = 15.0, 15.0, 15.0,
+
+n_prior = 4,
+
+prior_name(1) = 'pp_ne_prior',
+prior_param_name(1) = 'pp_ne_af',
+prior_indices(1,1) = 2,
+
+prior_name(2) = 'am_prior',
+prior_param_name(2) = 'am_aux_f',
+prior_indices(2,1) = 2,
+
+prior_name(3) = 'pp_te_prior',
+prior_param_name(3) = 'pp_te_af',
+prior_indices(3,1) = 2,
+
+prior_name(4) = 'pp_sxrem_prior',
+prior_param_name(4) = 'pp_sxrem_af_a',
+prior_indices(4,:) = 1, 1,
+
+&END
