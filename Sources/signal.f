@@ -841,11 +841,7 @@
 !  can be used for the last_value arument.
       modeled_signal = this%get_modeled_signal(a_model, modeled_sigma,         &
      &                                         .true., dummy_value)
-      WRITE(*,*) this%s_name
-      WRITE(*,*) modeled_signal(1)
-      WRITE(*,*) modeled_signal(2)
-      WRITE(*,*) modeled_signal(3)
-      WRITE(*,*) modeled_signal(4)
+
       WRITE (iou,1000) index, this%get_type(), this%s_name,                    &
      &                 this%get_g2(a_model, .true., modeled_signal),           &
      &                 this%weight, this%get_observed_signal(a_model),         &
