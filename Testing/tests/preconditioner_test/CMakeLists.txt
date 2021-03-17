@@ -26,10 +26,10 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
                 COPYONLY)
 
 add_test (NAME    preconditioner_test_v3rfun
-          COMMAND <TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
+          COMMAND $<TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
 
 add_test (NAME    preconditioner_test
-          COMMAND <TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
+          COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
