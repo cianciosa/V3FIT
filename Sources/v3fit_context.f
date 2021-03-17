@@ -498,20 +498,18 @@
          END DO
 
 !  Write out the derived parameter correlation matrix.
-         IF (SIZE(this%derived_params) .gt. 0 .and.                            &
-     &       ASSOCIATED(this%derived_params(1)%p%correlation)) THEN
-            CALL v3fit_context_write_param_header(this,                        &
-     &                                            this%derived_params,         &
-     &                                            prefix,                      &
-     &                                            ' *** Derived ' //           &
-     &                                            'parameter ' //              &
-     &                                            'covariance ' //             &
-     &                                            'matrix')
+         IF (SIZE(this%derived_params) .gt. 0) THEN
+            IF (ASSOCIATED(this%derived_params(1)%p%correlation)) THEN
+               CALL v3fit_context_write_param_header(this,                     &
+     &                  this%derived_params, prefix,                           &
+     &                  ' *** Derived parameter covariance matrix')
 
-            DO j = 1, SIZE(this%derived_params)
-               CALL param_write_correlation(this%derived_params(j)%p,          &
-     &                                      this%recout_iou, this%model)
-            END DO
+               DO j = 1, SIZE(this%derived_params)
+                  CALL param_write_correlation(this%derived_params(j)%p,       &
+     &                                         this%recout_iou,                &
+     &                                         this%model)
+               END DO
+            END IF
          END IF
       END IF
 
