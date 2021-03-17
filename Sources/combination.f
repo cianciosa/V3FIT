@@ -72,7 +72,7 @@
 !  INTERFACE BLOCKS
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  Interface for thomson te constructor.
+!>  Interface for combination constructor.
 !-------------------------------------------------------------------------------
       INTERFACE combination_class
          MODULE PROCEDURE combination_construct

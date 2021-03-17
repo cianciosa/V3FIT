@@ -148,7 +148,7 @@
 !-------------------------------------------------------------------------------
 !>  Object to cache data needed to compute magnetic signals.
 !-------------------------------------------------------------------------------
-      TYPE siesta_magnetic_cache
+      TYPE :: siesta_magnetic_cache
 !>  Volume differential element for the s direction.
          REAL (rprec)                            :: ds
 !>  Volume differential element for the u direction.
@@ -218,7 +218,7 @@
 !>  @par Super Class:
 !>  @ref equilibrium
 !-------------------------------------------------------------------------------
-      TYPE siesta_class
+      TYPE :: siesta_class
 !>  File name of the output of siesta.
          CHARACTER (len=path_length)            :: restart_file_name
 !>  File name of the siesta namelist inout file.
@@ -254,99 +254,148 @@
 
 !>  Base VMEC equilibrium.
          TYPE (vmec_class), POINTER             :: vmec => null()
+      CONTAINS
+         PROCEDURE :: set_param => siesta_set_param
+         PROCEDURE :: set_magnetic_cache_responce =>                           &
+     &                   siesta_set_magnetic_cache_responce
+         PROCEDURE :: set_magnetic_cache_point =>                              &
+     &                   siesta_set_magnetic_cache_point
+         PROCEDURE :: set_magnetic_cache_calc =>                               &
+     &                   siesta_set_magnetic_cache_calc
+         GENERIC   :: set_magnetic_cache =>                                    &
+     &                   siesta_set_magnetic_cache_responce,                   &
+     &                   siesta_set_magnetic_cache_point,                      &
+     &                   siesta_set_magnetic_cache_calc
+         PROCEDURE :: set_namelist => siesta_set_namelist
+
+         PROCEDURE :: get_param_id => siesta_get_param_id
+         PROCEDURE :: get_param_value => siesta_get_param_value
+         PROCEDURE :: get_param_name => siesta_get_param_name
+
+         PROCEDURE :: get_gp_ne_num_hyper_param =>                             &
+     &                   siesta_get_gp_ne_num_hyper_param
+         PROCEDURE :: get_ne_af => siesta_get_ne_af
+         PROCEDURE :: get_gp_ne_ij => siesta_get_gp_ne_ij
+         PROCEDURE :: get_gp_ne_pi => siesta_get_gp_ne_pi
+         PROCEDURE :: get_gp_ne_pp => siesta_get_gp_ne_pp
+         GENERIC   :: get_gp_ne => get_gp_ne_ij,                               &
+     &                             get_gp_ne_pi,                               &
+     &                             get_gp_ne_pp
+         PROCEDURE :: get_ne_cart => siesta_get_ne_cart
+         PROCEDURE :: get_ne_radial => siesta_get_ne_radial
+         GENERIC   :: get_ne => get_ne_cart, get_ne_radial
+
+         PROCEDURE :: get_gp_te_num_hyper_param =>                             &
+     &                   siesta_get_gp_te_num_hyper_param
+         PROCEDURE :: get_te_af => siesta_get_te_af
+         PROCEDURE :: get_gp_te_ij => siesta_get_gp_te_ij
+         PROCEDURE :: get_gp_te_pi => siesta_get_gp_te_pi
+         PROCEDURE :: get_gp_te_pp => siesta_get_gp_te_pp
+         GENERIC   :: get_gp_te => get_gp_te_ij,                               &
+     &                             get_gp_te_pi,                               &
+     &                             get_gp_te_pp
+         PROCEDURE :: get_te_cart => siesta_get_te_cart
+         PROCEDURE :: get_te_radial => siesta_get_te_radial
+         GENERIC   :: get_te => get_te_cart, get_te_radial
+
+         PROCEDURE :: get_gp_ti_num_hyper_param =>                             &
+     &                   siesta_get_gp_ti_num_hyper_param
+         PROCEDURE :: get_ti_af => siesta_get_ti_af
+         PROCEDURE :: get_gp_ti_ij => siesta_get_gp_ti_ij
+         PROCEDURE :: get_gp_ti_pi => siesta_get_gp_ti_pi
+         PROCEDURE :: get_gp_ti_pp => siesta_get_gp_ti_pp
+         GENERIC   :: get_gp_ti => get_gp_ti_ij,                               &
+     &                             get_gp_ti_pi,                               &
+     &                             get_gp_ti_pp
+         PROCEDURE :: get_ti_cart => siesta_get_ti_cart
+         PROCEDURE :: get_ti_radial => siesta_get_ti_radial
+         GENERIC   :: get_ti => get_te_cart, get_ti_radial
+
+         PROCEDURE :: get_gp_sxrem_num_hyper_param =>                          &
+     &                   siesta_get_gp_sxrem_num_hyper_param
+         PROCEDURE :: get_sxrem_af => siesta_get_sxrem_af
+         PROCEDURE :: get_gp_sxrem_ij => siesta_get_gp_sxrem_ij
+         PROCEDURE :: get_gp_sxrem_pi => siesta_get_gp_sxrem_pi
+         PROCEDURE :: get_gp_sxrem_pp => siesta_get_gp_sxrem_pp
+         GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij,                         &
+     &                                get_gp_sxrem_pi,                         &
+     &                                get_gp_sxrem_pp
+         PROCEDURE :: get_sxrem_cart => siesta_get_sxrem_cart
+         PROCEDURE :: get_sxrem_radial => siesta_get_sxrem_radial
+         GENERIC   :: get_sxrem => get_sxrem_cart, get_sxrem_radial
+
+         PROCEDURE :: get_p_cart => siesta_get_p_cart
+         PROCEDURE :: get_p_radial => siesta_get_p_radial
+         GENERIC   :: get_p => get_p_cart, get_p_radial
+         PROCEDURE :: get_p_flux => siesta_get_p_flux
+
+         PROCEDURE :: get_B_vec => siesta_get_B_vec
+         PROCEDURE :: get_Int_B_dphi => siesta_get_Int_B_dphi
+         PROCEDURE :: get_suv => siesta_get_suv
+         PROCEDURE :: get_plasma_edge => siesta_get_plasma_edge
+         PROCEDURE :: get_magnetic_volume_rgrid =>                             &
+     &                   siesta_get_magnetic_volume_rgrid
+         PROCEDURE :: get_magnetic_volume_zgrid =>                             &
+     &                   siesta_get_magnetic_volume_zgrid
+         PROCEDURE :: get_magnetic_volume_jrgrid =>                            &
+     &                   siesta_get_magnetic_volume_jrgrid
+         PROCEDURE :: get_magnetic_volume_jphigrid =>                          &
+     &                   siesta_get_magnetic_volume_jphigrid
+         PROCEDURE :: get_magnetic_volume_jzgrid =>                            &
+     &                   siesta_get_magnetic_volume_jzgrid
+         PROCEDURE :: get_volume_int_element =>                                &
+     &                   siesta_get_volume_int_element
+         PROCEDURE :: get_con_surface_krgrid =>                                &
+     &                   siesta_get_con_surface_krgrid
+         PROCEDURE :: get_con_surface_kphigrid =>                              &
+     &                   siesta_get_con_surface_kphigrid
+         PROCEDURE :: get_con_surface_kzgrid =>                                &
+     &                   siesta_get_con_surface_kzgrid
+         PROCEDURE :: get_area_int_element =>                                  &
+     &                   siesta_get_area_int_element
+         PROCEDURE :: get_ext_currents => siesta_get_ext_currents
+         PROCEDURE :: get_ext_b_plasma => siesta_get_ext_b_plasma
+         PROCEDURE :: get_int_b_plasma => siesta_get_int_b_plasma
+
+         PROCEDURE :: get_grid_size => siesta_get_grid_size
+         PROCEDURE :: get_grid_start => siesta_get_grid_start
+         PROCEDURE :: get_grid_stop => siesta_get_grid_stop
+
+         PROCEDURE :: is_scaler_value => siesta_is_scaler_value
+         PROCEDURE :: is_1d_array => siesta_is_1d_array
+         PROCEDURE :: is_2d_array => siesta_is_2d_array
+         PROCEDURE :: is_recon_param => siesta_is_recon_param
+         PROCEDURE :: is_using_point => siesta_is_using_point
+
+         PROCEDURE :: converge => siesta_converge
+
+         PROCEDURE :: read_vac_file => siesta_read_vac_file
+
+         PROCEDURE :: save_state => siesta_save_state
+         PROCEDURE :: reset_state => siesta_reset_state
+
+         PROCEDURE :: write => siesta_write
+         PROCEDURE :: write_input => siesta_write_input
+
+         PROCEDURE :: def_result => siesta_def_result
+         PROCEDURE :: write_init_data => siesta_write_init_data
+         PROCEDURE :: write_step_data => siesta_write_step_data
+         PROCEDURE :: restart => siesta_restart
+
+         PROCEDURE :: sync_state => siesta_sync_state
+         PROCEDURE :: sync_child => siesta_sync_child
+
+         FINAL     :: siesta_destruct
       END TYPE
 
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  Interface for the setting the @ref siesta_magnetic_cache types using
-!>  @ref siesta_set_magnetic_cache_responce,
-!>  @ref siesta_set_magnetic_cache_point or @ref siesta_set_magnetic_cache_calc.
+!>  Interface for siesta constructor.
 !-------------------------------------------------------------------------------
-      INTERFACE siesta_set_magnetic_cache
-         MODULE PROCEDURE siesta_set_magnetic_cache_responce,                  &
-     &                    siesta_set_magnetic_cache_point,                     &
-     &                    siesta_set_magnetic_cache_calc
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_ne
-         MODULE PROCEDURE siesta_get_ne_cart,                                  &
-     &                    siesta_get_ne_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta guassian process density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_gp_ne
-         MODULE PROCEDURE siesta_get_gp_ne_ij,                                 &
-     &                    siesta_get_gp_ne_pi,                                 &
-     &                    siesta_get_gp_ne_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta electron temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_te
-         MODULE PROCEDURE siesta_get_te_cart,                                  &
-     &                    siesta_get_te_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta guassian process electron temperature profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_gp_te
-         MODULE PROCEDURE siesta_get_gp_te_ij,                                 &
-     &                    siesta_get_gp_te_pi,                                 &
-     &                    siesta_get_gp_te_pp
-      END INTERFACE
-
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_ti
-         MODULE PROCEDURE siesta_get_ti_cart,                                  &
-     &                    siesta_get_ti_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta guassian process ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_gp_ti
-         MODULE PROCEDURE siesta_get_gp_ti_ij,                                 &
-     &                    siesta_get_gp_ti_pi,                                 &
-     &                    siesta_get_gp_ti_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta soft x-ray emission profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_sxrem
-         MODULE PROCEDURE siesta_get_sxrem_cart,                               &
-     &                    siesta_get_sxrem_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta guassian process soft x-ray emissivity profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_gp_sxrem
-         MODULE PROCEDURE siesta_get_gp_sxrem_ij,                              &
-     &                    siesta_get_gp_sxrem_pi,                              &
-     &                    siesta_get_gp_sxrem_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the siesta pressure profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE siesta_get_p
-         MODULE PROCEDURE siesta_get_p_cart,                                   &
-     &                    siesta_get_p_radial
+      INTERFACE siesta_class
+         MODULE PROCEDURE siesta_construct
       END INTERFACE
 
       CONTAINS
@@ -496,10 +545,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), POINTER :: this
+      TYPE (siesta_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                      :: i, error
+      INTEGER                            :: i
+      INTEGER                            :: error
 
 !  Start of executable code
       IF (ASSOCIATED(this%ne)) THEN

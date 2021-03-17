@@ -264,8 +264,6 @@
       this%modeled = 0.0
       this%modeled_sigma = 0.0
 
-      WRITE (*,*) 'Destruct'
-
       END SUBROUTINE
 
 !*******************************************************************************
