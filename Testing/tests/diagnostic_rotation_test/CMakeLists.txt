@@ -24,6 +24,9 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.unrot
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
                 ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit
                 COPYONLY)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/coils.null
+                ${CMAKE_CURRENT_BINARY_DIR}/coils.null
+                COPYONLY)
 
 add_test (NAME    diagnostic_rotation_test_mdsig
           COMMAND $<TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
