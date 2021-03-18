@@ -18,6 +18,8 @@
 
       MODULE equilibrium
       USE profiler
+      USE data_parameters
+      USE v3_utilities
 
       IMPLICIT NONE
 
@@ -36,6 +38,8 @@
          LOGICAL :: force_solve
       CONTAINS
          PROCEDURE                                           ::                &
+     &      set_param => equilibrium_set_param
+         PROCEDURE                                           ::                &
      &      set_magnetic_cache_response =>                                     &
      &         equilibrium_set_magnetic_cache_response
          PROCEDURE                                           ::                &
@@ -44,6 +48,16 @@
          GENERIC                                             ::                &
      &      set_magnetic_cache => set_magnetic_cache_response,                 &
      &                            set_magnetic_cache_point
+
+         PROCEDURE                                           ::                &
+     &      get_type => equilibrium_get_type
+
+         PROCEDURE                                           ::                &
+     &      get_param_id => equilibrium_get_param_id
+         PROCEDURE                                           ::                &
+     &      get_param_name => equilibrium_get_param_name
+         PROCEDURE                                           ::                &
+     &      get_param_value => equilibrium_get_param_value
 
          PROCEDURE                                           ::                &
      &      get_gp_ne_num_hyper_param =>                                       &
@@ -178,7 +192,10 @@
          PROCEDURE                                           ::                &
      &      is_2d_array => equilibrium_is_2d_array
          PROCEDURE                                           ::                &
+     &      is_recon_param => equilibrium_is_recon_param
+         PROCEDURE                                           ::                &
      &      is_using_point => equilibrium_is_using_point
+
          PROCEDURE                                           ::                &
      &      converge => equilibrium_converge
          PROCEDURE                                           ::                &
@@ -187,6 +204,10 @@
      &      save_state => equilibrium_save_state
          PROCEDURE                                           ::                &
      &      reset_state => equilibrium_reset_state
+
+         PROCEDURE                                           ::                &
+     &      write => equilibrium_write
+
          PROCEDURE                                           ::                &
      &      def_result => equilibrium_def_result
          PROCEDURE                                           ::                &
@@ -278,6 +299,45 @@
 !  SETTER SUBROUTINES
 !*******************************************************************************
 !-------------------------------------------------------------------------------
+!>  @brief Sets the value of a reconstruction equilibrium parameter.
+!>
+!>  This method is virtual. The actual setting of the parameter should be
+!>  handled by a subclass method. The subclass is responsible updating the
+!>  state flags.
+!>  @see vmec_equilibrium::vmec_set_param
+!>  @see vacuum_equilibrium::vacuum_set_param
+!>  @see siesta_equilibrium::siesta_set_param
+!>
+!>  @param[inout] this        A @ref equilibrium_class instance.
+!>  @param[in]    id          ID of the parameter.
+!>  @param[in]    i_index     The ith index of the parameter.
+!>  @param[in]    j_index     The jth index of the parameter.
+!>  @param[in]    value       The value of the parameter.
+!>  @param[in]    eq_comm     MPI communicator for the child equilibrium processes.
+!>  @param[inout] state_flags Bitwise flags to indicate which parts of the model
+!>                            changed.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_set_param(this, id, i_index, j_index,             &
+     &                                 value, eq_comm, state_flags)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: id
+      INTEGER, INTENT(in)                      :: i_index
+      INTEGER, INTENT(in)                      :: j_index
+      REAL (rprec), INTENT(in)                 :: value
+      INTEGER, INTENT(in)                      :: eq_comm
+      INTEGER, INTENT(inout)                   :: state_flags
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_set_param not ' //                     &
+     &                     'over written for ' // this%get_type())
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
 !>  @brief Sets the magnetic cache of the equilibrium for the magnetic responce.
 !>
 !>  This method is virtual. The actual setting of the magnetic cache should be
@@ -362,6 +422,120 @@
 !*******************************************************************************
 !  GETTER SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Checks if a parameter id is a reconstruction parameter.
+!>
+!>  This method is virtual. The actual check should be handled by a subclass
+!>  method.
+!>  @see vmec_equilibrium::vmec_get_type
+!>  @see vacuum_equilibrium::vacuum_get_type
+!>  @see siesta_equilibrium::siesta_get_type
+!>
+!>  @param[in] this A @ref signal_class instance.
+!>  @returns A string describing the signal type.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_type(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CHARACTER (len=data_name_length)      :: equilibrium_get_type
+      CLASS (equilibrium_class), INTENT(in) :: this
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_type not ' //                      &
+     &                     'over written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Get the id for a reconstruction parameter.
+!>
+!>  This method is virtual. The actual getting of the reconstruction parameter
+!>  id should be handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_get_param_id
+!>  @see vacuum_equilibrium::vacuum_get_param_id
+!>  @see siesta_equilibrium::siesta_get_param_id
+!>
+!>  @param[in] this       A @ref equilibrium_class instance.
+!>  @param[in] param_name Name of a reconstruction parameter.
+!>  @returns The id for a reconstruction parameter.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_param_id(this, param_name)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      INTEGER :: equilibrium_get_param_id
+      CLASS (equilibrium_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)        :: param_name
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_param_id not ' //                      &
+     &                     'over written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Gets the name of a reconstruction equilibrium parameter.
+!>
+!>  This method is virtual. The actual getting of the reconstruction parameter
+!>  name should be handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_get_param_name
+!>  @see vacuum_equilibrium::vacuum_get_param_name
+!>  @see siesta_equilibrium::siesta_get_param_name
+!>
+!>  @param[in] this A @ref equilibrium_class instance.
+!>  @param[in] id   ID of the parameter.
+!>  @returns The name of the parameter.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_param_name(this, id)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CHARACTER(len=data_name_length) :: equilibrium_get_param_name
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: id
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_param_name not ' //                &
+     &                     'over written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Gets the value of a reconstruction equilibrium parameter.
+!>
+!>  This method is virtual. The actual getting of the reconstruction parameter
+!>  value should be handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_get_param_value
+!>  @see vacuum_equilibrium::vacuum_get_param_value
+!>  @see siesta_equilibrium::siesta_get_param_value
+!>
+!>  @param[in] this    A @ref equilibrium_class instance.
+!>  @param[in] id      ID of the parameter.
+!>  @param[in] i_index The ith index of the parameter.
+!>  @param[in] j_index The jth index of the parameter.
+!>  @returns The value of the parameter.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_param_value(this, id, i_index, j_index)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec) :: equilibrium_get_param_value
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                  :: id
+      INTEGER, INTENT(in)                  :: i_index
+      INTEGER, INTENT(in)                  :: j_index
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_param_value not ' //               &
+     &                     'over written for ' // this%get_type())
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Get the number of electron density gp kernel hyper parameters.
 !>
@@ -2025,6 +2199,35 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
+!>  @brief Checks if a parameter id is a reconstruction parameter.
+!>
+!>  This method is virtual. The actual check should be handled by a subclass
+!>  method.
+!>  @see vmec_equilibrium::vmec_is_recon_param
+!>  @see vacuum_equilibrium::vacuum_is_recon_param
+!>  @see siesta_equilibrium::siesta_is_recon_param
+!>
+!>  @param[in] this A @ref equilibrium_class instance.
+!>  @param[in] id   ID of the parameter.
+!>  @returns True if the parameter is a reconstruction parameter and false if
+!>  otherwise.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_is_recon_param(this, id)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL :: equilibrium_is_recon_param
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: id
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_is_recon_param not ' //                &
+     &                     'over written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
 !>  @brief Checks if a the point magnetics are being used.
 !>
 !>  This method is virtual. The actual check should be handled by a subclass
@@ -2190,6 +2393,32 @@
 
       CALL profiler_set_stop_time('equilibrium_reset_state',                   &
      &                            start_time)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Write out the equilibrium to an output file.
+!>
+!>  This method is virtual. The actual writing of the equilibrium should be
+!>  handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_write
+!>  @see vacuum_equilibrium::vacuum_write
+!>  @see siesta_equilibrium::siesta_write
+!>
+!>  @param[in] this A @ref equilibrium_class instance.
+!>  @param[in] iou  Input/output unit of the output file.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_write(this, iou)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: iou
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_write not over written ' //            &
+     &                     'for ' // this%get_type())
 
       END SUBROUTINE
 

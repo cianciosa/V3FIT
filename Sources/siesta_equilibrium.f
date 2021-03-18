@@ -88,7 +88,7 @@
 !  parameters but overwrites the auxilary parameters.
 
 !>  Helical perturbation parameter.
-      INTEGER, PARAMETER :: siesta_helpert_id     = 84
+      INTEGER, PARAMETER :: siesta_helpert_id     = 82
 
 !*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
@@ -117,6 +117,8 @@
      &                   siesta_set_magnetic_cache_point
          PROCEDURE :: set_magnetic_cache_calc =>                               &
      &                   siesta_set_magnetic_cache_calc
+
+         PROCEDURE :: get_type => siesta_get_type()
 
          PROCEDURE :: get_param_id => siesta_get_param_id
          PROCEDURE :: get_param_value => siesta_get_param_value
@@ -1166,6 +1168,32 @@
 !*******************************************************************************
 !  GETTER SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Gets a discription of the equilibrium type.
+!>
+!>  @param[in] this A @ref siesta_class instance.
+!>  @returns A string describing the signal type.
+!-------------------------------------------------------------------------------
+      FUNCTION siesta_get_type(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CHARACTER (len=data_name_length) :: siesta_get_type
+      CLASS (siesta_class), INTENT(in) :: this
+
+!  local variables
+      REAL (rprec)                     :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      siesta_get_type = 'siesta_class'
+
+      CALL profiler_set_stop_time('siesta_get_type', start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Get the id for a reconstruction parameter.
 !>

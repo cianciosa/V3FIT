@@ -50,7 +50,7 @@
 
 !  Variable Parameters
 !>  1D Array of external currents.
-      INTEGER, PARAMETER :: vacuum_extcur_id = 15
+      INTEGER, PARAMETER :: vacuum_extcur_id = 14
 
 !*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
@@ -69,6 +69,7 @@
          REAL (rprec), DIMENSION(:), POINTER  :: extcur => null()
       CONTAINS
          PROCEDURE :: set_param => vacuum_set_param
+         PROCEDURE :: get_type => vacuum_get_type()
          PROCEDURE :: get_param_id => vacuum_get_param_id
          PROCEDURE :: get_param_value => vacuum_get_param_value
          PROCEDURE :: get_param_name => vacuum_get_param_name
@@ -242,6 +243,32 @@
 !*******************************************************************************
 !  GETTER SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Gets a discription of the equilibrium type.
+!>
+!>  @param[in] this A @ref vacuum_class instance.
+!>  @returns A string describing the signal type.
+!-------------------------------------------------------------------------------
+      FUNCTION vacuum_get_type(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CHARACTER (len=data_name_length) :: vacuum_get_type
+      CLASS (vacuum_class), INTENT(in) :: this
+
+!  local variables
+      REAL (rprec)                     :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      vacuum_get_type = 'vacuum_class'
+
+      CALL profiler_set_stop_time('vacuum_get_type', start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Get the id for a reconstruction parameter.
 !>
