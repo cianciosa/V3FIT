@@ -3850,11 +3850,12 @@
 !>
 !>  This method overrides @ref equilibrium::equilibrium_get_p.
 !>
-!>  @param[in] this   A @ref vmec_class instance.
-!>  @param[in] x_cart Cartesian position to get the plasma pressure at.
+!>  @param[in] this      A @ref vmec_class instance.
+!>  @param[in] x_cart    Cartesian position to get the plasma pressure at.
+!>  @param[in] normalize Normalize the pressure value.
 !>  @returns The plasma pressure at x_cart.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_get_p_cart(this, x_cart)
+      FUNCTION vmec_get_p_cart(this, x_cart, normalize)
 
       IMPLICIT NONE
 
@@ -3862,13 +3863,14 @@
       REAL (rprec)                           :: vmec_get_p_cart
       CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+      LOGICAL, INTENT(in)                    :: normalize
 
 !  local variables
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_p_cart = this%get_p(this%get_flux(x_cart))
+      vmec_get_p_cart = this%get_p(this%get_flux(x_cart), normalize)
 
       CALL profiler_set_stop_time('vmec_get_p_cart', start_time)
 
@@ -3879,11 +3881,12 @@
 !>
 !>  This method overrides @ref equilibrium::equilibrium_get_p.
 !>
-!>  @param[in] this A @ref vmec_class instance.
-!>  @param[in] s    Radial position to get the plasma pressure at.
+!>  @param[in] this      A @ref vmec_class instance.
+!>  @param[in] s         Radial position to get the plasma pressure at.
+!>  @param[in] normalize Normalize the pressure value.
 !>  @returns The plasma pressure at s.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_get_p_radial(this, s)
+      FUNCTION vmec_get_p_radial(this, s, normalize)
       USE stel_constants, only: mu0
 
       IMPLICIT NONE
@@ -3892,6 +3895,7 @@
       REAL (rprec)                   :: vmec_get_p_radial
       CLASS (vmec_class), INTENT(in) :: this
       REAL (rprec), INTENT(in)       :: s
+      LOGICAL, INTENT(in)            :: normalize
 
 !  local variables
       REAL (rprec)                   :: start_time

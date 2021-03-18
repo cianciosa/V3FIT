@@ -117,58 +117,33 @@
      &                   siesta_set_magnetic_cache_point
          PROCEDURE :: set_magnetic_cache_calc =>                               &
      &                   siesta_set_magnetic_cache_calc
-         GENERIC   :: set_magnetic_cache =>                                    &
-     &                   set_magnetic_cache_responce,                          &
-     &                   set_magnetic_cache_point,                             &
-     &                   set_magnetic_cache_calc
 
          PROCEDURE :: get_param_id => siesta_get_param_id
          PROCEDURE :: get_param_value => siesta_get_param_value
          PROCEDURE :: get_param_name => siesta_get_param_name
 
-         PROCEDURE :: get_gp_ne_ij => vmec_get_gp_ne_ij
          PROCEDURE :: get_gp_ne_pi => siesta_get_gp_ne_pi
          PROCEDURE :: get_gp_ne_pp => siesta_get_gp_ne_pp
-         GENERIC   :: get_gp_ne => get_gp_ne_ij,                               &
-     &                             get_gp_ne_pi,                               &
-     &                             get_gp_ne_pp
          PROCEDURE :: get_ne_cart => siesta_get_ne_cart
          PROCEDURE :: get_ne_radial => siesta_get_ne_radial
-         GENERIC   :: get_ne => get_ne_cart, get_ne_radial
 
-         PROCEDURE :: get_gp_te_ij => vmec_get_gp_te_ij
          PROCEDURE :: get_gp_te_pi => siesta_get_gp_te_pi
          PROCEDURE :: get_gp_te_pp => siesta_get_gp_te_pp
-         GENERIC   :: get_gp_te => get_gp_te_ij,                               &
-     &                             get_gp_te_pi,                               &
-     &                             get_gp_te_pp
          PROCEDURE :: get_te_cart => siesta_get_te_cart
          PROCEDURE :: get_te_radial => siesta_get_te_radial
-         GENERIC   :: get_te => get_te_cart, get_te_radial
 
-         PROCEDURE :: get_gp_ti_ij => vmec_get_gp_ti_ij
          PROCEDURE :: get_gp_ti_pi => siesta_get_gp_ti_pi
          PROCEDURE :: get_gp_ti_pp => siesta_get_gp_ti_pp
-         GENERIC   :: get_gp_ti => get_gp_ti_ij,                               &
-     &                             get_gp_ti_pi,                               &
-     &                             get_gp_ti_pp
          PROCEDURE :: get_ti_cart => siesta_get_ti_cart
          PROCEDURE :: get_ti_radial => siesta_get_ti_radial
-         GENERIC   :: get_ti => get_te_cart, get_ti_radial
 
-         PROCEDURE :: get_gp_sxrem_ij => vmec_get_gp_sxrem_ij
          PROCEDURE :: get_gp_sxrem_pi => siesta_get_gp_sxrem_pi
          PROCEDURE :: get_gp_sxrem_pp => siesta_get_gp_sxrem_pp
-         GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij,                         &
-     &                                get_gp_sxrem_pi,                         &
-     &                                get_gp_sxrem_pp
          PROCEDURE :: get_sxrem_cart => siesta_get_sxrem_cart
          PROCEDURE :: get_sxrem_radial => siesta_get_sxrem_radial
-         GENERIC   :: get_sxrem => get_sxrem_cart, get_sxrem_radial
 
          PROCEDURE :: get_p_cart => siesta_get_p_cart
          PROCEDURE :: get_p_radial => siesta_get_p_radial
-         GENERIC   :: get_p => get_p_cart, get_p_radial
          PROCEDURE :: get_p_flux => siesta_get_p_flux
 
          PROCEDURE :: get_B_vec => siesta_get_B_vec
@@ -179,7 +154,6 @@
          PROCEDURE :: get_int_b_plasma => siesta_get_int_b_plasma
 
          PROCEDURE :: get_grid_size => siesta_get_grid_size
-         PROCEDURE :: get_grid_stop => siesta_get_grid_stop
 
          PROCEDURE :: is_1d_array => siesta_is_1d_array
          PROCEDURE :: is_recon_param => siesta_is_recon_param\
@@ -286,10 +260,10 @@
 
       ALLOCATE(siesta_construct)
 
-      CALL vmec_class(siesta_construct, vmec_namelist, wout_file_name,         &
-     &                ne, te, ti, sxrem, phi_offset, z_offset,                 &
-     &                pol_rad_ratio, iou, eq_comm, recon_comm,                 &
-     &                state_flags)
+      CALL vmec_construct_sub(siesta_construct, vmec_namelist,                 &
+     &                        wout_file_name, ne, te, ti, sxrem,               &
+     &                        phi_offset, z_offset, pol_rad_ratio, iou,        &
+     &                        eq_comm, recon_comm, state_flags)
 
       eq_rank = 0
       recon_rank = 0
@@ -1887,7 +1861,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_sxrem_radial =                                                &
-     &   vmec_get_sxrem_radial(this, this%get_p(x_cart, .true.),               &
+     &   vmec_get_sxrem_radial(this, this%get_p(s, .true.),               &
      &                         index)
 
       CALL profiler_set_stop_time('siesta_get_sxrem_radial', start_time)
@@ -1921,7 +1895,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_p_cart =                                                      &
-     &   siesta_get_p_flux(this, this%get_suv(x_cart), normalize)
+     &   this%get_p_flux(this%get_suv(x_cart), normalize)
 
       CALL profiler_set_stop_time('siesta_get_p_cart', start_time)
 
@@ -1956,7 +1930,7 @@
 
       flux(1) = MIN(s, 1.0)
       flux(2:3) = 0.0
-      siesta_get_p_radial = siesta_get_p_flux(this, flux, normalize)
+      siesta_get_p_radial = this%get_p_flux(flux, normalize)
 
       CALL profiler_set_stop_time('siesta_get_p_cart', start_time)
 
