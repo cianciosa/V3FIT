@@ -331,7 +331,7 @@
 !-------------------------------------------------------------------------------
 !>  Object to cache data needed to compute magnetic signals.
 !-------------------------------------------------------------------------------
-      TYPE vmec_magnetic_cache
+      TYPE :: vmec_magnetic_cache
 !>  Volume differential element for the s direction.
          REAL (rprec)                            :: ds
 !>  Volume differential element for the u direction.
@@ -401,7 +401,7 @@
 !>  @par Super Class:
 !>  @ref equilibrium
 !-------------------------------------------------------------------------------
-      TYPE vmec_class
+      TYPE :: vmec_class
 !>  File name of the output of vmec.
          CHARACTER (len=path_length)            :: wout_file_name
 !>  File name of the vmec namelist inout file.
@@ -441,9 +441,138 @@
 !>  Index of the largest ns value.
          INTEGER                                :: ns_index
 
-#if defined (TRAV)
+      CONTAINS
+         PROCEDURE :: set_param => vmec_set_param
+         PROCEDURE :: set_magnetic_cache_responce =>                           &
+     &                   vmec_set_magnetic_cache_responce
+         PROCEDURE :: set_magnetic_cache_point =>                              &
+     &                   vmec_set_magnetic_cache_point
+         PROCEDURE :: set_magnetic_cache_calc =>                               &
+     &                   vmec_set_magnetic_cache_calc
+         GENERIC   :: set_magnetic_cache =>                                    &
+     &                   set_magnetic_cache_responce,                          &
+     &                   set_magnetic_cache_point,                             &
+     &                   set_magnetic_cache_calc
+         PROCEDURE :: set_namelist => vmec_set_namelist
 
-#endif
+         PROCEDURE :: get_param_id => vmec_get_param_id
+         PROCEDURE :: get_param_value => vmec_get_param_value
+         PROCEDURE :: get_param_name => vmec_get_param_name
+
+         PROCEDURE :: get_gp_ne_num_hyper_param =>                             &
+     &                   vmec_get_gp_ne_num_hyper_param
+         PROCEDURE :: get_ne_af => vmec_get_ne_af
+         PROCEDURE :: get_gp_ne_ij => vmec_get_gp_ne_ij
+         PROCEDURE :: get_gp_ne_pi => vmec_get_gp_ne_pi
+         PROCEDURE :: get_gp_ne_pp => vmec_get_gp_ne_pp
+         GENERIC   :: get_gp_ne => get_gp_ne_ij,                               &
+     &                             get_gp_ne_pi,                               &
+     &                             get_gp_ne_pp
+         PROCEDURE :: get_ne_cart => vmec_get_ne_cart
+         PROCEDURE :: get_ne_radial => vmec_get_ne_radial
+         GENERIC   :: get_ne => get_ne_cart, get_ne_radial
+
+         PROCEDURE :: get_gp_te_num_hyper_param =>                             &
+     &                   vmec_get_gp_te_num_hyper_param
+         PROCEDURE :: get_te_af => vmec_get_te_af
+         PROCEDURE :: get_gp_te_ij => vmec_get_gp_te_ij
+         PROCEDURE :: get_gp_te_pi => vmec_get_gp_te_pi
+         PROCEDURE :: get_gp_te_pp => vmec_get_gp_te_pp
+         GENERIC   :: get_gp_te => get_gp_te_ij,                               &
+     &                             get_gp_te_pi,                               &
+     &                             get_gp_te_pp
+         PROCEDURE :: get_te_cart => vmec_get_te_cart
+         PROCEDURE :: get_te_radial => vmec_get_te_radial
+         GENERIC   :: get_te => get_te_cart, get_te_radial
+
+         PROCEDURE :: get_gp_ti_num_hyper_param =>                             &
+     &                   vmec_get_gp_ti_num_hyper_param
+         PROCEDURE :: get_ti_af => vmec_get_ti_af
+         PROCEDURE :: get_gp_ti_ij => vmec_get_gp_ti_ij
+         PROCEDURE :: get_gp_ti_pi => vmec_get_gp_ti_pi
+         PROCEDURE :: get_gp_ti_pp => vmec_get_gp_ti_pp
+         GENERIC   :: get_gp_ti => get_gp_ti_ij,                               &
+     &                             get_gp_ti_pi,                               &
+     &                             get_gp_ti_pp
+         PROCEDURE :: get_ti_cart => vmec_get_ti_cart
+         PROCEDURE :: get_ti_radial => vmec_get_ti_radial
+         GENERIC   :: get_ti => get_te_cart, get_ti_radial
+
+         PROCEDURE :: get_gp_sxrem_num_hyper_param =>                          &
+     &                   vmec_get_gp_sxrem_num_hyper_param
+         PROCEDURE :: get_sxrem_af => vmec_get_sxrem_af
+         PROCEDURE :: get_gp_sxrem_ij => vmec_get_gp_sxrem_ij
+         PROCEDURE :: get_gp_sxrem_pi => vmec_get_gp_sxrem_pi
+         PROCEDURE :: get_gp_sxrem_pp => vmec_get_gp_sxrem_pp
+         GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij,                         &
+     &                                get_gp_sxrem_pi,                         &
+     &                                get_gp_sxrem_pp
+         PROCEDURE :: get_sxrem_cart => vmec_get_sxrem_cart
+         PROCEDURE :: get_sxrem_radial => vmec_get_sxrem_radial
+         GENERIC   :: get_sxrem => get_sxrem_cart, get_sxrem_radial
+
+         PROCEDURE :: get_p_cart => vmec_get_p_cart
+         PROCEDURE :: get_p_radial => vmec_get_p_radial
+         GENERIC   :: get_p => get_p_cart, get_p_radial
+         PROCEDURE :: get_p_flux => vmec_get_p_flux
+
+         PROCEDURE :: get_B_vec => vmec_get_B_vec
+         PROCEDURE :: get_Int_B_dphi => vmec_get_Int_B_dphi
+         PROCEDURE :: get_suv => vmec_get_suv
+         PROCEDURE :: get_plasma_edge => vmec_get_plasma_edge
+         PROCEDURE :: get_magnetic_volume_rgrid =>                             &
+     &                   vmec_get_magnetic_volume_rgrid
+         PROCEDURE :: get_magnetic_volume_zgrid =>                             &
+     &                   vmec_get_magnetic_volume_zgrid
+         PROCEDURE :: get_magnetic_volume_jrgrid =>                            &
+     &                   vmec_get_magnetic_volume_jrgrid
+         PROCEDURE :: get_magnetic_volume_jphigrid =>                          &
+     &                   vmec_get_magnetic_volume_jphigrid
+         PROCEDURE :: get_magnetic_volume_jzgrid =>                            &
+     &                   vmec_get_magnetic_volume_jzgrid
+         PROCEDURE :: get_volume_int_element =>                                &
+     &                   vmec_get_volume_int_element
+         PROCEDURE :: get_con_surface_krgrid =>                                &
+     &                   vmec_get_con_surface_krgrid
+         PROCEDURE :: get_con_surface_kphigrid =>                              &
+     &                   vmec_get_con_surface_kphigrid
+         PROCEDURE :: get_con_surface_kzgrid =>                                &
+     &                   vmec_get_con_surface_kzgrid
+         PROCEDURE :: get_area_int_element =>                                  &
+     &                   vmec_get_area_int_element
+         PROCEDURE :: get_ext_currents => vmec_get_ext_currents
+         PROCEDURE :: get_ext_b_plasma => vmec_get_ext_b_plasma
+         PROCEDURE :: get_int_b_plasma => vmec_get_int_b_plasma
+
+         PROCEDURE :: get_grid_size => vmec_get_grid_size
+         PROCEDURE :: get_grid_start => vmec_get_grid_start
+         PROCEDURE :: get_grid_stop => vmec_get_grid_stop
+
+         PROCEDURE :: is_scaler_value => vmec_is_scaler_value
+         PROCEDURE :: is_1d_array => vmec_is_1d_array
+         PROCEDURE :: is_2d_array => vmec_is_2d_array
+         PROCEDURE :: is_recon_param => vmec_is_recon_param
+         PROCEDURE :: is_using_point => vmec_is_using_point
+
+         PROCEDURE :: converge => vmec_converge
+
+         PROCEDURE :: read_vac_file => vmec_read_vac_file
+
+         PROCEDURE :: save_state => vmec_save_state
+         PROCEDURE :: reset_state => vmec_reset_state
+
+         PROCEDURE :: write => vmec_write
+         PROCEDURE :: write_input => vmec_write_input
+
+         PROCEDURE :: def_result => vmec_def_result
+         PROCEDURE :: write_init_data => vmec_write_init_data
+         PROCEDURE :: write_step_data => vmec_write_step_data
+         PROCEDURE :: restart => vmec_restart
+
+         PROCEDURE :: sync_state => vmec_sync_state
+         PROCEDURE :: sync_child => vmec_sync_child
+
+         FINAL     :: vmec_destruct
       END TYPE
 
 !*******************************************************************************
@@ -453,20 +582,9 @@
 !>  Interface for the construction of @ref vmec_class types using
 !>  @ref vmec_construct_full or @ref vmec_construct_eq
 !-------------------------------------------------------------------------------
-      INTERFACE vmec_construct
+      INTERFACE vmec_class
          MODULE PROCEDURE vmec_construct_eq,                                   &
      &                    vmec_construct_full
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the setting the @ref vmec_magnetic_cache types using
-!>  @ref vmec_set_magnetic_cache_responce, @ref vmec_set_magnetic_cache_point or
-!>  @ref vmec_set_magnetic_cache_calc.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_set_magnetic_cache
-         MODULE PROCEDURE vmec_set_magnetic_cache_responce,                    &
-     &                    vmec_set_magnetic_cache_point,                       &
-     &                    vmec_set_magnetic_cache_calc
       END INTERFACE
 
 !-------------------------------------------------------------------------------
@@ -483,91 +601,6 @@
          INTEGER, INTENT(in)            :: comm
          CHARACTER(LEN=*), OPTIONAL     :: reset_file_name
          END SUBROUTINE
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_ne
-         MODULE PROCEDURE vmec_get_ne_cart,                                    &
-     &                    vmec_get_ne_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec guassian process density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_gp_ne
-         MODULE PROCEDURE vmec_get_gp_ne_ij,                                   &
-     &                    vmec_get_gp_ne_pi,                                   &
-     &                    vmec_get_gp_ne_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec electron temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_te
-         MODULE PROCEDURE vmec_get_te_cart,                                    &
-     &                    vmec_get_te_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec guassian process electron temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_gp_te
-         MODULE PROCEDURE vmec_get_gp_te_ij,                                   &
-     &                    vmec_get_gp_te_pi,                                   &
-     &                    vmec_get_gp_te_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_ti
-         MODULE PROCEDURE vmec_get_ti_cart,                                    &
-     &                    vmec_get_ti_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec guassian process ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_gp_ti
-         MODULE PROCEDURE vmec_get_gp_ti_ij,                                   &
-     &                    vmec_get_gp_ti_pi,                                   &
-     &                    vmec_get_gp_ti_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec soft x-ray emissivity profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_sxrem
-         MODULE PROCEDURE vmec_get_sxrem_cart,                                 &
-     &                    vmec_get_sxrem_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec guassian process soft x-ray emissivity profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_gp_sxrem
-         MODULE PROCEDURE vmec_get_gp_sxrem_ij,                                &
-     &                    vmec_get_gp_sxrem_pi,                                &
-     &                    vmec_get_gp_sxrem_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec pressure profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_p
-         MODULE PROCEDURE vmec_get_p_cart,                                     &
-     &                    vmec_get_p_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the vmec zeff profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE vmec_get_ze
-         MODULE PROCEDURE vmec_get_ze_cart,                                    &
-     &                    vmec_get_ze_radial
       END INTERFACE
 
       CONTAINS
@@ -856,10 +889,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), POINTER :: this
+      TYPE (vmec_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                    :: i, error
+      INTEGER                          :: i
+      INTEGER                          :: error
 
 !  Start of executable code
       IF (ASSOCIATED(this%ne)) THEN
@@ -992,8 +1026,6 @@
       CALL free_mem_funct3d
       CALL free_mem_nunv
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -1032,18 +1064,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)              :: id
-      INTEGER, INTENT(in)              :: i_index
-      INTEGER, INTENT(in)              :: j_index
-      REAL (rprec), INTENT(in)         :: value
-      INTEGER, INTENT(in)              :: eq_comm
-      INTEGER, INTENT(inout)           :: state_flags
+      CLASS (vmec_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)               :: id
+      INTEGER, INTENT(in)               :: i_index
+      INTEGER, INTENT(in)               :: j_index
+      REAL (rprec), INTENT(in)          :: value
+      INTEGER, INTENT(in)               :: eq_comm
+      INTEGER, INTENT(inout)            :: state_flags
 
 !  local variables
-      REAL (rprec)                     :: phiedge_ratio
-      INTEGER                          :: error
-      REAL (rprec)                     :: start_time
+      REAL (rprec)                      :: phiedge_ratio
+      INTEGER                           :: error
+      REAL (rprec)                      :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1208,7 +1240,7 @@
      &                     error)
             CALL MPI_BCAST(i_index, 1, MPI_INTEGER, 0, eq_comm, error)
 #endif
-            CALL vmec_read_vac_file(this, i_index, eq_comm)
+            CALL this%read_vac_file(i_index, eq_comm)
 
          CASE (vmec_curtor_id)
             state_flags = IBSET(state_flags, model_state_vmec_flag)
@@ -1290,7 +1322,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout)           :: this
+      CLASS (vmec_class), INTENT(inout)          :: this
       TYPE (magnetic_response_class), INTENT(in) :: response_object
 
 !  local variables
@@ -1372,12 +1404,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout) :: this
-      LOGICAL, INTENT(in)              :: use_axi
+      CLASS (vmec_class), INTENT(inout) :: this
+      LOGICAL, INTENT(in)               :: use_axi
 
 !  local variables
-      INTEGER                          :: u_size, v_size
-      REAL (rprec)                     :: start_time
+      INTEGER                           :: u_size
+      INTEGER                           :: v_size
+      REAL (rprec)                      :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1441,7 +1474,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout)          :: this
+      CLASS (vmec_class), INTENT(inout)         :: this
 
 !  local variables
       INTEGER                                   :: s, u, v, i
@@ -1998,11 +2031,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      INTEGER                       :: i
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: i
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2054,12 +2087,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_param_id
-      TYPE (vmec_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in) :: param_name
+      INTEGER                        :: vmec_get_param_id
+      CLASS (vmec_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)  :: param_name
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2325,11 +2358,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_param_value
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: id
-      INTEGER, INTENT(in)           :: i_index
-      INTEGER, INTENT(in)           :: j_index
+      REAL (rprec)                   :: vmec_get_param_value
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: id
+      INTEGER, INTENT(in)            :: i_index
+      INTEGER, INTENT(in)            :: j_index
 
 !  local variables
       REAL (rprec)                  :: start_time
@@ -2579,11 +2612,11 @@
 
 !  Declare Arguments
       CHARACTER(len=data_name_length) :: vmec_get_param_name
-      TYPE (vmec_class), INTENT(in)   :: this
+      CLASS (vmec_class), INTENT(in)  :: this
       INTEGER, INTENT(in)             :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2831,11 +2864,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_gp_ne_num_hyper_param
-      TYPE (vmec_class), INTENT(in) :: this
+      INTEGER                        :: vmec_get_gp_ne_num_hyper_param
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2867,7 +2900,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vmec_get_ne_af
-      TYPE (vmec_class), INTENT(in)       :: this
+      CLASS (vmec_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -2901,13 +2934,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_gp_ne_ij
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: i
-      INTEGER, INTENT(in)           :: j
+      REAL (rprec)                   :: vmec_get_gp_ne_ij
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: i
+      INTEGER, INTENT(in)            :: j
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2939,7 +2972,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_ne_pi
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -2950,7 +2983,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s = vmec_get_s(this, x_cart)
+      s = this%get_s(x_cart)
       IF (ASSOCIATED(this%ne) .and. (s .le. 1.0)) THEN
          vmec_get_gp_ne_pi = pprofile_get_gp(this%ne, s, i)
       ELSE
@@ -2979,7 +3012,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_ne_pp
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -2991,8 +3024,8 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s1 = vmec_get_s(this, x_cart)
-      s2 = vmec_get_s(this, y_cart)
+      s1 = this%get_s(x_cart)
+      s2 = this%get_s(y_cart)
       IF (ASSOCIATED(this%ne) .and. (s1 .le. 1.0) .and.                        &
      &    (s2 .le. 1.0)) THEN
          vmec_get_gp_ne_pp = pprofile_get_gp(this%ne, s1, s2)
@@ -3020,7 +3053,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_ne_cart
-      TYPE (vmec_class), INTENT(in)          :: this
+      Class (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -3028,7 +3061,7 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_ne_cart = vmec_get_ne(this, vmec_get_flux(this, x_cart))
+      vmec_get_ne_cart = this%get_ne(this%get_flux(x_cart))
 
       CALL profiler_set_stop_time('vmec_get_ne_cart', start_time)
 
@@ -3049,12 +3082,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_ne_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
+      REAL (rprec)                   :: vmec_get_ne_radial
+      ClASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3084,11 +3117,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_gp_te_num_hyper_param
-      TYPE (vmec_class), INTENT(in) :: this
+      INTEGER                        :: vmec_get_gp_te_num_hyper_param
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3120,7 +3153,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vmec_get_te_af
-      TYPE (vmec_class), INTENT(in)       :: this
+      CLASS (vmec_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -3154,13 +3187,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_gp_te_ij
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: i
-      INTEGER, INTENT(in)           :: j
+      REAL (rprec)                   :: vmec_get_gp_te_ij
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: i
+      INTEGER, INTENT(in)            :: j
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3193,7 +3226,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_te_pi
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -3235,7 +3268,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_te_pp
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -3276,7 +3309,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_te_cart
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -3284,7 +3317,7 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_te_cart = vmec_get_te(this, vmec_get_flux(this, x_cart))
+      vmec_get_te_cart = this%get_te(this%get_flux(x_cart))
 
       CALL profiler_set_stop_time('vmec_get_te_cart', start_time)
 
@@ -3305,12 +3338,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_te_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
+      REAL (rprec)                   :: vmec_get_te_radial
+      CLASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3339,11 +3372,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_gp_ti_num_hyper_param
-      TYPE (vmec_class), INTENT(in) :: this
+      INTEGER                        :: vmec_get_gp_ti_num_hyper_param
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3375,7 +3408,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vmec_get_ti_af
-      TYPE (vmec_class), INTENT(in)       :: this
+      CLASS (vmec_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -3409,13 +3442,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_gp_ti_ij
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: i
-      INTEGER, INTENT(in)           :: j
+      REAL (rprec)                   :: vmec_get_gp_ti_ij
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: i
+      INTEGER, INTENT(in)            :: j
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3448,7 +3481,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_ti_pi
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -3488,7 +3521,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_ti_pp
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -3500,8 +3533,8 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s1 = vmec_get_s(this, x_cart)
-      s2 = vmec_get_s(this, y_cart)
+      s1 = this%get_s(x_cart)
+      s2 = this%get_s(y_cart)
       IF (ASSOCIATED(this%ti) .and. (s1 .le. 1.0) .and.                        &
      &    (s2 .le. 1.0)) THEN
          vmec_get_gp_ti_pp = pprofile_get_gp(this%ti, s1, s2)
@@ -3529,7 +3562,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_ti_cart
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -3537,7 +3570,7 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_ti_cart = vmec_get_ti(this, vmec_get_flux(this, x_cart))
+      vmec_get_ti_cart = this%get_ti(this%get_flux(x_cart))
 
       CALL profiler_set_stop_time('vmec_get_ti_cart', start_time)
 
@@ -3558,12 +3591,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_ti_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
+      REAL (rprec)                   :: vmec_get_ti_radial
+      CLASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3574,70 +3607,6 @@
       END IF
 
       CALL profiler_set_stop_time('vmec_get_ti_radial', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the effective charge at a cartesian position.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_ze. If no
-!>  Zeff profile was created, return 1.0
-!>
-!>  @param[in] this   A @ref vmec_class instance.
-!>  @param[in] x_cart Cartesian position to get the effective charge at.
-!>  @returns The effective charge at x_cart.
-!-------------------------------------------------------------------------------
-      FUNCTION vmec_get_ze_cart(this, x_cart)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                           :: vmec_get_ze_cart
-      TYPE (vmec_class), INTENT(in)          :: this
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-
-!  local variables
-      REAL (rprec)                           :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      vmec_get_ze_cart = vmec_get_ze(this, vmec_get_flux(this, x_cart))
-
-      CALL profiler_set_stop_time('vmec_get_ze_cart', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the effective charge at a s position.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_ze. If no
-!>  Zeff profile was created, return 1.0
-!>
-!>  @param[in] this A @ref vmec_class instance.
-!>  @param[in] s    Radial position to get the effective charge at.
-!>  @returns The effective charge at s.
-!-------------------------------------------------------------------------------
-      FUNCTION vmec_get_ze_radial(this, s)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                  :: vmec_get_ze_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
-
-!  local variables
-      REAL (rprec)                  :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      IF (ASSOCIATED(this%ze)) THEN
-         vmec_get_ze_radial = pprofile_get_value(this%ze, s)
-      ELSE
-         vmec_get_ze_radial = 1.0
-      END IF
-
-      CALL profiler_set_stop_time('vmec_get_ze_radial', start_time)
 
       END FUNCTION
 
@@ -3657,12 +3626,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_gp_sxrem_num_hyper_param
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: index
+      INTEGER :: vmec_get_gp_sxrem_num_hyper_param
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: index
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3696,7 +3665,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vmec_get_sxrem_af
-      TYPE (vmec_class), INTENT(in)       :: this
+      CLASS (vmec_class), INTENT(in)      :: this
       INTEGER, INTENT(in)                 :: index
 
 !  local variables
@@ -3733,14 +3702,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_gp_sxrem_ij
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: i
-      INTEGER, INTENT(in)           :: j
-      INTEGER, INTENT(in)           :: index
+      REAL (rprec)                   :: vmec_get_gp_sxrem_ij
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: i
+      INTEGER, INTENT(in)            :: j
+      INTEGER, INTENT(in)            :: index
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3776,7 +3745,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_sxrem_pi
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
       INTEGER, INTENT(in)                    :: index
@@ -3788,7 +3757,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s = vmec_get_s(this, x_cart)
+      s = this%get_s(x_cart)
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem)) .and. (s .le. 1.0)) THEN
          vmec_get_gp_sxrem_pi = pprofile_get_gp(this%sxrem(index)%p,           &
@@ -3822,7 +3791,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_gp_sxrem_pp
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
       INTEGER, INTENT(in)                    :: index
@@ -3835,8 +3804,8 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s1 = vmec_get_s(this, x_cart)
-      s2 = vmec_get_s(this, y_cart)
+      s1 = this%get_s(x_cart)
+      s2 = this%get_s(y_cart)
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem)) .and.                                  &
      &    (s1 .le. 1.0) .and. (s2 .le. 1.0)) THEN
@@ -3867,7 +3836,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_sxrem_cart
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: index
 
@@ -3876,8 +3845,7 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_sxrem_cart = vmec_get_sxrem(this,                               &
-     &                                     vmec_get_flux(this, x_cart),        &
+      vmec_get_sxrem_cart = this%get_sxrem(this%get_flux(x_cart),              &
      &                                     index)
 
       CALL profiler_set_stop_time('vmec_get_sxrem_cart', start_time)
@@ -3900,13 +3868,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_sxrem_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
-      INTEGER, INTENT(in)           :: index
+      REAL (rprec)                   :: vmec_get_sxrem_radial
+      CLASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: s
+      INTEGER, INTENT(in)            :: index
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3938,7 +3906,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_p_cart
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -3946,7 +3914,7 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-      vmec_get_p_cart = vmec_get_p(this, vmec_get_flux(this, x_cart))
+      vmec_get_p_cart = this%get_p(this%get_flux(x_cart))
 
       CALL profiler_set_stop_time('vmec_get_p_cart', start_time)
 
@@ -3967,12 +3935,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_p_radial
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: s
+      REAL (rprec)                   :: vmec_get_p_radial
+      CLASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Forward declare the interface for pmass. This explicitly defined the type for
 !  pmass to avoid a compiler error. If profile_functions.f was implimented as a
@@ -4014,7 +3982,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: vmec_get_B_vec
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       LOGICAL, INTENT(in)                    :: cyl
 
@@ -4043,8 +4011,8 @@
 !  The measurement point stays fixed relative to the field coils so there should
 !  be no rotation or offset here. vmec_get_ext_b_plasma handles shift of the
 !  plasma internally.
-         vmec_get_B_vec = vmec_get_B_vac(this, r_cyl)                      &
-     &                  + vmec_get_ext_b_plasma(this, r_cyl, .false.)
+         vmec_get_B_vec = this%get_B_vac(r_cyl)                                &
+     &                  + this%get_ext_b_plasma(r_cyl, .false.)
       END IF
 
       IF (.not.cyl) THEN
@@ -4074,16 +4042,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_Int_B_dphi
-      TYPE (vmec_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)      :: r
-      REAL (rprec), INTENT(in)      :: theta
+      REAL (rprec)                   :: vmec_get_Int_B_dphi
+      CLASS (vmec_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)       :: r
+      REAL (rprec), INTENT(in)       :: theta
 
 !  local variables
-      REAL (rprec)                  :: bsubv00c, ds
-      INTEGER                       :: i
-      REAL (rprec), DIMENSION(2)    :: s
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: bsubv00c
+      REAL (rprec)                   :: ds
+      INTEGER                        :: i
+      REAL (rprec), DIMENSION(2)     :: s
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4119,7 +4088,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: vmec_get_suv
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -4179,7 +4148,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_s
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -4189,7 +4158,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      s_flux = vmec_get_suv(this, x_cart)
+      s_flux = this%get_suv(x_cart)
       vmec_get_s = s_flux(1)
 
       CALL profiler_set_stop_time('vmec_get_s', start_time)
@@ -4212,7 +4181,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: vmec_get_flux
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -4224,7 +4193,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      vmec_get_flux = vmec_get_s(this, x_cart)
+      vmec_get_flux = this%get_s(x_cart)
 
       IF (.not.lrfp) THEN
 !  VMEC can redistribute the radial grid. This converts even spaced internal
@@ -4258,14 +4227,16 @@
 
 !  Declare Arguments
       INTEGER :: vmec_get_plasma_edge
-      TYPE (vmec_class), INTENT(in)           :: this
+      CLASS (vmec_class), INTENT(in)          :: this
       REAL (rprec), INTENT (in)               :: phi
       REAL (rprec), DIMENSION(:), POINTER     :: r
       REAL (rprec), DIMENSION(:), POINTER     :: z
 
 !  local variables
-      REAL (rprec), DIMENSION(:), ALLOCATABLE :: cosv, sinv
-      REAL (rprec), DIMENSION(:), ALLOCATABLE :: cosu, sinu
+      REAL (rprec), DIMENSION(:), ALLOCATABLE :: cosv
+      REAL (rprec), DIMENSION(:), ALLOCATABLE :: sinv
+      REAL (rprec), DIMENSION(:), ALLOCATABLE :: cosu
+      REAL (rprec), DIMENSION(:), ALLOCATABLE :: sinu
       INTEGER                                 :: i
       REAL (rprec)                            :: start_time
 
@@ -4318,10 +4289,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   vmec_get_magnetic_volume_rgrid
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4348,10 +4319,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   vmec_get_magnetic_volume_zgrid
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4378,10 +4349,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   vmec_get_magnetic_volume_jrgrid
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4408,10 +4379,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   vmec_get_magnetic_volume_jphigrid
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4438,10 +4409,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   vmec_get_magnetic_volume_jzgrid
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4474,10 +4445,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: vmec_get_volume_int_element
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4506,7 +4477,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   vmec_get_con_surface_krgrid
-      TYPE (vmec_class), INTENT(in)         :: this
+      CLASS (vmec_class), INTENT(in)        :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -4536,7 +4507,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   vmec_get_con_surface_kphigrid
-      TYPE (vmec_class), INTENT(in)         :: this
+      CLASS (vmec_class), INTENT(in)        :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -4566,7 +4537,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   vmec_get_con_surface_kzgrid
-      TYPE (vmec_class), INTENT(in)         :: this
+      CLASS (vmec_class), INTENT(in)        :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -4602,10 +4573,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: vmec_get_area_int_element
-      TYPE (vmec_class), INTENT(in) :: this
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4641,7 +4612,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vmec_get_ext_currents
-      TYPE (vmec_class), INTENT(in)       :: this
+      CLASS (vmec_class), INTENT(in)      :: this
       INTEGER, INTENT(in)                 :: num_currents
       LOGICAL, INTENT(out)                :: scale_currents
 
@@ -4694,7 +4665,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: vmec_get_B_vac
-      TYPE (vmec_class), INTENT(in)          :: this
+      CLASS (vmec_class), INTENT(in)         :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: r_cyl
 
 !  local variables
@@ -4822,7 +4793,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)              :: vmec_get_ext_b_plasma
-      TYPE (vmec_class), INTENT(in)           :: this
+      CLASS (vmec_class), INTENT(in)          :: this
       REAL (rprec), DIMENSION(3), INTENT(in)  :: position
       LOGICAL, INTENT(in)                     :: axi_only
 
@@ -4924,11 +4895,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                       :: vmec_get_grid_size
-      TYPE (vmec_class), INTENT(in) :: this
+      INTEGER                        :: vmec_get_grid_size
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4950,11 +4921,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAl (rprec)                  :: vmec_get_grid_start
-      TYPE (vmec_class), INTENT(in) :: this
+      REAl (rprec)                   :: vmec_get_grid_start
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4976,11 +4947,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                  :: vmec_get_grid_stop
-      TYPE (vmec_class), INTENT(in) :: this
+      REAL (rprec)                   :: vmec_get_grid_stop
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5006,12 +4977,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                       :: vmec_is_scaler_value
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: id
+      LOGICAL                        :: vmec_is_scaler_value
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5047,12 +5018,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                       :: vmec_is_1d_array
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: id
+      LOGICAL                        :: vmec_is_1d_array
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5095,12 +5066,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                       :: vmec_is_2d_array
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: id
+      LOGICAL                        :: vmec_is_2d_array
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5141,12 +5112,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                       :: vmec_is_recon_param
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: id
+      LOGICAL                        :: vmec_is_recon_param
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5188,11 +5159,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                       :: vmec_is_using_point
-      TYPE (vmec_class), INTENT(in) :: this
+      LOGICAL                        :: vmec_is_using_point
+      CLASS (vmec_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5239,7 +5210,7 @@
 
 !  Declare Arguments
       LOGICAL                            :: vmec_converge
-      TYPE (vmec_class), INTENT(inout)   :: this
+      CLASS (vmec_class), INTENT(inout)  :: this
       INTEGER, INTENT(inout)             :: num_iter
       INTEGER, INTENT(in)                :: iou
       INTEGER, INTENT(in)                :: eq_comm
@@ -5426,13 +5397,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: index
-      INTEGER, INTENT(in)           :: eq_comm
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: index
+      INTEGER, INTENT(in)            :: eq_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                       :: error
+      INTEGER                        :: error
 
 !  Start of executable code
       mgrid_path_old = ''
@@ -5458,12 +5429,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout) :: this
+      CLASS (vmec_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                          :: error
-      INTEGER                          :: i
-      REAL (rprec)                     :: start_time
+      INTEGER                           :: error
+      INTEGER                           :: i
+      REAL (rprec)                      :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5516,12 +5487,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout) :: this
+      CLASS (vmec_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                          :: error
-      INTEGER                          :: i
-      REAL (rprec)                     :: start_time
+      INTEGER                           :: error
+      INTEGER                           :: i
+      REAL (rprec)                      :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5579,14 +5550,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: iou
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: iou
 
 !  local variables
-      INTEGER                       :: i
-      INTEGER                       :: iou_nl
-      INTEGER                       :: status
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: i
+      INTEGER                        :: iou_nl
+      INTEGER                        :: status
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5648,20 +5619,20 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: current_step
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: current_step
 
 !  local variables
-      INTEGER                       :: iou_nl
-      INTEGER                       :: status
-      CHARACTER (len=path_length)   :: filename
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: iou_nl
+      INTEGER                        :: status
+      CHARACTER (len=path_length)    :: filename
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Update the namelist input variables from the equilibrium solution.
-      CALL vmec_set_namelist(this)
+      CALL this%set_namelist()
 
 !  Write out the final namelist input file.
       iou_nl = 0
@@ -5739,27 +5710,27 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: result_ncid
-      INTEGER, INTENT(in)           :: maxnsetps_dim_id
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: result_ncid
+      INTEGER, INTENT(in)            :: maxnsetps_dim_id
 
 !  Local variables
-      INTEGER                       :: status
-      INTEGER                       :: vmec_nextcur_dim_id
-      INTEGER                       :: vmec_boundary_m_dim_id
-      INTEGER                       :: vmec_boundary_n_dim_id
-      INTEGER                       :: vmec_extcur_id
-      INTEGER                       :: vmec_curtor_id
-      INTEGER                       :: vmec_pres_scale_id
-      INTEGER                       :: vmec_rbc_id
-      INTEGER                       :: vmec_rbs_id
-      INTEGER                       :: vmec_zbc_id
-      INTEGER                       :: vmec_zbs_id
-      INTEGER                       :: vmec_l_sub_i_id
-      INTEGER                       :: vmec_kappa_p_id
-      INTEGER                       :: vmec_xc_id
-      INTEGER                       :: vmec_xc_dim_id
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: status
+      INTEGER                        :: vmec_nextcur_dim_id
+      INTEGER                        :: vmec_boundary_m_dim_id
+      INTEGER                        :: vmec_boundary_n_dim_id
+      INTEGER                        :: vmec_extcur_id
+      INTEGER                        :: vmec_curtor_id
+      INTEGER                        :: vmec_pres_scale_id
+      INTEGER                        :: vmec_rbc_id
+      INTEGER                        :: vmec_rbs_id
+      INTEGER                        :: vmec_zbc_id
+      INTEGER                        :: vmec_zbs_id
+      INTEGER                        :: vmec_l_sub_i_id
+      INTEGER                        :: vmec_kappa_p_id
+      INTEGER                        :: vmec_xc_id
+      INTEGER                        :: vmec_xc_dim_id
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5860,19 +5831,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: result_ncid
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: result_ncid
 
 !  Local variables
-      INTEGER                       :: status
-      INTEGER                       :: vmec_extcur_id
-      INTEGER                       :: vmec_curtor_id
-      INTEGER                       :: vmec_pres_scale_id
-      INTEGER                       :: vmec_rbc_id
-      INTEGER                       :: vmec_rbs_id
-      INTEGER                       :: vmec_zbc_id
-      INTEGER                       :: vmec_zbs_id
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: status
+      INTEGER                        :: vmec_extcur_id
+      INTEGER                        :: vmec_curtor_id
+      INTEGER                        :: vmec_pres_scale_id
+      INTEGER                        :: vmec_rbc_id
+      INTEGER                        :: vmec_rbs_id
+      INTEGER                        :: vmec_zbc_id
+      INTEGER                        :: vmec_zbs_id
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5922,7 +5893,7 @@
      &                      zbs(-ntor:ntor,0:mpol1))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      CALL vmec_write_step_data(this, result_ncid, 1)
+      CALL this%write_step_data(result_ncid, 1)
 
       CALL profiler_set_stop_time('vmec_write_init_data', start_time)
 
@@ -5945,16 +5916,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: result_ncid
-      INTEGER, INTENT(in)           :: current_step
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: result_ncid
+      INTEGER, INTENT(in)            :: current_step
 
 !  Local variables
-      INTEGER                       :: status
-      INTEGER                       :: vmec_l_sub_i_id
-      INTEGER                       :: vmec_kappa_p_id
-      INTEGER                       :: vmec_xc_id
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: status
+      INTEGER                        :: vmec_l_sub_i_id
+      INTEGER                        :: vmec_kappa_p_id
+      INTEGER                        :: vmec_xc_id
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -5999,16 +5970,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in) :: this
-      INTEGER, INTENT(in)           :: result_ncid
-      INTEGER, INTENT(in)           :: current_step
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: result_ncid
+      INTEGER, INTENT(in)            :: current_step
 
 !  Local variables
-      INTEGER                       :: status
-      INTEGER                       :: vmec_l_sub_i_id
-      INTEGER                       :: vmec_kappa_p_id
-      INTEGER                       :: vmec_xc_id
-      REAL (rprec)                  :: start_time
+      INTEGER                        :: status
+      INTEGER                        :: vmec_l_sub_i_id
+      INTEGER                        :: vmec_kappa_p_id
+      INTEGER                        :: vmec_xc_id
+      REAL (rprec)                   :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -6055,14 +6026,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-       TYPE (vmec_class), INTENT(inout) :: this
-       INTEGER, INTENT(in)              :: recon_comm
+       CLASS (vmec_class), INTENT(inout) :: this
+       INTEGER, INTENT(in)               :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: i
-      INTEGER                           :: error
-      INTEGER                           :: mpi_rank
+      INTEGER                            :: i
+      INTEGER                            :: error
+      INTEGER                            :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
@@ -6108,14 +6079,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)              :: index
-      INTEGER, INTENT(in)              :: recon_comm
+      CLASS (vmec_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)               :: index
+      INTEGER, INTENT(in)               :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      INTEGER                           :: mpi_rank
+      INTEGER                            :: error
+      INTEGER                            :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
@@ -6164,14 +6135,24 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), INTENT(in)        :: this
+      CLASS (vmec_class), INTENT(in)          :: this
 
 !  local variables
-      REAL (rprec)                            :: delta, sgn
-      INTEGER                                 :: m, n, mj, ni
+      REAL (rprec)                            :: delta
+      REAL (rprec)                            :: sgn
+      INTEGER                                 :: m
+      INTEGER                                 :: n
+      INTEGER                                 :: mj
+      INTEGER                                 :: ni
       REAL (rprec)                            :: temp
-      REAL (rprec), DIMENSION(:,:), POINTER   :: rbcc, rbss, rbcs, rbsc
-      REAL (rprec), DIMENSION(:,:), POINTER   :: zbcc, zbss, zbcs, zbsc
+      REAL (rprec), DIMENSION(:,:), POINTER   :: rbcc
+      REAL (rprec), DIMENSION(:,:), POINTER   :: rbss
+      REAL (rprec), DIMENSION(:,:), POINTER   :: rbcs
+      REAL (rprec), DIMENSION(:,:), POINTER   :: rbsc
+      REAL (rprec), DIMENSION(:,:), POINTER   :: zbcc
+      REAL (rprec), DIMENSION(:,:), POINTER   :: zbss
+      REAL (rprec), DIMENSION(:,:), POINTER   :: zbcs
+      REAL (rprec), DIMENSION(:,:), POINTER   :: zbsc
       REAL (rprec), DIMENSION(:), ALLOCATABLE :: temp_array
       REAL (rprec)                            :: start_time
 

@@ -218,7 +218,7 @@
 !>  @par Super Class:
 !>  @ref equilibrium
 !-------------------------------------------------------------------------------
-      TYPE :: siesta_class
+      TYPE, EXTENDS(vmec_class) :: siesta_class
 !>  File name of the output of siesta.
          CHARACTER (len=path_length)            :: restart_file_name
 !>  File name of the siesta namelist inout file.
@@ -368,8 +368,6 @@
          PROCEDURE :: is_using_point => siesta_is_using_point
 
          PROCEDURE :: converge => siesta_converge
-
-         PROCEDURE :: read_vac_file => siesta_read_vac_file
 
          PROCEDURE :: save_state => siesta_save_state
          PROCEDURE :: reset_state => siesta_reset_state
@@ -4234,31 +4232,6 @@
       CALL profiler_set_stop_time('siesta_converge', start_time)
 
       END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Loads the vacuum magnetic field file.
-!>
-!>  Loads the vacuum magnetic field file. This will get on multiple processes to
-!>  allow parallel loading of the mgrid file. The extcur array will need to be
-!>  broadcast to the child processes.
-!>
-!>  @param[in] this    A @ref siesta_class instance.
-!>  @param[in] index   Index of the changed current.
-!>  @param[in] eq_comm MPI communicator pool for siesta.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_read_vac_file(this, index, eq_comm)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: index
-      INTEGER, INTENT(in)              :: eq_comm
-
-!  Start of executable code
-      CALL vmec_read_vac_file(this%vmec, index, eq_comm)
-
-      END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Save the internal state of the equilibrium.
