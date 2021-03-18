@@ -17,25 +17,9 @@
 !*******************************************************************************
 
       MODULE equilibrium
-      USE vacuum_equilibrium
-      USE siesta_equilibrium
+      USE profiler
 
       IMPLICIT NONE
-
-!*******************************************************************************
-!  equilibrium module parameters
-!*******************************************************************************
-!>  Type descriptor for the @ref equilibrium_class no subclass.
-      INTEGER, PARAMETER :: equilibrium_no_type     = -1
-!>  Type descriptor for the @ref equilibrium_class subclass
-!>  @ref vmec_equilibrium.
-      INTEGER, PARAMETER :: equilibrium_vmec_type   = 0
-!>  Type descriptor for the @ref equilibrium_class subclass
-!>  @ref vacuum_equilibrium.
-      INTEGER, PARAMETER :: equilibrium_vacuum_type = 1
-!>  Type descriptor for the @ref equilibrium_class subclass
-!>  @ref siesta_equilibrium.
-      INTEGER, PARAMETER :: equilibrium_siesta_type = 2
 
 !*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
@@ -47,20 +31,192 @@
 !>  @par Sub Classes:
 !>  @ref vmec_equilibrium
 !-------------------------------------------------------------------------------
-      TYPE equilibrium_class
-!>  Type descirptor of the equilibrium subclass type.
-!>  @par Possible values are:
-!>  * @ref equilibrium_no_type
-!>  * @ref equilibrium_vmec_type
-         INTEGER                      :: type = equilibrium_no_type
+      TYPE, ABSTRACT :: equilibrium_class
 !>  Controls if an equilibrium is forced to be resolved or not.
-         LOGICAL                      :: force_solve
-!>  An instance of a @ref vmec_equilibrium object.
-         TYPE (vmec_class), POINTER   :: vmec => null()
-!>  An instance of a @ref vacuum_equilibrium object.
-         TYPE (vacuum_class), POINTER :: vacuum => null()
-!>  An instance of a @ref vacuum_equilibrium object.
-         TYPE (siesta_class), POINTER :: siesta => null()
+         LOGICAL :: force_solve
+      CONTAINS
+         PROCEDURE (equilibrium_set_param), DEFERRED         ::                &
+     &      set_param
+         PROCEDURE                                           ::                &
+     &      set_magnetic_cache_response =>                                     &
+     &         equilibrium_set_magnetic_cache_response
+         PROCEDURE                                           ::                &
+     &      set_magnetic_cache_point =>                                        &
+     &         equilibrium_set_magnetic_cache_point
+         PROCEDURE (equilibrium_get_param_id), DEFERRED      ::                &
+     &      get_param_id
+         PROCEDURE (equilibrium_get_param_value), DEFERRED   ::                &
+     &      get_param_value
+         PROCEDURE (equilibrium_get_param_name), DEFERRED    ::                &
+     &      get_param_name
+
+         PROCEDURE                                           ::                &
+     &      get_gp_ne_num_hyper_param =>                                       &
+     &         equilibrium_get_gp_ne_num_hyper_param
+         PROCEDURE                                           ::                &
+     &      get_ne_af => equilibrium_get_ne_af
+         PROCEDURE                                           ::                &
+     &      get_gp_ne_ij => equilibrium_get_gp_ne_ij
+         PROCEDURE                                           ::                &
+     &      get_gp_ne_pi => equilibrium_get_gp_ne_pi
+         PROCEDURE                                           ::                &
+     &      get_gp_ne_pp => equilibrium_get_gp_ne_pp
+         GENERIC                                             ::                &
+     &      get_gp_ne => get_gp_ne_ij, get_gp_ne_pi, get_gp_ne_pp
+         PROCEDURE                                           ::                &
+     &      get_ne_cart => equilibrium_get_ne_cart
+         PROCEDURE                                           ::                &
+     &      get_ne_radial => equilibrium_get_ne_radial
+         GENERIC                                             ::                &
+     &      get_ne => get_ne_cart, get_ne_radial
+
+         PROCEDURE                                           ::                &
+     &      get_gp_te_num_hyper_param =>                                       &
+     &         equilibrium_get_gp_te_num_hyper_param
+         PROCEDURE                                           ::                &
+     &      get_te_af => equilibrium_get_te_af
+         PROCEDURE                                           ::                &
+     &      get_gp_te_ij => equilibrium_get_gp_te_ij
+         PROCEDURE                                           ::                &
+     &      get_gp_te_pi => equilibrium_get_gp_te_pi
+         PROCEDURE                                           ::                &
+     &      get_gp_te_pp => equilibrium_get_gp_te_pp
+         GENERIC                                             ::                &
+     &      get_gp_te => get_gp_te_ij, get_gp_te_pi, get_gp_te_pp
+         PROCEDURE                                           ::                &
+     &      get_te_cart => equilibrium_get_te_cart
+         PROCEDURE                                           ::                &
+     &      get_te_radial => equilibrium_get_te_radial
+         GENERIC                                             ::                &
+     &      get_te => get_te_cart, get_te_radial
+
+         PROCEDURE                                           ::                &
+     &      get_gp_ti_num_hyper_param =>                                       &
+     &         equilibrium_get_gp_ti_num_hyper_param
+         PROCEDURE                                           ::                &
+     &      get_ti_af => equilibrium_get_ti_af
+         PROCEDURE                                           ::                &
+     &      get_gp_ti_ij => equilibrium_get_gp_ti_ij
+         PROCEDURE                                           ::                &
+     &      get_gp_ti_pi => equilibrium_get_gp_ti_pi
+         PROCEDURE                                           ::                &
+     &      get_gp_ti_pp => equilibrium_get_gp_ti_pp
+         GENERIC                                             ::                &
+     &      get_gp_ti => get_gp_ti_ij, get_gp_ti_pi, get_gp_ti_pp
+         PROCEDURE                                           ::                &
+     &      get_ti_cart => equilibrium_get_ti_cart
+         PROCEDURE                                           ::                &
+     &      get_ti_radial => equilibrium_get_ti_radial
+         GENERIC                                             ::                &
+     &      get_ti => get_ti_cart, get_ti_radial
+
+         PROCEDURE                                           ::                &
+     &      get_gp_sxrem_num_hyper_param =>                                    &
+     &         equilibrium_get_gp_sxrem_num_hyper_param
+         PROCEDURE                                           ::                &
+     &      get_sxrem_af => equilibrium_get_sxrem_af
+         PROCEDURE                                           ::                &
+     &      get_gp_sxrem_ij => equilibrium_get_gp_sxrem_ij
+         PROCEDURE                                           ::                &
+     &      get_gp_sxrem_pi => equilibrium_get_gp_sxrem_pi
+         PROCEDURE                                           ::                &
+     &      get_gp_sxrem_pp => equilibrium_get_gp_sxrem_pp
+         GENERIC                                             ::                &
+     &      get_gp_sxrem => get_gp_sxrem_ij, get_gp_sxrem_pi,                  &
+     &                      get_gp_sxrem_pp
+         PROCEDURE                                           ::                &
+     &      get_sxrem_cart => equilibrium_get_sxrem_cart
+         PROCEDURE                                           ::                &
+     &      get_sxrem_radial => equilibrium_get_sxrem_radial
+         GENERIC                                             ::                &
+     &      get_sxrem => get_sxrem_cart, get_sxrem_radial
+
+         PROCEDURE                                           ::                &
+     &      get_p_cart => equilibrium_get_p_cart
+         PROCEDURE                                           ::                &
+     &      get_p_radial => equilibrium_get_p_radial
+         GENERIC                                             ::                &
+     &      get_p => get_p_cart, get_p_radial
+
+         PROCEDURE                                           ::                &
+     &      get_B_vec => equilibrium_get_B_vec
+         PROCEDURE                                           ::                &
+     &      get_plasma_edge => equilibrium_get_plasma_edge
+         PROCEDURE                                           ::                &
+     &      get_magnetic_volume_rgrid =>                                       &
+     &         equilibrium_get_magnetic_volume_rgrid
+         PROCEDURE                                           ::                &
+     &      get_magnetic_volume_zgrid =>                                       &
+     &         equilibrium_get_magnetic_volume_zgrid
+         PROCEDURE                                           ::                &
+     &      get_magnetic_volume_jrgrid =>                                      &
+     &         equilibrium_get_magnetic_volume_jrgrid
+         PROCEDURE                                           ::                &
+     &      get_magnetic_volume_jphigrid =>                                    &
+     &         equilibrium_get_magnetic_volume_jphigrid
+         PROCEDURE                                           ::                &
+     &      get_magnetic_volume_jzgrid =>                                      &
+     &         equilibrium_get_magnetic_volume_jzgrid
+         PROCEDURE                                           ::                &
+     &      get_volume_int_element =>                                          &
+     &         equilibrium_get_volume_int_element
+         PROCEDURE                                           ::                &
+     &      get_con_surface_krgrid =>                                          &
+     &         equilibrium_get_con_surface_krgrid
+         PROCEDURE                                           ::                &
+     &      get_con_surface_kphigrid =>                                        &
+     &         equilibrium_get_con_surface_kphigrid
+         PROCEDURE                                           ::                &
+     &      get_con_surface_kzgrid =>                                          &
+     &         equilibrium_get_con_surface_kzgrid
+         PROCEDURE                                           ::                &
+     &      get_area_int_element =>                                            &
+     &         equilibrium_get_area_int_element
+         PROCEDURE (equilibrium_get_ext_currents), DEFERRED  ::                &
+     &      get_ext_currents
+         PROCEDURE                                           ::                &
+     &      get_ext_b_plasma => equilibrium_get_ext_b_plasma
+         PROCEDURE                                           ::                &
+     &      get_grid_size => equilibrium_get_grid_size
+         PROCEDURE                                           ::                &
+     &      get_grid_start => equilibrium_get_grid_start
+         PROCEDURE                                           ::                &
+            get_grid_stop => equilibrium_get_grid_stop
+         PROCEDURE                                           ::                &
+     &      is_scaler_value => equilibrium_is_scaler_value
+         PROCEDURE (equilibrium_is_1d_array), DEFERRED       ::                &
+     &      is_1d_array
+         PROCEDURE                                           ::                &
+     &      equilibrium_is_2d_array => is_2d_array
+         PROCEDURE (equilibrium_is_recon_param), DEFERRED    ::                &
+     &      is_recon_param
+         PROCEDURE                                           ::                &
+     &      is_using_point => equilibrium_is_using_point
+         PROCEDURE                                           ::                &
+     &      converge => equilibrium_converge
+         PROCEDURE                                           ::                &
+     &      read_vac_file => equilibrium_read_vac_file
+         PROCEDURE                                           ::                &
+     &      save_state => equilibrium_save_state
+         PROCEDURE                                           ::                &
+     &      reset_state => equilibrium_reset_state
+         PROCEDURE (equilibrium_write), DEFERRED             :: write
+         PROCEDURE (equilibrium_write_input), DEFERRED       ::                &
+     &      write_input
+         PROCEDURE                                           ::                &
+     &      def_result => equilibrium_def_result
+         PROCEDURE                                           ::                &
+     &      write_init_data => equilibrium_write_init_data
+         PROCEDURE                                           ::                &
+     &      write_step_data => equilibrium_write_step_data
+         PROCEDURE                                           ::                &
+     &      restart => equilibrium_restart
+         PROCEDURE                                           ::                &
+     &      sync_state => equilibrium_sync_state
+         PROCEDURE                                           ::                &
+     &      sync_child => equilibrium_sync_child
+         FINAL                                               ::                &
+     &      equilibrium_destruct
       END TYPE
 
 !*******************************************************************************
@@ -72,9 +228,135 @@
 !>  @ref equilibrium_construct_siesta
 !-------------------------------------------------------------------------------
       INTERFACE equilibrium_construct
-         MODULE PROCEDURE equilibrium_construct_vmec,                          &
-     &                    equilibrium_construct_vacuum,                        &
-     &                    equilibrium_construct_siesta
+         MODULE PROCEDURE equilibrium_construct
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for set_param methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_set_param
+         SUBROUTINE set_param(this, id, i_index, j_index, value,               &
+     &                        eq_comm, state_flags)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(inout) :: this
+         INTEGER, INTENT(in)                      :: id
+         INTEGER, INTENT(in)                      :: i_index
+         INTEGER, INTENT(in)                      :: j_index
+         REAL (rprec), INTENT(in)                 :: value
+         INTEGER, INTENT(in)                      :: eq_comm
+         INTEGER, INTENT(inout)                   :: state_flags
+         END SUBROUTINE
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_param_id methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_param_id
+         FUNCTION get_param_id(this, param_name)
+         IMPORT
+         INTEGER                               :: get_param_id
+         CLASS (equilibrium_class), INTENT(in) :: this
+         CHARACTER (len=*), INTENT(in)         :: param_name
+         END FUNCTION
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_param_name methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_param_name
+         FUNCTION get_param_name(this, id)
+         IMPORT
+         REAL (rprec)                          :: get_param_name
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: id
+         END FUNCTION
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_param_value methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_param_value
+         FUNCTION get_param_value(this, id, i_index, j_index)
+         IMPORT
+         REAL (rprec) :: equilibrium_get_param_value
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: id
+         INTEGER, INTENT(in)                   :: i_index
+         INTEGER, INTENT(in)                   :: j_index
+         END FUNCTION
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_B_vec methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_B_vec
+         FUNCTION get_B_vec(this, x_cart, cyl)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in)  :: this
+         REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+         LOGICAL, INTENT(in)                    :: cyl
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_Int_B_dphi methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_Int_B_dphi
+         FUNCTION get_Int_B_dphi(this, x_cart, cyl)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         REAL (rprec), INTENT(in)              :: r
+         REAL (rprec), INTENT(in)              :: theta
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for get_ext_currents methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_get_ext_currents
+         FUNCTION get_ext_currents(this, num_currents, scale_currents)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER                               :: num_currents
+         LOGICAL, INTENT(out)                  :: scale_currents
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for is_1d_array methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_is_1d_array
+         FUNCTION is_1d_array(this, id)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: id
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for is_recon_param methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_is_recon_param
+         FUNCTION is_recon_param(this, id)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: id
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for write methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_write
+         FUNCTION write(this, iou)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: iou
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Abstract Interface for write_input methods.
+!-------------------------------------------------------------------------------
+      INTERFACE equilibrium_write_input
+         FUNCTION write_input(this, iou)
+         IMPORT
+         CLASS (equilibrium_class), INTENT(in) :: this
+         INTEGER, INTENT(in)                   :: current_step
       END INTERFACE
 
 !-------------------------------------------------------------------------------
@@ -83,93 +365,6 @@
       INTERFACE equilibrium_set_magnetic_cache
          MODULE PROCEDURE equilibrium_set_magnetic_cache_response,             &
      &                    equilibrium_set_magnetic_cache_point
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_ne
-         MODULE PROCEDURE equilibrium_get_ne_cart,                             &
-     &                    equilibrium_get_ne_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium guassian process density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_gp_ne
-         MODULE PROCEDURE equilibrium_get_gp_ne_ij,                            &
-     &                    equilibrium_get_gp_ne_pi,                            &
-     &                    equilibrium_get_gp_ne_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium electron temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_te
-         MODULE PROCEDURE equilibrium_get_te_cart,                             &
-     &                    equilibrium_get_te_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium guassian process electron temperature profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_gp_te
-         MODULE PROCEDURE equilibrium_get_gp_te_ij,                            &
-     &                    equilibrium_get_gp_te_pi,                            &
-     &                    equilibrium_get_gp_te_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_ti
-         MODULE PROCEDURE equilibrium_get_ti_cart,                             &
-     &                    equilibrium_get_ti_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium guassian process ion temperature profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_gp_ti
-         MODULE PROCEDURE equilibrium_get_gp_ti_ij,                            &
-     &                    equilibrium_get_gp_ti_pi,                            &
-     &                    equilibrium_get_gp_ti_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the effective charge profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_ze
-         MODULE PROCEDURE equilibrium_get_ze_cart,                             &
-     &                    equilibrium_get_ze_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium soft x-ray emissivity profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_sxrem
-         MODULE PROCEDURE equilibrium_get_sxrem_cart,                          &
-     &                    equilibrium_get_sxrem_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium guassian process soft x-ray emissivity profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_gp_sxrem
-         MODULE PROCEDURE equilibrium_get_gp_sxrem_ij,                         &
-     &                    equilibrium_get_gp_sxrem_pi,                         &
-     &                    equilibrium_get_gp_sxrem_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium pressure profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_p
-         MODULE PROCEDURE equilibrium_get_p_cart,                              &
-     &                    equilibrium_get_p_radial
       END INTERFACE
 
       CONTAINS
@@ -186,13 +381,12 @@
 !>  @param[in] force_solve If true, forces the equilbirum to resolve every time.
 !>  @returns A pointer to a constructed @ref equilibrium_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_construct_vmec(vmec_object, force_solve)
+      FUNCTION equilibrium_construct(force_solve)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), POINTER :: equilibrium_construct_vmec
-      TYPE (vmec_class), POINTER        :: vmec_object
+      TYPE (equilibrium_class), POINTER :: equilibrium_construct
       LOGICAL, INTENT(in)               :: force_solve
 
 !  local variables
@@ -201,87 +395,11 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      ALLOCATE(equilibrium_construct_vmec)
+      ALLOCATE(equilibrium_construct)
 
-      equilibrium_construct_vmec%type = equilibrium_vmec_type
-      equilibrium_construct_vmec%vmec => vmec_object
-      equilibrium_construct_vmec%force_solve = force_solve
+      equilibrium_construct%force_solve = force_solve
 
       CALL profiler_set_stop_time('equilibrium_construct_vmec',                &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Construct a @ref equilibrium_class containing a
-!>  @ref vacuum_equilibrium object.
-!>
-!>  Allocates memory and initializes a @ref equilibrium_class object.
-!>
-!>  @param[in] vacuum_object An instance of a @ref vacuum_equilibrium subclass.
-!>  @param[in] force_solve   If true, forces the equilbirum to resolve every
-!>                           time.
-!>  @returns A pointer to a constructed @ref equilibrium_class object.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_construct_vacuum(vacuum_object, force_solve)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), POINTER :: equilibrium_construct_vacuum
-      TYPE (vacuum_class), POINTER      :: vacuum_object
-      LOGICAL, INTENT(in)               :: force_solve
-
-!  local variables
-      REAL (rprec)                      :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      ALLOCATE(equilibrium_construct_vacuum)
-
-      equilibrium_construct_vacuum%type = equilibrium_vacuum_type
-      equilibrium_construct_vacuum%vacuum => vacuum_object
-      equilibrium_construct_vacuum%force_solve = force_solve
-
-      CALL profiler_set_stop_time('equilibrium_construct_vacuum',              &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Construct a @ref equilibrium_class containing a
-!>  @ref siesta_equilibrium object.
-!>
-!>  Allocates memory and initializes a @ref equilibrium_class object.
-!>
-!>  @param[in] siesta_object An instance of a @ref siesta_equilibrium subclass.
-!>  @param[in] force_solve   If true, forces the equilbirum to resolve every
-!>                           time.
-!>  @returns A pointer to a constructed @ref equilibrium_class object.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_construct_siesta(siesta_object, force_solve)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), POINTER :: equilibrium_construct_siesta
-      TYPE (siesta_class), POINTER      :: siesta_object
-      LOGICAL, INTENT(in)               :: force_solve
-
-!  local variables
-      REAL (rprec)                      :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      ALLOCATE(equilibrium_construct_siesta)
-
-      equilibrium_construct_siesta%type = equilibrium_siesta_type
-      equilibrium_construct_siesta%siesta => siesta_object
-      equilibrium_construct_siesta%force_solve = force_solve
-
-      CALL profiler_set_stop_time('equilibrium_construct_siesta',              &
      &                            start_time)
 
       END FUNCTION
@@ -301,95 +419,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), POINTER :: this
+      TYPE (equilibrium_class), INTENT(inout) :: this
 
 !  Start of executable code
-      IF (ASSOCIATED(this%vmec)) THEN
-         CALL vmec_destruct(this%vmec)
-         this%vmec => null()
-      END IF
-
-      IF (ASSOCIATED(this%vacuum)) THEN
-         CALL vacuum_destruct(this%vacuum)
-         this%vacuum => null()
-      END IF
-
-      IF (ASSOCIATED(this%siesta)) THEN
-         CALL siesta_destruct(this%siesta)
-         this%siesta => null()
-      END IF
-
-      this%type = equilibrium_no_type
       this%force_solve = .false.
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
 !*******************************************************************************
 !  SETTER SUBROUTINES
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  @brief Sets the value of a reconstruction equilibrium parameter.
-!>
-!>  This method is virtual. The actual setting of the parameter should be
-!>  handled by a subclass method. The subclass is responsible updating the
-!>  state flags.
-!>  @see vmec_equilibrium::vmec_set_param
-!>  @see vacuum_equilibrium::vacuum_set_param
-!>  @see siesta_equilibrium::siesta_set_param
-!>
-!>  @param[inout] this        A @ref equilibrium_class instance.
-!>  @param[in]    id          ID of the parameter.
-!>  @param[in]    i_index     The ith index of the parameter.
-!>  @param[in]    j_index     The jth index of the parameter.
-!>  @param[in]    value       The value of the parameter.
-!>  @param[in]    eq_comm     MPI communicator for the child equilibrium processes.
-!>  @param[inout] state_flags Bitwise flags to indicate which parts of the model
-!>                            changed.
-!-------------------------------------------------------------------------------
-      SUBROUTINE equilibrium_set_param(this, id, i_index, j_index,             &
-     &                                 value, eq_comm, state_flags)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                     :: id
-      INTEGER, INTENT(in)                     :: i_index
-      INTEGER, INTENT(in)                     :: j_index
-      REAL (rprec), INTENT(in)                :: value
-      INTEGER, INTENT(in)                     :: eq_comm
-      INTEGER, INTENT(inout)                  :: state_flags
-
-!  local variables
-      REAL (rprec)                            :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-!  Set param needs to come first so that function gets executed. Otherwise, when
-!  this%not_converged was true, the expression will evaluate to false all the
-!  time and not bother calling vmec_set_param.
-         CASE (equilibrium_vmec_type)
-            CALL vmec_set_param(this%vmec, id, i_index, j_index, value,        &
-     &                          eq_comm, state_flags)
-
-         CASE (equilibrium_vacuum_type)
-            CALL vacuum_set_param(this%vacuum, id, i_index, value)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_set_param(this%siesta, id, i_index, j_index,           &
-     &                            value, eq_comm, state_flags)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_set_param', start_time)
-
-      END SUBROUTINE
-
 !-------------------------------------------------------------------------------
 !>  @brief Sets the magnetic cache of the equilibrium for the magnetic responce.
 !>
@@ -417,7 +456,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout)    :: this
+      CLASS (equilibrium_class), INTENT(inout)   :: this
       TYPE (magnetic_response_class), INTENT(in) :: response_object
       INTEGER, INTENT(in)                        :: state_flags
 
@@ -426,26 +465,6 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_set_magnetic_cache(this%vmec, response_object)
-
-!  If the equilibrium is already converged, compute the magnetic cache as well.
-            IF (.not.BTEST(state_flags, model_state_vmec_flag)) THEN
-               CALL vmec_set_magnetic_cache(this%vmec)
-            END IF
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_set_magnetic_cache(this%siesta, response_object)
-
-!  If the equilibrium is already converged, compute the magnetic cache as well.
-            IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
-               CALL siesta_set_magnetic_cache(this%siesta)
-            END IF
-
-      END SELECT
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_set_magnetic_cache_response', start_time)
@@ -477,35 +496,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
-      LOGICAL, INTENT(in)                     :: use_axi
-      INTEGER, INTENT(in)                     :: state_flags
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      LOGICAL, INTENT(in)                      :: use_axi
+      INTEGER, INTENT(in)                      :: state_flags
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_set_magnetic_cache(this%vmec, use_axi)
-
-!  If the equilibrium is already converged, compute the magnetic cache as well.
-            IF (.not.BTEST(state_flags, model_state_vmec_flag)) THEN
-               CALL vmec_set_magnetic_cache(this%vmec)
-            END IF
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_set_magnetic_cache(this%siesta, use_axi)
-
-!  If the equilibrium is already converged, compute the magnetic cache as well.
-            IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
-               CALL siesta_set_magnetic_cache(this%siesta)
-            END IF
-
-      END SELECT
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_set_magnetic_cache_point', start_time)
@@ -515,166 +514,6 @@
 !*******************************************************************************
 !  GETTER SUBROUTINES
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  @brief Get the id for a reconstruction parameter.
-!>
-!>  This method is virtual. The actual getting of the reconstruction parameter
-!>  id should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_param_id
-!>  @see vacuum_equilibrium::vacuum_get_param_id
-!>  @see siesta_equilibrium::siesta_get_param_id
-!>
-!>  @param[in] this       A @ref equilibrium_class instance.
-!>  @param[in] param_name Name of a reconstruction parameter.
-!>  @returns The id for a reconstruction parameter.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_param_id(this, param_name)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      INTEGER :: equilibrium_get_param_id
-      TYPE (equilibrium_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)        :: param_name
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_param_id =                                         &
-     &         vmec_get_param_id(this%vmec, param_name)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_get_param_id =                                         &
-     &         vacuum_get_param_id(this%vacuum, param_name)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_param_id =                                         &
-     &         siesta_get_param_id(this%siesta, param_name)
-
-         CASE DEFAULT
-            equilibrium_get_param_id = data_no_id
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_param_id',                  &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the value of a reconstruction equilibrium parameter.
-!>
-!>  This method is virtual. The actual getting of the reconstruction parameter
-!>  value should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_param_value
-!>  @see vacuum_equilibrium::vacuum_get_param_value
-!>  @see siesta_equilibrium::siesta_get_param_value
-!>
-!>  @param[in] this    A @ref equilibrium_class instance.
-!>  @param[in] id      ID of the parameter.
-!>  @param[in] i_index The ith index of the parameter.
-!>  @param[in] j_index The jth index of the parameter.
-!>  @returns The value of the parameter.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_param_value(this, id, i_index, j_index)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: equilibrium_get_param_value
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
-      INTEGER, INTENT(in)                  :: i_index
-      INTEGER, INTENT(in)                  :: j_index
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_param_value =                                      &
-     &         vmec_get_param_value(this%vmec, id, i_index, j_index)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_get_param_value =                                      &
-     &         vacuum_get_param_value(this%vacuum, id, i_index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_param_value =                                      &
-     &         siesta_get_param_value(this%siesta, id, i_index, j_index)
-
-         CASE DEFAULT
-            equilibrium_get_param_value = 0.0
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_param_value',               &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the name of a reconstruction equilibrium parameter.
-!>
-!>  This method is virtual. The actual getting of the reconstruction parameter
-!>  name should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_param_name
-!>  @see vacuum_equilibrium::vacuum_get_param_name
-!>  @see siesta_equilibrium::siesta_get_param_name
-!>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] id   ID of the parameter.
-!>  @returns The name of the parameter.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_param_name(this, id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CHARACTER(len=data_name_length) :: equilibrium_get_param_name
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_param_name =                                       &
-     &         vmec_get_param_name(this%vmec, id)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_get_param_name =                                       &
-     &         vacuum_get_param_name(this%vacuum, id)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_param_name =                                       &
-     &         siesta_get_param_name(this%siesta, id)
-
-         CASE DEFAULT
-            equilibrium_get_param_name = ''
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_param_name',                &
-     &                            start_time)
-
-      END FUNCTION
-
 !-------------------------------------------------------------------------------
 !>  @brief Get the number of electron density gp kernel hyper parameters.
 !>
@@ -700,20 +539,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ne_num_hyper_param =                            &
-     &         vmec_get_gp_ne_num_hyper_param(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ne_num_hyper_param =                            &
-     &         siesta_get_gp_ne_num_hyper_param(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ne_num_hyper_param = 0
-
-      END SELECT
+      equilibrium_get_gp_ne_num_hyper_param = 0
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_gp_ne_num_hyper_param', start_time)
@@ -745,18 +571,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ne_af => vmec_get_ne_af(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ne_af => siesta_get_ne_af(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_ne_af => null()
-
-      END SELECT
+      equilibrium_get_ne_af => null()
 
       END FUNCTION
 
@@ -791,19 +606,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ne_ij = vmec_get_gp_ne(this%vmec, i, j)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ne_ij = siesta_get_gp_ne(this%siesta,           &
-     &                                                  i, j)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ne_ij = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ne_ij = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ne_ij',                  &
      &                            start_time)
@@ -841,20 +644,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ne_pi = vmec_get_gp_ne(this%vmec,               &
-     &                                                x_cart, i)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ne_pi = siesta_get_gp_ne(this%siesta,           &
-     &                                                  x_cart, i)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ne_pi = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ne_pi = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ne_pi',                  &
      &                            start_time)
@@ -893,20 +683,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ne_pp = vmec_get_gp_ne(this%vmec,               &
-     &                                                x_cart, y_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ne_pp = siesta_get_gp_ne(this%siesta,           &
-     &                                                  x_cart, y_cart)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ne_pp = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ne_pp = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ne_pp',                  &
      &                            start_time)
@@ -942,18 +719,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ne_cart = vmec_get_ne(this%vmec, x_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ne_cart = siesta_get_ne(this%siesta, x_cart)
-
-         CASE DEFAULT
-            equilibrium_get_ne_cart = 0.0
-
-      END SELECT
+      equilibrium_get_ne_cart = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_ne_cart',                   &
      &                            start_time)
@@ -989,18 +755,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ne_radial = vmec_get_ne(this%vmec, r)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ne_radial = siesta_get_ne(this%siesta, r)
-
-         CASE DEFAULT
-            equilibrium_get_ne_radial = 0.0
-
-         END SELECT
+      equilibrium_get_ne_radial = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_ne_radial',                 &
      &                            start_time)
@@ -1032,20 +787,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_te_num_hyper_param =                            &
-     &         vmec_get_gp_te_num_hyper_param(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_te_num_hyper_param =                            &
-     &         siesta_get_gp_te_num_hyper_param(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_gp_te_num_hyper_param = 0
-
-      END SELECT
+      equilibrium_get_gp_te_num_hyper_param = 0
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_gp_te_num_hyper_param', start_time)
@@ -1077,18 +819,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_te_af => vmec_get_te_af(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_te_af => siesta_get_te_af(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_te_af => null()
-
-      END SELECT
+      equilibrium_get_te_af => null()
 
       CALL profiler_set_stop_time('equilibrium_get_te_af', start_time)
 
@@ -1125,19 +856,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_te_ij = vmec_get_gp_te(this%vmec, i, j)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_te_ij = siesta_get_gp_te(this%siesta,           &
-     &                                                  i, j)
-
-         CASE DEFAULT
-            equilibrium_get_gp_te_ij = 0.0
-
-      END SELECT
+      equilibrium_get_gp_te_ij = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_te_ij',                  &
      &                            start_time)
@@ -1176,20 +895,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_te_pi = vmec_get_gp_te(this%vmec,               &
-     &                                                x_cart, i)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_te_pi = siesta_get_gp_te(this%siesta,           &
-     &                                                  x_cart, i)
-
-         CASE DEFAULT
-            equilibrium_get_gp_te_pi = 0.0
-
-      END SELECT
+      equilibrium_get_gp_te_pi = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_te_pi',                  &
      &                            start_time)
@@ -1228,20 +934,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_te_pp = vmec_get_gp_te(this%vmec,               &
-     &                                                x_cart, y_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_te_pp = siesta_get_gp_te(this%siesta,           &
-     &                                                  x_cart, y_cart)
-
-         CASE DEFAULT
-            equilibrium_get_gp_te_pp = 0.0
-
-      END SELECT
+      equilibrium_get_gp_te_pp = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_te_pp',                  &
      &                            start_time)
@@ -1277,18 +970,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_te_cart = vmec_get_te(this%vmec, x_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_te_cart = siesta_get_te(this%siesta, x_cart)
-
-         CASE DEFAULT
-            equilibrium_get_te_cart = 0.0
-
-      END SELECT
+      equilibrium_get_te_cart = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_te_cart',                   &
      &                            start_time)
@@ -1324,18 +1006,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_te_radial = vmec_get_te(this%vmec, r)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_te_radial = siesta_get_te(this%siesta, r)
-
-         CASE DEFAULT
-            equilibrium_get_te_radial = 0.0
-
-      END SELECT
+      equilibrium_get_te_radial = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_te_radial',                 &
      &                            start_time)
@@ -1367,20 +1038,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ti_num_hyper_param =                            &
-     &         vmec_get_gp_ti_num_hyper_param(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ti_num_hyper_param =                            &
-     &         siesta_get_gp_ti_num_hyper_param(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ti_num_hyper_param = 0
-
-      END SELECT
+      equilibrium_get_gp_ti_num_hyper_param = 0
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_gp_ti_num_hyper_param', start_time)
@@ -1412,18 +1070,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ti_af => vmec_get_ti_af(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ti_af => siesta_get_ti_af(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_ti_af => null()
-
-      END SELECT
+      equilibrium_get_ti_af => null()
 
       CALL profiler_set_stop_time('equilibrium_get_ti_af', start_time)
 
@@ -1460,19 +1107,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ti_ij = vmec_get_gp_ti(this%vmec, i, j)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ti_ij = siesta_get_gp_ti(this%siesta,           &
-     &                                                  i, j)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ti_ij = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ti_ij = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ti_ij',                  &
      &                            start_time)
@@ -1510,20 +1145,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ti_pi = vmec_get_gp_ti(this%vmec,               &
-     &                                                x_cart, i)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ti_pi = siesta_get_gp_ti(this%siesta,           &
-     &                                                  x_cart, i)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ti_pi = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ti_pi = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ti_pi',                  &
      &                            start_time)
@@ -1562,20 +1184,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_ti_pp = vmec_get_gp_ti(this%vmec,               &
-     &                                                x_cart, y_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_ti_pp = siesta_get_gp_ti(this%siesta,           &
-     &                                                  x_cart, y_cart)
-
-         CASE DEFAULT
-            equilibrium_get_gp_ti_pp = 0.0
-
-      END SELECT
+      equilibrium_get_gp_ti_pp = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_ti_pp',                  &
      &                            start_time)
@@ -1611,18 +1220,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ti_cart = vmec_get_ti(this%vmec, x_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ti_cart = siesta_get_ti(this%siesta, x_cart)
-
-         CASE DEFAULT
-            equilibrium_get_ti_cart = 0.0
-
-      END SELECT
+      equilibrium_get_ti_cart = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_ti_cart',                   &
      &                            start_time)
@@ -1658,114 +1256,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ti_radial = vmec_get_ti(this%vmec, r)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ti_radial = siesta_get_ti(this%siesta, r)
-
-         CASE DEFAULT
-            equilibrium_get_ti_radial = 0.0
-
-      END SELECT
+      equilibrium_get_ti_radial = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_ti_radial',                 &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the effective charge at a cartesian position.
-!>
-!>  This method is virtual. The actual getting of the effective charge
-!>  should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_ze
-!>  @see siesta_equilibrium::siesta_get_ze
-!>
-!>  @param[in] this   A @ref equilibrium_class instance.
-!>  @param[in] x_cart Cartesian position to get the effective charge at.
-!>  @returns The effective charge at x_cart.
-!>  @note  Note the default choice for the effective charge is 1.0
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_ze_cart(this, x_cart)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: equilibrium_get_ze_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-
-!  local variables
-      REAL (rprec)                           :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ze_cart = vmec_get_ze(this%vmec, x_cart)
-
-! @TODO add ze to siesta
-!         CASE (equilibrium_siesta_type)
-!            equilibrium_get_ze_cart = siesta_get_ze(this%siesta, x_cart)
-
-         CASE DEFAULT
-            equilibrium_get_ze_cart = 1.0
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_ze_cart',                   &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the effective charge at a radial position.
-!>
-!>  This method is virtual. The actual getting of the effective charge
-!>  should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_ze
-!>  @see siesta_equilibrium::siesta_get_ze
-!>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] r    Cartesian position to get the effective charge at.
-!>  @returns The effective charge at r.
-!>  @note Note the default choice for the effective charge is 1.0
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_ze_radial(this, r)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: equilibrium_get_ze_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ze_radial = vmec_get_ze(this%vmec, r)
-
-! @TODO add ze to siesta
-!         CASE (equilibrium_siesta_type)
-!            equilibrium_get_ze_radial = siesta_get_ze(this%siesta, r)
-
-         CASE DEFAULT
-            equilibrium_get_ze_radial = 1.0
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_ze_radial',                 &
      &                            start_time)
 
       END FUNCTION
@@ -1797,20 +1290,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_sxrem_num_hyper_param =                         &
-     &         vmec_get_gp_sxrem_num_hyper_param(this%vmec, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_sxrem_num_hyper_param =                         &
-     &         siesta_get_gp_sxrem_num_hyper_param(this%siesta, index)
-
-         CASE DEFAULT
-            equilibrium_get_gp_sxrem_num_hyper_param = 0
-
-      END SELECT
+      equilibrium_get_gp_sxrem_num_hyper_param = 0
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_gp_sxrem_num_hyper_param', start_time)
@@ -1844,20 +1324,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_sxrem_af => vmec_get_sxrem_af(this%vmec,           &
-     &                                                    index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_sxrem_af => siesta_get_sxrem_af(this%siesta,       &
-     &                                                      index)
-
-         CASE DEFAULT
-            equilibrium_get_sxrem_af => null()
-
-      END SELECT
+      equilibrium_get_sxrem_af => null()
 
       END FUNCTION
 
@@ -1894,20 +1361,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_sxrem_ij =                                      &
-     &         vmec_get_gp_sxrem(this%vmec, i, j, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_sxrem_ij =                                      &
-     &         siesta_get_gp_sxrem(this%siesta, i, j, index)
-
-         CASE DEFAULT
-            equilibrium_get_gp_sxrem_ij = 0.0
-
-      END SELECT
+      equilibrium_get_gp_sxrem_ij = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_sxrem_ij',               &
      &                            start_time)
@@ -1948,20 +1402,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_sxrem_pi =                                      &
-     &         vmec_get_gp_sxrem(this%vmec, x_cart, i, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_sxrem_pi =                                      &
-     &         siesta_get_gp_sxrem(this%siesta, x_cart, i, index)
-
-         CASE DEFAULT
-            equilibrium_get_gp_sxrem_pi = 0.0
-
-      END SELECT
+      equilibrium_get_gp_sxrem_pi = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_sxrem_pi',                &
      &                            start_time)
@@ -2002,20 +1443,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_gp_sxrem_pp =                                      &
-     &         vmec_get_gp_sxrem(this%vmec, x_cart, y_cart, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_gp_sxrem_pp =                                      &
-     &         siesta_get_gp_sxrem(this%siesta, x_cart, y_cart, index)
-
-         CASE DEFAULT
-            equilibrium_get_gp_sxrem_pp = 0.0
-
-      END SELECT
+      equilibrium_get_gp_sxrem_pp = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_gp_sxrem_pp',               &
      &                            start_time)
@@ -2053,20 +1481,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_sxrem_cart = vmec_get_sxrem(this%vmec,             &
-     &                                                  x_cart, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_sxrem_cart = siesta_get_sxrem(this%siesta,         &
-     &                                                    x_cart, index)
-
-         CASE DEFAULT
-            equilibrium_get_sxrem_cart = 0.0
-
-      END SELECT
+      equilibrium_get_sxrem_cart = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_sxrem_cart',                &
      &                            start_time)
@@ -2104,20 +1519,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_sxrem_radial = vmec_get_sxrem(this%vmec,           &
-     &                                                    r, index)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_sxrem_radial = siesta_get_sxrem(this%siesta,       &
-     &                                                      r, index)
-
-         CASE DEFAULT
-            equilibrium_get_sxrem_radial = 0.0
-
-      END SELECT
+      equilibrium_get_sxrem_radial = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_sxrem_radial',              &
      &                            start_time)
@@ -2153,19 +1555,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_p_cart = vmec_get_p(this%vmec, x_cart)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_p_cart = siesta_get_p(this%siesta, x_cart,         &
-     &                                            .false.)
-
-         CASE DEFAULT
-            equilibrium_get_p_cart = 0.0
-
-      END SELECT
+      equilibrium_get_p_cart = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_p_cart', start_time)
 
@@ -2200,130 +1590,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_p_radial = vmec_get_p(this%vmec, r)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_p_radial = siesta_get_p(this%siesta, r,            &
-     &                                              .false.)
-
-         CASE DEFAULT
-            equilibrium_get_p_radial = 0.0
-
-      END SELECT
+      equilibrium_get_p_radial = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_p_radial',                  &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the magnetic field vector at a position.
-!>
-!>  This method is virtual. The actual getting of the magnetic field vector
-!>  should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_get_B_vec
-!>  @see vacuum_equilibrium::vacuum_get_B_vec
-!>  @see siesta_equilibrium::siesta_get_B_vec
-!>
-!>  @param[in] this   A @ref equilibrium_class instance.
-!>  @param[in] x_cart Cartesian position to get the magnetic field vector at.
-!>  @param[in] cyl    Flag that specifies if the bfield should be returned in
-!>                    cartesian or cylindical coordinates.
-!>  @returns The magnetic field vector at x_cart.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_B_vec(this, x_cart, cyl)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(3) :: equilibrium_get_B_vec
-      TYPE (equilibrium_class), INTENT(in)   :: this
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-      LOGICAL, INTENT(in)                    :: cyl
-
-!  local variables
-      REAL (rprec)                           :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_B_vec = vmec_get_B_vec(this%vmec, x_cart,          &
-     &                                             cyl)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_get_B_vec = vacuum_get_B_vec(this%vacuum,              &
-     &                                               x_cart, cyl)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_B_vec = siesta_get_B_vec(this%siesta,              &
-     &                                               x_cart, cyl)
-
-         CASE DEFAULT
-            equilibrium_get_B_vec = 0.0
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_B_vec', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the loop integrated magnetic field at a position.
-!>
-!>  This method is virtual. The actual getting of the loop integrated magnetic
-!>  field should be handled by a subclass method. Returns the closed loop
-!>  integration of the magnetic field to determine the enclosed current.
-!>  @see vmec_equilibrium::vmec_get_Int_B_dphi
-!>  @see vacuum_equilibrium::vacuum_get_Int_B_dphi
-!>  @see siesta_equilibrium::siesta_get_Int_B_dphi
-!>
-!>  @param[in] this  A @ref equilibrium_class instance.
-!>  @param[in] r     Radial position to integrate about.
-!>  @param[in] theta Poloidal angle to integrate about.
-!>  @returns The loop integrated magnetic field at x_cart.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_Int_B_dphi(this, r, theta)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: equilibrium_get_Int_B_dphi
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
-      REAL (rprec), INTENT(in)             :: theta
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_Int_B_dphi =                                       &
-     &         vmec_get_Int_B_dphi(this%vmec, r, theta)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_get_Int_B_dphi =                                       &
-     &         vacuum_get_Int_B_dphi(this%vacuum, r, theta)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_Int_B_dphi =                                       &
-     &         siesta_get_Int_B_dphi(this%siesta, r, theta)
-
-         CASE DEFAULT
-            equilibrium_get_Int_B_dphi = 0.0
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_Int_B_dphi',                &
      &                            start_time)
 
       END FUNCTION
@@ -2367,22 +1636,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_plasma_edge =                                      &
-     &         vmec_get_plasma_edge(this%vmec, phi, r, z)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_plasma_edge =                                      &
-     &         siesta_get_plasma_edge(this%siesta, phi, r, z)
-
-         CASE DEFAULT
-            equilibrium_get_plasma_edge = 0
-            r => null()
-            z => null()
-
-      END SELECT
+      equilibrium_get_plasma_edge = 0
+      r => null()
+      z => null()
 
       CALL profiler_set_stop_time('equilibrium_get_plasma_edge',               &
      &                            start_time)
@@ -2415,20 +1671,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_magnetic_volume_rgrid =>                           &
-     &         vmec_get_magnetic_volume_rgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_magnetic_volume_rgrid =>                           &
-     &         siesta_get_magnetic_volume_rgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_magnetic_volume_rgrid => null()
-
-      END SELECT
+      equilibrium_get_magnetic_volume_rgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_magnetic_volume_rgrid', start_time)
@@ -2461,20 +1704,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_magnetic_volume_zgrid =>                           &
-     &         vmec_get_magnetic_volume_zgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_magnetic_volume_zgrid =>                           &
-     &         siesta_get_magnetic_volume_zgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_magnetic_volume_zgrid => null()
-
-      END SELECT
+      equilibrium_get_magnetic_volume_zgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_magnetic_volume_zgrid', start_time)
@@ -2507,20 +1737,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_magnetic_volume_jrgrid =>                          &
-     &         vmec_get_magnetic_volume_jrgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_magnetic_volume_jrgrid =>                          &
-     &         siesta_get_magnetic_volume_jrgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_magnetic_volume_jrgrid => null()
-
-      END SELECT
+      equilibrium_get_magnetic_volume_jrgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_magnetic_volume_jrgrid', start_time)
@@ -2553,20 +1770,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_magnetic_volume_jphigrid =>                        &
-     &         vmec_get_magnetic_volume_jphigrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_magnetic_volume_jphigrid =>                        &
-     &         siesta_get_magnetic_volume_jphigrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_magnetic_volume_jphigrid => null()
-
-      END SELECT
+      equilibrium_get_magnetic_volume_jphigrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_magnetic_volume_jphigrid', start_time)
@@ -2599,20 +1803,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_magnetic_volume_jzgrid =>                          &
-     &         vmec_get_magnetic_volume_jzgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_magnetic_volume_jzgrid =>                          &
-     &         siesta_get_magnetic_volume_jzgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_magnetic_volume_jzgrid => null()
-
-      END SELECT
+      equilibrium_get_magnetic_volume_jzgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_magnetic_volume_jzgrid', start_time)
@@ -2644,20 +1835,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-        CASE (equilibrium_vmec_type)
-            equilibrium_get_volume_int_element =                               &
-     &         vmec_get_volume_int_element(this%vmec)
-
-        CASE (equilibrium_siesta_type)
-           equilibrium_get_volume_int_element =                               &
-     &         siesta_get_volume_int_element(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_volume_int_element = 0.0
-
-      END SELECT
+      equilibrium_get_volume_int_element = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_volume_int_element',        &
      &                            start_time)
@@ -2690,20 +1868,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_con_surface_krgrid =>                              &
-     &         vmec_get_con_surface_krgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_con_surface_krgrid =>                              &
-     &         siesta_get_con_surface_krgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_con_surface_krgrid => null()
-
-      END SELECT
+      equilibrium_get_con_surface_krgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_con_surface_krgrid', start_time)
@@ -2736,20 +1901,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_con_surface_kphigrid =>                            &
-     &         vmec_get_con_surface_kphigrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_con_surface_kphigrid =>                            &
-     &         siesta_get_con_surface_kphigrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_con_surface_kphigrid => null()
-
-      END SELECT
+      equilibrium_get_con_surface_kphigrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_con_surface_kphigrid', start_time)
@@ -2782,20 +1934,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_con_surface_kzgrid =>                              &
-     &         vmec_get_con_surface_kzgrid(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_con_surface_kzgrid =>                              &
-     &         siesta_get_con_surface_kzgrid(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_con_surface_kzgrid => null()
-
-      END SELECT
+      equilibrium_get_con_surface_kzgrid => null()
 
       CALL profiler_set_stop_time(                                             &
      &        'equilibrium_get_con_surface_kzgrid', start_time)
@@ -2827,89 +1966,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_area_int_element =                                 &
-     &         vmec_get_area_int_element(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_area_int_element =                                 &
-     &         siesta_get_area_int_element(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_area_int_element = 0.0
-
-      END SELECT
+      equilibrium_get_area_int_element = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_area_int_element',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get external current.
-!>
-!>  This method is virtual. The actual getting of the external current should be
-!>  handled by a subclass method. To void extra memory operations, arrays are
-!>  returned as pointers. The memory management is handled by the equilibrium
-!>  subclass instance. If the equilibrium has no external currents return a
-!>  null() pointer or don't override this method. MAKEGRID has a mode where
-!>  currents maybe scaled. Inform the signal using this to scale the currents
-!>  if need be.
-!>  @see vmec_equilibrium::vmec_get_ext_currents
-!>  @see vacuum_equilibrium::vacuum_get_ext_currents
-!>  @see siesta_equilibrium::siesta_get_ext_currents
-!>
-!>  @param[in]  this           A @ref equilibrium_class instance.
-!>  @param[in]  num_currents   Forces the number of currents to return if
-!>                             greater than zero.
-!>  @param[out] scale_currents Informs the caller that currents need to be
-!>                             scaled.
-!>  @returns The external currents.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_ext_currents(this, num_currents,                &
-     &                                      scale_currents)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER  ::                                  &
-     &   equilibrium_get_ext_currents
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER                              :: num_currents
-      LOGICAL, INTENT(out)                 :: scale_currents
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ext_currents =>                                    &
-     &         vmec_get_ext_currents(this%vmec, num_currents,                  &
-     &                               scale_currents)
-
-         CASE (equilibrium_vacuum_type)
-!  Vacuum equilibira always return currents. No need to force it.
-            equilibrium_get_ext_currents =>                                    &
-     &         vacuum_get_ext_currents(this%vacuum, scale_currents)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ext_currents =>                                    &
-     &         siesta_get_ext_currents(this%siesta, num_currents,              &
-     &                                 scale_currents)
-
-         CASE DEFAULT
-            scale_currents = .false.
-            equilibrium_get_ext_currents => null()
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_get_ext_currents',              &
      &                            start_time)
 
       END FUNCTION
@@ -2944,20 +2003,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_ext_b_plasma =                                     &
-     &         vmec_get_ext_b_plasma(this%vmec, position, axi_only)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_ext_b_plasma =                                     &
-     &         siesta_get_ext_b_plasma(this%siesta, position, axi_only)
-
-         CASE DEFAULT
-            equilibrium_get_ext_b_plasma = 0.0
-
-      END SELECT
+      equilibrium_get_ext_b_plasma = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_ext_b_plasma',              &
      &                            start_time)
@@ -2989,19 +2035,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_grid_size = vmec_get_grid_size(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_grid_size =                                        &
-     &         siesta_get_grid_size(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_grid_size = 0
-
-      END SELECT
+      equilibrium_get_grid_size = 0
 
       CALL profiler_set_stop_time('equilibrium_get_grid_size',                 &
      &                            start_time)
@@ -3033,19 +2067,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_grid_start = vmec_get_grid_start(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_grid_start =                                       &
-     &         siesta_get_grid_start(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_grid_start = 0.0
-
-      END SELECT
+      equilibrium_get_grid_start = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_grid_start',                &
      &                            start_time)
@@ -3077,19 +2099,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_get_grid_stop = vmec_get_grid_stop(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_get_grid_stop =                                        &
-     &         siesta_get_grid_stop(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_get_grid_stop = 0.0
-
-      END SELECT
+      equilibrium_get_grid_stop = 0.0
 
       CALL profiler_set_stop_time('equilibrium_get_grid_stop',                 &
      &                            start_time)
@@ -3126,73 +2136,10 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_is_scaler_value =                                      &
-     &         vmec_is_scaler_value(this%vmec, id)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_is_scaler_value =                                      &
-     &         siesta_is_scaler_value(this%siesta, id)
-
-         CASE DEFAULT
-            equilibrium_is_scaler_value = .false.
-
-      END SELECT
+      equilibrium_is_scaler_value = .false.
 
       CALL profiler_set_stop_time('equilibrium_is_scaler_value',               &
      &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Checks if a parameter id is a 1d array.
-!>
-!>  This method is virtual. The actual check should be handled by a subclass
-!>  method.
-!>  @see vmec_equilibrium::vmec_is_1d_array
-!>  @see vacuum_equilibrium::vacuum_is_1d_array
-!>  @see siesta_equilibrium::siesta_is_1d_array
-!>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] id   ID of the parameter.
-!>  @returns True if the parameter is a 1d array and false if otherwise.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_is_1d_array(this, id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL :: equilibrium_is_1d_array
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_is_1d_array = vmec_is_1d_array(this%vmec, id)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_is_1d_array = vacuum_is_1d_array(this%vacuum,          &
-     &                                                   id)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_is_1d_array = siesta_is_1d_array(this%siesta,          &
-     &                                                   id)
-
-         CASE DEFAULT
-            equilibrium_is_1d_array = .false.
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_is_1d_array', start_time)
 
       END FUNCTION
 
@@ -3223,74 +2170,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_is_2d_array = vmec_is_2d_array(this%vmec, id)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_is_2d_array = siesta_is_2d_array(this%siesta,          &
-     &                                                   id)
-
-         CASE DEFAULT
-            equilibrium_is_2d_array = .false.
-
-      END SELECT
+      equilibrium_is_2d_array = .false.
 
       CALL profiler_set_stop_time('equilibrium_is_2d_array', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Checks if a parameter id is a reconstruction parameter.
-!>
-!>  This method is virtual. The actual check should be handled by a subclass
-!>  method.
-!>  @see vmec_equilibrium::vmec_is_recon_param
-!>  @see vacuum_equilibrium::vacuum_is_recon_param
-!>  @see siesta_equilibrium::siesta_is_recon_param
-!>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] id   ID of the parameter.
-!>  @returns True if the parameter is a reconstruction parameter and false if
-!>  otherwise.
-!-------------------------------------------------------------------------------
-      FUNCTION equilibrium_is_recon_param(this, id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL :: equilibrium_is_recon_param
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_is_recon_param =                                       &
-     &         vmec_is_recon_param(this%vmec, id)
-
-         CASE (equilibrium_vacuum_type)
-            equilibrium_is_recon_param =                                       &
-     &         vacuum_is_recon_param(this%vacuum, id)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_is_recon_param =                                       &
-     &         siesta_is_recon_param(this%siesta, id)
-
-         CASE DEFAULT
-            equilibrium_is_recon_param = .false.
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_is_recon_param',                &
-     &                            start_time)
 
       END FUNCTION
 
@@ -3319,19 +2201,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_is_using_point = vmec_is_using_point(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_is_using_point =                                       &
-     &         siesta_is_using_point(this%siesta)
-
-         CASE DEFAULT
-            equilibrium_is_using_point = .false.
-
-      END SELECT
+      equilibrium_is_using_point = .false.
 
       CALL profiler_set_stop_time('equilibrium_is_using_point',                &
      &                            start_time)
@@ -3381,21 +2251,7 @@
 #if defined(MPI_OPT)
       CALL MPI_BCAST(num_iter, 1, MPI_INTEGER, 0, eq_comm, error)
 #endif
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            equilibrium_converge = vmec_converge(this%vmec, num_iter,          &
-     &                                           iou, eq_comm)
-
-         CASE (equilibrium_siesta_type)
-            equilibrium_converge = siesta_converge(this%siesta,                &
-     &                                             num_iter, iou,              &
-     &                                             eq_comm, state_flags)
-
-         CASE DEFAULT
-            equilibrium_converge = .false.
-
-      END SELECT
+      equilibrium_converge = .false.
 
       CALL profiler_set_stop_time('equilibrium_converge', start_time)
 
@@ -3422,18 +2278,15 @@
       INTEGER, INTENT(in)                  :: index
       INTEGER, INTENT(in)                  :: eq_comm
 
+!  local variables
+      REAL (rprec)                         :: start_time
+
 !  Start of executable code
-       SELECT CASE (this%type)
+      start_time = profiler_get_start_time()
+      CALL profiler_set_stop_time('equilibrium_read_vac_file',                 &
+     &                            start_time)
 
-          CASE (equilibrium_vmec_type)
-             CALL vmec_read_vac_file(this%vmec, index, eq_comm)
-
-          CASE (equilibrium_siesta_type)
-             CALL siesta_read_vac_file(this%siesta, index, eq_comm)
-
-       END SELECT
-
-       END SUBROUTINE
+      END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Save the internal state of the equilibrium.
@@ -3457,17 +2310,6 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_save_state(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_save_state(this%siesta)
-
-      END SELECT
-
       CALL profiler_set_stop_time('equilibrium_save_state', start_time)
 
       END SUBROUTINE
@@ -3511,140 +2353,9 @@
 
       END SUBROUTINE
 
-!-------------------------------------------------------------------------------
-!>  @brief Write out the equilibrium to an output file.
-!>
-!>  This method is virtual. The actual writing of the equilibrium should be
-!>  handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_write
-!>  @see vacuum_equilibrium::vacuum_write
-!>  @see siesta_equilibrium::siesta_write
-!>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] iou  Input/output unit of the output file.
-!-------------------------------------------------------------------------------
-      SUBROUTINE equilibrium_write(this, iou)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: iou
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_write(this%vmec, iou)
-
-         CASE (equilibrium_vacuum_type)
-            CALL vacuum_write(this%vacuum, iou)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_write(this%siesta, iou)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_write', start_time)
-
-      END SUBROUTINE
-
-!-------------------------------------------------------------------------------
-!>  @brief Write the current valid input.
-!>
-!>  This method is virtual. The actual writing of the input file should be
-!>  handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_write_input
-!>  @see vaccum_equilibrium::vacuum_write_input
-!>  @see siesta_equilibrium::siesta_write_input
-!>
-!>  @param[in] this         A @ref equilibrium_class instance.
-!>  @param[in] current_step Step number to append to input filename.
-!-------------------------------------------------------------------------------
-      SUBROUTINE equilibrium_write_input(this, current_step)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER                              :: current_step
-
-!  local variables
-      REAL (rprec)                            :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_write_input(this%vmec, current_step)
-
-         CASE (equilibrium_vacuum_type)
-            CALL vacuum_write_input(this%vacuum, current_step)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_write_input(this%siesta, current_step)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_write_input', start_time)
-
-      END SUBROUTINE
-
 !*******************************************************************************
 !  NETCDF SUBROUTINES
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  @brief Define NetCDF variables for the result file
-!>
-!>  This method is virtual. The actual defining of the equilibrium variables
-!>  should be handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_def_result
-!>  @see siesta_equilibrium::siesta_def_result
-!>
-!>  @param[in] this             A @ref equilibrium_class instance.
-!>  @param[in] result_ncid      NetCDF file id of the result file.
-!>  @param[in] maxnsetps_dim_id NetCDF dimension id of the number of steps
-!>                              dimension.
-!-------------------------------------------------------------------------------
-      SUBROUTINE equilibrium_def_result(this, result_ncid,                     &
-     &                                  maxnsetps_dim_id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: result_ncid
-      INTEGER, INTENT(in)                  :: maxnsetps_dim_id
-
-!  local variables
-      REAL (rprec)                         :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_def_result(this%vmec, result_ncid,                       &
-     &                           maxnsetps_dim_id)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_def_result(this%siesta, result_ncid,                   &
-     &                             maxnsetps_dim_id)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('equilibrium_def_result', start_time)
-
-      END SUBROUTINE
-
 !-------------------------------------------------------------------------------
 !>  @brief Write inital data to NetCDF result file
 !>
@@ -3669,16 +2380,6 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_write_init_data(this%vmec, result_ncid)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_write_init_data(this%siesta, result_ncid)
-
-      END SELECT
 
       CALL profiler_set_stop_time('equilibrium_write_init_data',               &
      &                            start_time)
@@ -3713,18 +2414,6 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_write_step_data(this%vmec, result_ncid,                  &
-     &                                current_step)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_write_step_data(this%siesta, result_ncid,              &
-     &                                  current_step)
-
-      END SELECT
-
       CALL profiler_set_stop_time('equilibrium_write_step_data',               &
      &                            start_time)
 
@@ -3756,16 +2445,6 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_restart(this%vmec, result_ncid, current_step)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_restart(this%siesta, result_ncid, current_step)
-
-      END SELECT
 
       CALL profiler_set_stop_time('equilibrium_restart', start_time)
 
@@ -3799,16 +2478,6 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_sync_state(this%vmec, recon_comm)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_sync_state(this%siesta, recon_comm)
-
-      END SELECT
-
       CALL profiler_set_stop_time('equilibrium_sync_state', start_time)
 
 #endif
@@ -3841,18 +2510,6 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_sync_child(this%vmec, index, recon_comm)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_sync_child(this%siesta, index, recon_comm)
-
-      END SELECT
 
       CALL profiler_set_stop_time('equilibrium_sync_child', start_time)
 

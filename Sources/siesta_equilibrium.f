@@ -431,9 +431,12 @@
 !>  @param[inout] this            A @ref siesta_class instance.
 !>  @param[in]    response_object A @ref magnetic_response::magnetic_response_class
 !>                                instance.
+!>  @param[in]    state_flags     Bitwise flags to indicate which parts of the
+!>                                model changed.
 !-------------------------------------------------------------------------------
       SUBROUTINE siesta_set_magnetic_cache_responce(this,                      &
-     &                                              response_object)
+     &                                              response_object,           &
+     &                                              state_flags)
       USE stel_constants, only: twopi
       USE magnetic_response
       USE siesta_namelist, ONLY: mpolin, nsin, nsin_ext
@@ -443,6 +446,7 @@
 !  Declare Arguments
       CLASS (siesta_class), INTENT(inout)        :: this
       TYPE (magnetic_response_class), INTENT(in) :: response_object
+      INTEGER, INTENT(in)                        :: state_flags
 
 !  local variables
       INTEGER                                    :: numU
@@ -509,6 +513,11 @@
      &               compression_get_dimension2(response_object%a_s_r)))
       END IF
 
+!  If the equilibrium is already converged, compute the magnetic cache as well.
+      IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
+         CALL this%set_magnetic_cache()
+      END IF
+
       CALL profiler_set_stop_time('siesta_set_magnetic_cache_responce',        &
      &                            start_time)
 
@@ -521,16 +530,21 @@
 !>  allocates a @ref sieste_magnetic_cache structure. Point measurements require
 !>  no array allocations.
 !>
-!>  @param[inout] this    A @ref siesta_class instance.
-!>  @param[in]    use_axi Magnetics can subtract off axisymmetric components.
+!>  @param[inout] this        A @ref siesta_class instance.
+!>  @param[in]    use_axi     Magnetics can subtract off axisymmetric
+!>                            components.
+!>  @param[in]    state_flags Bitwise flags to indicate which parts of the model
+!>                            changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE siesta_set_magnetic_cache_point(this, use_axi)
+      SUBROUTINE siesta_set_magnetic_cache_point(this, use_axi,                &
+     &                                           state_flags)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       CLASS (siesta_class), INTENT(inout) :: this
       LOGICAL, INTENT(in)                 :: use_axi
+      INTEGER, INTENT(in)                 :: state_flags
 
 !  local variables
       INTEGER                             :: u_size
@@ -580,6 +594,11 @@
 
          ALLOCATE(this%magnetic_cache%x_axi(u_size,v_size,3))
 
+      END IF
+
+!  If the equilibrium is already converged, compute the magnetic cache as well.
+      IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
+         CALL this%set_magnetic_cache()
       END IF
 
       CALL profiler_set_stop_time('siesta_set_magnetic_cache_point',           &
@@ -2664,6 +2683,10 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
+
+#if defined(MPI_OPT)
+      CALL MPI_BCAST(num_iter, 1, MPI_INTEGER, 0, eq_comm, status)
+#endif
 
       siesta_converge = .true.
       IF (BTEST(state_flags, model_state_vmec_flag)) THEN

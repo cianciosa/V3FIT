@@ -62,7 +62,7 @@
 !>  @par Super Class:
 !>  @ref equilibrium
 !-------------------------------------------------------------------------------
-      TYPE vacuum_class
+      TYPE, EXTENDS(equilibrium_class) :: vacuum_class
 !>  File name of the vacuum namelist inout file.
          CHARACTER (len=path_length) :: vacuum_file_name
 !>  Array of external currents
@@ -200,10 +200,14 @@
 !>  always returns false because a vacuum equilibrium never needs to be
 !>  reconverged.
 !>
-!>  @param[inout] this        A @ref vacuum_class instance.
+!>  @param[inout] this        A @ref vaccum_class instance.
 !>  @param[in]    id          ID of the parameter.
 !>  @param[in]    i_index     The ith index of the parameter.
+!>  @param[in]    j_index     The jth index of the parameter.
 !>  @param[in]    value       The value of the parameter.
+!>  @param[in]    eq_comm     MPI communicator for the child equilibrium processes.
+!>  @param[inout] state_flags Bitwise flags to indicate which parts of the model
+!>                            changed.
 !-------------------------------------------------------------------------------
       SUBROUTINE vacuum_set_param(this, id, i_index, value)
 
@@ -213,7 +217,10 @@
       CLASS (vacuum_class), INTENT(inout) :: this
       INTEGER, INTENT(in)                 :: id
       INTEGER, INTENT(in)                 :: i_index
+      INTEGER, INTENT(in)                 :: j_index
       REAL (rprec), INTENT(in)            :: value
+      INTEGER, INTENT(in)                 :: eq_comm
+      INTEGER, INTENT(inout)              :: state_flags
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -346,6 +353,7 @@
             vacuum_get_param_name = 'extcur'
 
          CASE DEFAULT
+            WRITE (*,*) id
             STOP 'Invalid vacuum parameter id.'
 
       END SELECT

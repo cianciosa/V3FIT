@@ -389,7 +389,7 @@
 !>  @par Super Class:
 !>  @ref equilibrium
 !-------------------------------------------------------------------------------
-      TYPE :: vmec_class
+      TYPE, EXTENDS(equilibrium_class) :: vmec_class
 !>  File name of the output of vmec.
          CHARACTER (len=path_length)            :: wout_file_name
 !>  File name of the vmec namelist inout file.
@@ -450,12 +450,8 @@
          PROCEDURE :: get_gp_ne_ij => vmec_get_gp_ne_ij
          PROCEDURE :: get_gp_ne_pi => vmec_get_gp_ne_pi
          PROCEDURE :: get_gp_ne_pp => vmec_get_gp_ne_pp
-         GENERIC   :: get_gp_ne => get_gp_ne_ij,                               &
-     &                             get_gp_ne_pi,                               &
-     &                             get_gp_ne_pp
          PROCEDURE :: get_ne_cart => vmec_get_ne_cart
          PROCEDURE :: get_ne_radial => vmec_get_ne_radial
-         GENERIC   :: get_ne => get_ne_cart, get_ne_radial
 
          PROCEDURE :: get_gp_te_num_hyper_param =>                             &
      &                   vmec_get_gp_te_num_hyper_param
@@ -463,12 +459,8 @@
          PROCEDURE :: get_gp_te_ij => vmec_get_gp_te_ij
          PROCEDURE :: get_gp_te_pi => vmec_get_gp_te_pi
          PROCEDURE :: get_gp_te_pp => vmec_get_gp_te_pp
-         GENERIC   :: get_gp_te => get_gp_te_ij,                               &
-     &                             get_gp_te_pi,                               &
-     &                             get_gp_te_pp
          PROCEDURE :: get_te_cart => vmec_get_te_cart
          PROCEDURE :: get_te_radial => vmec_get_te_radial
-         GENERIC   :: get_te => get_te_cart, get_te_radial
 
          PROCEDURE :: get_gp_ti_num_hyper_param =>                             &
      &                   vmec_get_gp_ti_num_hyper_param
@@ -476,12 +468,8 @@
          PROCEDURE :: get_gp_ti_ij => vmec_get_gp_ti_ij
          PROCEDURE :: get_gp_ti_pi => vmec_get_gp_ti_pi
          PROCEDURE :: get_gp_ti_pp => vmec_get_gp_ti_pp
-         GENERIC   :: get_gp_ti => get_gp_ti_ij,                               &
-     &                             get_gp_ti_pi,                               &
-     &                             get_gp_ti_pp
          PROCEDURE :: get_ti_cart => vmec_get_ti_cart
          PROCEDURE :: get_ti_radial => vmec_get_ti_radial
-         GENERIC   :: get_ti => get_te_cart, get_ti_radial
 
          PROCEDURE :: get_gp_sxrem_num_hyper_param =>                          &
      &                   vmec_get_gp_sxrem_num_hyper_param
@@ -489,16 +477,11 @@
          PROCEDURE :: get_gp_sxrem_ij => vmec_get_gp_sxrem_ij
          PROCEDURE :: get_gp_sxrem_pi => vmec_get_gp_sxrem_pi
          PROCEDURE :: get_gp_sxrem_pp => vmec_get_gp_sxrem_pp
-         GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij,                         &
-     &                                get_gp_sxrem_pi,                         &
-     &                                get_gp_sxrem_pp
          PROCEDURE :: get_sxrem_cart => vmec_get_sxrem_cart
          PROCEDURE :: get_sxrem_radial => vmec_get_sxrem_radial
-         GENERIC   :: get_sxrem => get_sxrem_cart, get_sxrem_radial
 
          PROCEDURE :: get_p_cart => vmec_get_p_cart
          PROCEDURE :: get_p_radial => vmec_get_p_radial
-         GENERIC   :: get_p => get_p_cart, get_p_radial
 
          PROCEDURE :: get_B_vec => vmec_get_B_vec
          PROCEDURE :: get_Int_B_dphi => vmec_get_Int_B_dphi
@@ -1294,8 +1277,12 @@
 !>  @param[inout] this            A @ref vmec_class instance.
 !>  @param[in]    response_object A @ref magnetic_response::magnetic_response_class
 !>                                instance.
+!>  @param[in]    state_flags     Bitwise flags to indicate which parts of the
+!>                                model changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE vmec_set_magnetic_cache_responce(this, response_object)
+      SUBROUTINE vmec_set_magnetic_cache_responce(this,                        &
+     &                                            response_object,             &
+     &                                            state_flags)
       USE vmec_input, only: ns_array, mpol
       USE stel_constants, only: twopi
       USE magnetic_response
@@ -1305,6 +1292,7 @@
 !  Declare Arguments
       CLASS (vmec_class), INTENT(inout)          :: this
       TYPE (magnetic_response_class), INTENT(in) :: response_object
+      INTEGER, INTENT(in)                        :: state_flags
 
 !  local variables
       INTEGER                                    :: numU
@@ -1364,6 +1352,11 @@
      &               compression_get_dimension2(response_object%a_s_r)))
       END IF
 
+!  If the equilibrium is already converged, compute the magnetic cache as well.
+      IF (.not.BTEST(state_flags, model_state_vmec_flag)) THEN
+         CALL this%set_magnetic_cache()
+      END IF
+
       CALL profiler_set_stop_time('vmec_set_magnetic_cache_responce',          &
      &                            start_time)
 
@@ -1376,10 +1369,14 @@
 !>  allocates a @ref vmec_magnetic_cache structure. Point measurements require
 !>  no array allocations.
 !>
-!>  @param[inout] this    A @ref vmec_class instance.
-!>  @param[in]    use_axi Magnetics can subtract off axisymmetric components.
+!>  @param[inout] this        A @ref vmec_class instance.
+!>  @param[in]    use_axi     Magnetics can subtract off axisymmetric
+!>                            components.
+!>  @param[in]    state_flags Bitwise flags to indicate which parts of the model
+!>                            changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE vmec_set_magnetic_cache_point(this, use_axi)
+      SUBROUTINE vmec_set_magnetic_cache_point(this, use_axi,                  &
+     &                                         state_flags)
       USE vmec_input, only: rbc, zbs
 
       IMPLICIT NONE
@@ -1387,6 +1384,7 @@
 !  Declare Arguments
       CLASS (vmec_class), INTENT(inout) :: this
       LOGICAL, INTENT(in)               :: use_axi
+      INTEGER, INTENT(in)               :: state_flags
 
 !  local variables
       INTEGER                           :: u_size
@@ -1429,6 +1427,11 @@
 
          ALLOCATE(this%magnetic_cache%x_axi(u_size,v_size,3))
 
+      END IF
+
+!  If the equilibrium is already converged, compute the magnetic cache as well.
+      IF (.not.BTEST(state_flags, model_state_vmec_flag)) THEN
+         CALL this%set_magnetic_cache()
       END IF
 
       CALL profiler_set_stop_time('vmec_set_magnetic_cache_point',             &
@@ -5182,7 +5185,8 @@
       INTEGER                            :: niter_local
       INTEGER, DIMENSION(5)              :: ictrl_array
       INTEGER                            :: recovery_index
-      INTEGER                            :: error, num_iter_init
+      INTEGER                            :: error
+      INTEGER                            :: num_iter_init
       TYPE (vmec_context_class), POINTER :: temp_context => null()
       INTEGER                            :: eq_rank
       INTEGER                            :: nstep_save
@@ -5194,6 +5198,10 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
+
+#if defined(MPI_OPT)
+      CALL MPI_BCAST(num_iter, 1, MPI_INTEGER, 0, eq_comm, error)
+#endif
 
       delt_local = delt
       niter_local = niter
