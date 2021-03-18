@@ -263,9 +263,9 @@
          PROCEDURE :: set_magnetic_cache_calc =>                               &
      &                   siesta_set_magnetic_cache_calc
          GENERIC   :: set_magnetic_cache =>                                    &
-     &                   siesta_set_magnetic_cache_responce,                   &
-     &                   siesta_set_magnetic_cache_point,                      &
-     &                   siesta_set_magnetic_cache_calc
+     &                   set_magnetic_cache_responce,                          &
+     &                   set_magnetic_cache_point,                             &
+     &                   set_magnetic_cache_calc
          PROCEDURE :: set_namelist => siesta_set_namelist
 
          PROCEDURE :: get_param_id => siesta_get_param_id
