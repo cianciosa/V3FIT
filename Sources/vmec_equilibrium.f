@@ -418,9 +418,6 @@
 !>  profile.
          TYPE (pprofile_pointer), DIMENSION(:), POINTER ::                     &
      &      sxrem => null()
-!>  @ref pprofile_T describing a flux surface constant Zeff
-!>  profile.
-         TYPE (pprofile_class), POINTER         :: ze => null()
 
 !>  Ratio of the poloidal grid points to the poloidal grid points.
          REAL (rprec)                           :: pol_rad_ratio

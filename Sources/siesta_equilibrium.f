@@ -224,36 +224,12 @@
 !>  File name of the siesta namelist inout file.
          CHARACTER (len=path_length)            :: siesta_file_name
 
-!>  @ref pprofile_T describing a flux surface constant electron denisty profile.
-         TYPE (pprofile_class), POINTER         :: ne => null()
-!>  @ref pprofile_T describing a flux surface constant electron temperature
-!>  profile.
-         TYPE (pprofile_class), POINTER         :: te => null()
-!>  @ref pprofile_T describing a flux surface conatsnt soft x-ray emissivity
-!>  profile.
-         TYPE (pprofile_class), POINTER         :: ti => null()
-!>  @ref pprofile_T describing a flux surface conatsnt soft x-ray emissivity
-!>  profile.
-         TYPE (pprofile_pointer), DIMENSION(:), POINTER ::                     &
-     &      sxrem => null()
-
-!>  Ratio of the poloidal grid points to the poloidal grid points.
-         REAL (rprec)                           :: pol_rad_ratio
 !>  Instance of a @ref siesta_magnetic_cache object.
          TYPE (siesta_magnetic_cache), POINTER  ::                             &
      &      magnetic_cache => null()
 
 !>  siesta context.
          TYPE (siesta_context_class), POINTER   :: context => null()
-
-!  Extra reconstruction parameters
-!>  Plasma phi offset.
-         REAL (rprec)                           :: phi_offset = 0
-!>  Plasma z offset.
-         REAL (rprec)                           :: z_offset = 0
-
-!>  Base VMEC equilibrium.
-         TYPE (vmec_class), POINTER             :: vmec => null()
       CONTAINS
          PROCEDURE :: set_param => siesta_set_param
          PROCEDURE :: set_magnetic_cache_responce =>                           &
