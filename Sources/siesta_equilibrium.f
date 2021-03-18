@@ -87,131 +87,14 @@
 !  updated if any new model parameters are added. Siesta uses the VMEC model
 !  parameters but overwrites the auxilary parameters.
 
-!  Auxiliary Model Parameters
-!>  1D Array of function density profile parameters. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ne_b_id     = 61
-!>  1D Array of segment density profile s poitions. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ne_as_id    = 62
-!>  1D Array of segment density profile f values. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ne_af_id    = 63
-!>  1D Array of function sxrem profile parameters. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_sxrem_b_id  = 64
-!>  1D Array of segment sxrem profile s poitions. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_sxrem_as_id = 65
-!>  1D Array of segment sxrem profile f values. Defined in @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_sxrem_af_id = 66
-!>  1D Array of function electron temperature profile parameters. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_te_b_id     = 67
-!>  1D Array of segment electron temperature profile s poitions. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_te_as_id    = 68
-!>  1D Array of segment electron temperature profile f values. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_te_af_id    = 69
-!>  1D Array of function ion temperature profile parameters. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ti_b_id     = 70
-!>  1D Array of segment ion temperature profile s poitions. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ti_as_id    = 71
-!>  1D Array of segment ion temperature profile f values. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ti_af_id    = 72
-!>  1D Array of function zeff profile parameters. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ze_b_id     = 73
-!>  1D Array of segment zeff profile s poitions. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ze_as_id    = 74
-!>  1D Array of segment zeff profile f values. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: siesta_pp_ze_af_id    = 75
-
-!  Skip 74-82 since these parameters have a VMEC value but not a SIESTA analog.
-!>  Plasma Phi offset. This is a parameter to allow changing the phi angle of a
-!>  quasi helical state in an RFP. Defined in @ref vmec_equilibrium.
-      INTEGER, PARAMETER :: siesta_phi_offset_id  = 85
-!>  Plasma z offset. This is a parameter to allow changing the vertical shift of
-!>  the plasma
-      INTEGER, PARAMETER :: siesta_z_offset_id    = 86
-
 !>  Helical perturbation parameter.
-      INTEGER, PARAMETER :: siesta_helpert_id     = 87
+      INTEGER, PARAMETER :: siesta_helpert_id     = 84
 
 !*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
-!  1) siesta magnetic cache
-!  2) siesta base class
+!  1) siesta base class
 !
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  Object to cache data needed to compute magnetic signals.
-!-------------------------------------------------------------------------------
-      TYPE :: siesta_magnetic_cache
-!>  Volume differential element for the s direction.
-         REAL (rprec)                            :: ds
-!>  Volume differential element for the u direction.
-         REAL (rprec)                            :: du
-!>  Volume differential element for the v direction.
-         REAL (rprec)                            :: dv
-
-!>  Area differential elements for the u direction.
-         REAL (rprec)                            :: du_a
-!>  Area differential elements for the v direction.
-         REAL (rprec)                            :: dv_a
-
-!>  Full surface area differential elements for the u direction.
-         REAL (rprec)                            :: du_full
-!>  Full surface area differential elements for the v direction.
-         REAL (rprec)                            :: dv_full
-
-!>  R positions on the suv gird points.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: rsuv => null()
-!>  Z positions on the suv gird points.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: zsuv => null()
-
-!>  Current density in the R direction. Has a 1/Sqrt(g) factor embeded.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: jrsuv => null()
-!>  Current density in the Phi direction. Has a 1/Sqrt(g) factor embeded.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: jphisuv => null()
-!>  Current density in the Z direction. Has a 1/Sqrt(g) factor embeded.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: jzsuv => null()
-
-!>  Surface current density in the R direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kruv => null()
-!>  Surface current density in the Phi direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kphiuv => null()
-!>  Surface current density in the Z direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kzuv => null()
-
-!>  X' vector on the full uv grid.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: x_prime => null()
-!>  Full surface current density in the R direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kxuv_full => null()
-!>  Full surface current density in the Phi direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kyuv_full => null()
-!>  Full surface current density in the Z direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kzuv_full => null()
-
-!>  Axisymmtric X' vector on the full uv grid.
-         REAL (rprec), DIMENSION(:,:,:), POINTER :: x_axi => null()
-!>  Axisymmtric  surface current density in the R direction. Has all Jacobian
-!>  and normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kxuv_axi => null()
-!>  Full surface current density in the Phi direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kyuv_axi => null()
-!>  Full surface current density in the Z direction. Has all Jacobian and
-!>  normalization factors.
-         REAL (rprec), DIMENSION(:,:), POINTER :: kzuv_axi => null()
-      END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Base class representing a siesta_equilibrium.
@@ -223,10 +106,6 @@
          CHARACTER (len=path_length)            :: restart_file_name
 !>  File name of the siesta namelist inout file.
          CHARACTER (len=path_length)            :: siesta_file_name
-
-!>  Instance of a @ref siesta_magnetic_cache object.
-         TYPE (siesta_magnetic_cache), POINTER  ::                             &
-     &      magnetic_cache => null()
 
 !>  siesta context.
          TYPE (siesta_context_class), POINTER   :: context => null()
@@ -242,16 +121,12 @@
      &                   set_magnetic_cache_responce,                          &
      &                   set_magnetic_cache_point,                             &
      &                   set_magnetic_cache_calc
-         PROCEDURE :: set_namelist => siesta_set_namelist
 
          PROCEDURE :: get_param_id => siesta_get_param_id
          PROCEDURE :: get_param_value => siesta_get_param_value
          PROCEDURE :: get_param_name => siesta_get_param_name
 
-         PROCEDURE :: get_gp_ne_num_hyper_param =>                             &
-     &                   siesta_get_gp_ne_num_hyper_param
-         PROCEDURE :: get_ne_af => siesta_get_ne_af
-         PROCEDURE :: get_gp_ne_ij => siesta_get_gp_ne_ij
+         PROCEDURE :: get_gp_ne_ij => vmec_get_gp_ne_ij
          PROCEDURE :: get_gp_ne_pi => siesta_get_gp_ne_pi
          PROCEDURE :: get_gp_ne_pp => siesta_get_gp_ne_pp
          GENERIC   :: get_gp_ne => get_gp_ne_ij,                               &
@@ -261,10 +136,7 @@
          PROCEDURE :: get_ne_radial => siesta_get_ne_radial
          GENERIC   :: get_ne => get_ne_cart, get_ne_radial
 
-         PROCEDURE :: get_gp_te_num_hyper_param =>                             &
-     &                   siesta_get_gp_te_num_hyper_param
-         PROCEDURE :: get_te_af => siesta_get_te_af
-         PROCEDURE :: get_gp_te_ij => siesta_get_gp_te_ij
+         PROCEDURE :: get_gp_te_ij => vmec_get_gp_te_ij
          PROCEDURE :: get_gp_te_pi => siesta_get_gp_te_pi
          PROCEDURE :: get_gp_te_pp => siesta_get_gp_te_pp
          GENERIC   :: get_gp_te => get_gp_te_ij,                               &
@@ -274,10 +146,7 @@
          PROCEDURE :: get_te_radial => siesta_get_te_radial
          GENERIC   :: get_te => get_te_cart, get_te_radial
 
-         PROCEDURE :: get_gp_ti_num_hyper_param =>                             &
-     &                   siesta_get_gp_ti_num_hyper_param
-         PROCEDURE :: get_ti_af => siesta_get_ti_af
-         PROCEDURE :: get_gp_ti_ij => siesta_get_gp_ti_ij
+         PROCEDURE :: get_gp_ti_ij => vmec_get_gp_ti_ij
          PROCEDURE :: get_gp_ti_pi => siesta_get_gp_ti_pi
          PROCEDURE :: get_gp_ti_pp => siesta_get_gp_ti_pp
          GENERIC   :: get_gp_ti => get_gp_ti_ij,                               &
@@ -287,10 +156,7 @@
          PROCEDURE :: get_ti_radial => siesta_get_ti_radial
          GENERIC   :: get_ti => get_te_cart, get_ti_radial
 
-         PROCEDURE :: get_gp_sxrem_num_hyper_param =>                          &
-     &                   siesta_get_gp_sxrem_num_hyper_param
-         PROCEDURE :: get_sxrem_af => siesta_get_sxrem_af
-         PROCEDURE :: get_gp_sxrem_ij => siesta_get_gp_sxrem_ij
+         PROCEDURE :: get_gp_sxrem_ij => vmec_get_gp_sxrem_ij
          PROCEDURE :: get_gp_sxrem_pi => siesta_get_gp_sxrem_pi
          PROCEDURE :: get_gp_sxrem_pp => siesta_get_gp_sxrem_pp
          GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij,                         &
@@ -309,39 +175,14 @@
          PROCEDURE :: get_Int_B_dphi => siesta_get_Int_B_dphi
          PROCEDURE :: get_suv => siesta_get_suv
          PROCEDURE :: get_plasma_edge => siesta_get_plasma_edge
-         PROCEDURE :: get_magnetic_volume_rgrid =>                             &
-     &                   siesta_get_magnetic_volume_rgrid
-         PROCEDURE :: get_magnetic_volume_zgrid =>                             &
-     &                   siesta_get_magnetic_volume_zgrid
-         PROCEDURE :: get_magnetic_volume_jrgrid =>                            &
-     &                   siesta_get_magnetic_volume_jrgrid
-         PROCEDURE :: get_magnetic_volume_jphigrid =>                          &
-     &                   siesta_get_magnetic_volume_jphigrid
-         PROCEDURE :: get_magnetic_volume_jzgrid =>                            &
-     &                   siesta_get_magnetic_volume_jzgrid
-         PROCEDURE :: get_volume_int_element =>                                &
-     &                   siesta_get_volume_int_element
-         PROCEDURE :: get_con_surface_krgrid =>                                &
-     &                   siesta_get_con_surface_krgrid
-         PROCEDURE :: get_con_surface_kphigrid =>                              &
-     &                   siesta_get_con_surface_kphigrid
-         PROCEDURE :: get_con_surface_kzgrid =>                                &
-     &                   siesta_get_con_surface_kzgrid
-         PROCEDURE :: get_area_int_element =>                                  &
-     &                   siesta_get_area_int_element
-         PROCEDURE :: get_ext_currents => siesta_get_ext_currents
          PROCEDURE :: get_ext_b_plasma => siesta_get_ext_b_plasma
          PROCEDURE :: get_int_b_plasma => siesta_get_int_b_plasma
 
          PROCEDURE :: get_grid_size => siesta_get_grid_size
-         PROCEDURE :: get_grid_start => siesta_get_grid_start
          PROCEDURE :: get_grid_stop => siesta_get_grid_stop
 
-         PROCEDURE :: is_scaler_value => siesta_is_scaler_value
          PROCEDURE :: is_1d_array => siesta_is_1d_array
-         PROCEDURE :: is_2d_array => siesta_is_2d_array
-         PROCEDURE :: is_recon_param => siesta_is_recon_param
-         PROCEDURE :: is_using_point => siesta_is_using_point
+         PROCEDURE :: is_recon_param => siesta_is_recon_param\
 
          PROCEDURE :: converge => siesta_converge
 
@@ -350,11 +191,6 @@
 
          PROCEDURE :: write => siesta_write
          PROCEDURE :: write_input => siesta_write_input
-
-         PROCEDURE :: def_result => siesta_def_result
-         PROCEDURE :: write_init_data => siesta_write_init_data
-         PROCEDURE :: write_step_data => siesta_write_step_data
-         PROCEDURE :: restart => siesta_restart
 
          PROCEDURE :: sync_state => siesta_sync_state
          PROCEDURE :: sync_child => siesta_sync_child
@@ -524,116 +360,6 @@
       INTEGER                            :: error
 
 !  Start of executable code
-      IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_destruct(this%ne)
-         this%ne => null()
-      END IF
-
-      IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_destruct(this%te)
-         this%te => null()
-      END IF
-
-      IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_destruct(this%ti)
-         this%ti => null()
-      END IF
-
-      IF (ASSOCIATED(this%sxrem)) THEN
-         DO i = 1, SIZE(this%sxrem)
-            IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_destruct(this%sxrem(i)%p)
-               this%sxrem(i)%p => null()
-            END IF
-         END DO
-         DEALLOCATE(this%sxrem)
-         this%sxrem => null()
-      END IF
-
-      IF (ASSOCIATED(this%magnetic_cache)) THEN
-         IF (ASSOCIATED(this%magnetic_cache%rsuv)) THEN
-            DEALLOCATE(this%magnetic_cache%rsuv)
-            this%magnetic_cache%rsuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%zsuv)) THEN
-            DEALLOCATE(this%magnetic_cache%zsuv)
-            this%magnetic_cache%zsuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%jrsuv)) THEN
-            DEALLOCATE(this%magnetic_cache%jrsuv)
-            this%magnetic_cache%jrsuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%jphisuv)) THEN
-            DEALLOCATE(this%magnetic_cache%jphisuv)
-            this%magnetic_cache%jphisuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%jzsuv)) THEN
-            DEALLOCATE(this%magnetic_cache%jzsuv)
-            this%magnetic_cache%jzsuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kruv)) THEN
-            DEALLOCATE(this%magnetic_cache%kruv)
-            this%magnetic_cache%kruv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kphiuv)) THEN
-            DEALLOCATE(this%magnetic_cache%kphiuv)
-            this%magnetic_cache%kphiuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kzuv)) THEN
-            DEALLOCATE(this%magnetic_cache%kzuv)
-            this%magnetic_cache%kzuv => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%x_prime)) THEN
-            DEALLOCATE(this%magnetic_cache%x_prime)
-            this%magnetic_cache%x_prime => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kxuv_full)) THEN
-            DEALLOCATE(this%magnetic_cache%kxuv_full)
-            this%magnetic_cache%kxuv_full => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kyuv_full)) THEN
-            DEALLOCATE(this%magnetic_cache%kyuv_full)
-            this%magnetic_cache%kyuv_full => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kzuv_full)) THEN
-            DEALLOCATE(this%magnetic_cache%kzuv_full)
-            this%magnetic_cache%kzuv_full => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%x_axi)) THEN
-            DEALLOCATE(this%magnetic_cache%x_axi)
-            this%magnetic_cache%x_axi => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kxuv_axi)) THEN
-            DEALLOCATE(this%magnetic_cache%kxuv_axi)
-            this%magnetic_cache%kxuv_axi => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kyuv_axi)) THEN
-            DEALLOCATE(this%magnetic_cache%kyuv_axi)
-            this%magnetic_cache%kyuv_axi => null()
-         END IF
-
-         IF (ASSOCIATED(this%magnetic_cache%kzuv_axi)) THEN
-            DEALLOCATE(this%magnetic_cache%kzuv_axi)
-            this%magnetic_cache%kzuv_axi => null()
-         END IF
-
-         DEALLOCATE(this%magnetic_cache)
-         this%magnetic_cache => null()
-      END IF
 
 !  Delete the restart file. Errors here can safely be ignored.
       CALL delete_file(TRIM(this%restart_file_name) // '_cache', error)
@@ -690,71 +416,18 @@
 
       SELECT CASE (id)
 
-         CASE (siesta_pp_ne_b_id)
-            state_flags = IBSET(state_flags, model_state_ne_flag)
-            this%ne%b(i_index) = value
-
-         CASE (siesta_pp_ne_as_id)
-            state_flags = IBSET(state_flags, model_state_ne_flag)
-            this%ne%as(i_index) = value
-
-         CASE (siesta_pp_ne_af_id)
-            state_flags = IBSET(state_flags, model_state_ne_flag)
-            this%ne%af(i_index) = value
-
-         CASE (siesta_pp_te_b_id)
-            state_flags = IBSET(state_flags, model_state_te_flag)
-            this%te%b(i_index) = value
-
-         CASE (siesta_pp_te_as_id)
-            state_flags = IBSET(state_flags, model_state_te_flag)
-            this%te%as(i_index) = value
-
-         CASE (siesta_pp_te_af_id)
-            state_flags = IBSET(state_flags, model_state_te_flag)
-            this%te%af(i_index) = value
-
-         CASE (siesta_pp_ti_b_id)
-            state_flags = IBSET(state_flags, model_state_ti_flag)
-            this%ti%b(i_index) = value
-
-         CASE (siesta_pp_ti_as_id)
-            state_flags = IBSET(state_flags, model_state_ti_flag)
-            this%ti%as(i_index) = value
-
-         CASE (siesta_pp_ti_af_id)
-            state_flags = IBSET(state_flags, model_state_ti_flag)
-            this%ti%af(i_index) = value
-
-!  There are multiple soft x-ray emission profiles. These need to be offset by
-!  the array index.
-         CASE (siesta_pp_sxrem_b_id)
-            state_flags = IBSET(state_flags, model_state_sxrem_flag +          &
-     &                                       (i_index - 1))
-            this%sxrem(i_index)%p%b(j_index) = value
-
-         CASE (siesta_pp_sxrem_as_id)
-            state_flags = IBSET(state_flags, model_state_sxrem_flag +          &
-     &                                       (i_index - 1))
-            this%sxrem(i_index)%p%as(j_index) = value
-
-         CASE (siesta_pp_sxrem_af_id)
-            state_flags = IBSET(state_flags, model_state_sxrem_flag +          &
-     &                                       (i_index - 1))
-            this%sxrem(i_index)%p%af(j_index) = value
-
 !  For the phi_offset, the magnetic cache needs to be updated. Since the phi
 !  offset doesn't alter the equilibrium, the magnetics were not getting updated
 !  since the equilibrium was not reconverged. Call vmec_set_magnetic_cache_calc
 !  to update the magnetic cache without reconverging VMEC.
-         CASE (siesta_phi_offset_id)
+         CASE (vmec_phi_offset_id)
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%phi_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
                CALL this%set_magnetic_cache()
             END IF
 
-         CASE (siesta_z_offset_id)
+         CASE (vmec_z_offset_id)
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%z_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
@@ -779,7 +452,7 @@
 !>  @brief Set magnetic cache for plasma responce.
 !>
 !>  This method overrides @ref equilibrium::equilibrium_set_magnetic_cache. This
-!>  allocates a @ref siesta_magnetic_cache structure. Point measurements require
+!>  allocates a @ref vmec_magnetic_cache structure. Point measurements require
 !>  no array allocations.
 !>
 !>  @param[inout] this            A @ref siesta_class instance.
@@ -1498,34 +1171,6 @@
 
       END SUBROUTINE
 
-!-------------------------------------------------------------------------------
-!>  @brief Sets namelist variables from the solved siesta equilibrium.
-!>
-!>  This method updates the pertubration size and vmec namelist inputs.
-!>
-!>  @todo FIXME: Currently not implemented for siesta.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_set_namelist(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      CALL vmec_set_namelist(this)
-
-      CALL profiler_set_stop_time('siesta_set_namelist', start_time)
-
-      END SUBROUTINE
-
 !*******************************************************************************
 !  GETTER SUBROUTINES
 !*******************************************************************************
@@ -1554,48 +1199,6 @@
       start_time = profiler_get_start_time()
 
       SELECT CASE (TRIM(param_name))
-
-         CASE ('pp_ne_b')
-            siesta_get_param_id = siesta_pp_ne_b_id
-
-         CASE ('pp_ne_as')
-            siesta_get_param_id = siesta_pp_ne_as_id
-
-         CASE ('pp_ne_af')
-            siesta_get_param_id = siesta_pp_ne_af_id
-
-         CASE ('pp_sxrem_b_a')
-            siesta_get_param_id = siesta_pp_sxrem_b_id
-
-         CASE ('pp_sxrem_as_a')
-            siesta_get_param_id = siesta_pp_sxrem_as_id
-
-         CASE ('pp_sxrem_af_a')
-            siesta_get_param_id = siesta_pp_sxrem_af_id
-
-         CASE ('pp_te_b')
-            siesta_get_param_id = siesta_pp_te_b_id
-
-         CASE ('pp_te_as')
-            siesta_get_param_id = siesta_pp_te_as_id
-
-         CASE ('pp_te_af')
-            siesta_get_param_id = siesta_pp_te_af_id
-
-         CASE ('pp_ti_b')
-            siesta_get_param_id = siesta_pp_ti_b_id
-
-         CASE ('pp_ti_as')
-            siesta_get_param_id = siesta_pp_ti_as_id
-
-         CASE ('pp_ti_af')
-            siesta_get_param_id = siesta_pp_ti_af_id
-
-         CASE ('phi_offset')
-            siesta_get_param_id = siesta_phi_offset_id
-
-         CASE ('z_offset')
-            siesta_get_param_id = siesta_z_offset_id
 
          CASE ('helpert')
             siesta_get_param_id = siesta_helpert_id
@@ -1640,48 +1243,6 @@
 
       SELECT CASE (id)
 
-         CASE (siesta_pp_ne_b_id)
-            siesta_get_param_value = this%ne%b(i_index)
-
-         CASE (siesta_pp_ne_as_id)
-            siesta_get_param_value = this%ne%as(i_index)
-
-         CASE (siesta_pp_ne_af_id)
-            siesta_get_param_value = this%ne%af(i_index)
-
-         CASE (siesta_pp_sxrem_b_id)
-            siesta_get_param_value = this%sxrem(i_index)%p%b(j_index)
-
-         CASE (siesta_pp_sxrem_as_id)
-            siesta_get_param_value = this%sxrem(i_index)%p%as(j_index)
-
-         CASE (siesta_pp_sxrem_af_id)
-            siesta_get_param_value = this%sxrem(i_index)%p%af(j_index)
-
-         CASE (siesta_pp_te_b_id)
-            siesta_get_param_value = this%te%b(i_index)
-
-         CASE (siesta_pp_te_as_id)
-            siesta_get_param_value = this%te%as(i_index)
-
-         CASE (siesta_pp_te_af_id)
-            siesta_get_param_value = this%te%af(i_index)
-
-         CASE (siesta_pp_ti_b_id)
-            siesta_get_param_value = this%ti%b(i_index)
-
-         CASE (siesta_pp_ti_as_id)
-            siesta_get_param_value = this%ti%as(i_index)
-
-         CASE (siesta_pp_ti_af_id)
-            siesta_get_param_value = this%ti%af(i_index)
-
-         CASE (siesta_phi_offset_id)
-            siesta_get_param_value = this%phi_offset
-
-         CASE (siesta_z_offset_id)
-            siesta_get_param_value = this%z_offset
-
          CASE (siesta_helpert_id)
             siesta_get_param_value = helpert(i_index)
 
@@ -1721,48 +1282,6 @@
 
       SELECT CASE (id)
 
-         CASE (siesta_pp_ne_b_id)
-            siesta_get_param_name = 'pp_ne_b'
-
-         CASE (siesta_pp_ne_as_id)
-            siesta_get_param_name = 'pp_ne_as'
-
-         CASE (siesta_pp_ne_af_id)
-            siesta_get_param_name = 'pp_ne_af'
-
-         CASE (siesta_pp_sxrem_b_id)
-            siesta_get_param_name = 'pp_sxrem_b_a'
-
-         CASE (siesta_pp_sxrem_as_id)
-            siesta_get_param_name = 'pp_sxrem_as_a'
-
-         CASE (siesta_pp_sxrem_af_id)
-            siesta_get_param_name = 'pp_sxrem_af_a'
-
-         CASE (siesta_pp_te_b_id)
-            siesta_get_param_name = 'pp_te_b'
-
-         CASE (siesta_pp_te_as_id)
-            siesta_get_param_name = 'pp_te_as'
-
-         CASE (siesta_pp_te_af_id)
-            siesta_get_param_name = 'pp_te_af'
-
-         CASE (siesta_pp_ti_b_id)
-            siesta_get_param_name = 'pp_ti_b'
-
-         CASE (siesta_pp_ti_as_id)
-            siesta_get_param_name = 'pp_ti_as'
-
-         CASE (siesta_pp_ti_af_id)
-            siesta_get_param_name = 'pp_ti_af'
-
-         CASE (siesta_phi_offset_id)
-            siesta_get_param_name = 'phi_offset'
-
-         CASE (siesta_z_offset_id)
-            siesta_get_param_name = 'z_offset'
-
          CASE (siesta_helpert_id)
             siesta_get_param_name = 'helpert'
 
@@ -1772,110 +1291,6 @@
       END SELECT
 
       CALL profiler_set_stop_time('siesta_get_param_name', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the number of electron density gp kernel hyper parameters.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_gp_ne_num_hyper_param. If no density
-!>  profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Number of kernel hyper parameters.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_ne_num_hyper_param(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      INTEGER :: siesta_get_gp_ne_num_hyper_param
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ne)) THEN
-         siesta_get_gp_ne_num_hyper_param =                                    &
-     &      pprofile_get_gp_num_hyper_param(this%ne)
-      ELSE
-         siesta_get_gp_ne_num_hyper_param = 0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_ne_num_hyper_param',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the electron density profile af array.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_ne_af. If no density
-!>  profile was created a null pointer is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Pointer to the electron density profile af array.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_ne_af(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ne_af
-      CLASS (siesta_class), INTENT(in)    :: this
-
-!  local variables
-      REAL (rprec)                        :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ne)) THEN
-         siesta_get_ne_af => this%ne%af
-      ELSE
-         siesta_get_ne_af => null()
-      END IF
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the electron density gp kernel value for the two indicies.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_gp_ne_ij. If no
-!>  density profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @param[in] i    ith profile position.
-!>  @param[in] j    jth profile position.
-!>  @returns The value of the gp kernel function for i, j.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_ne_ij(this, i, j)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                     :: siesta_get_gp_ne_ij
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: i
-      INTEGER, INTENT(in)              :: j
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ne)) THEN
-         siesta_get_gp_ne_ij = pprofile_get_gp(this%ne, i, j)
-      ELSE
-         siesta_get_gp_ne_ij = 0.0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_ne_ij', start_time)
 
       END FUNCTION
 
@@ -1986,7 +1401,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ne_cart =                                                     &
-     &   pprofile_get_value(this%ne, this%get_p(x_cart, .true.))
+     &   vmec_get_ne_radial(this, this%get_p(x_cart, .true.))
 
       CALL profiler_set_stop_time('siesta_get_ne_cart', start_time)
 
@@ -2019,115 +1434,9 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ne_radial =                                                   &
-     &   pprofile_get_value(this%ne, this%get_p(s, .true.))
+     &   vmec_get_ne_radial(this, this%get_p(s, .true.))
 
       CALL profiler_set_stop_time('siesta_get_ne_radial', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the number of electron temperature gp kernel hyper parameters.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_gp_te_num_hyper_param. If no electron
-!>  temperature profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Number of kernel hyper parameters.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_te_num_hyper_param(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      INTEGER :: siesta_get_gp_te_num_hyper_param
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%te)) THEN
-         siesta_get_gp_te_num_hyper_param =                                    &
-     &      pprofile_get_gp_num_hyper_param(this%te)
-      ELSE
-         siesta_get_gp_te_num_hyper_param = 0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_te_num_hyper_param',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the electron temperature profile af array.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_te_af. If no
-!>  electron temperature profile was created a null pointer is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Pointer to the electron temperature profile af array.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_te_af(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: siesta_get_te_af
-      CLASS (siesta_class), INTENT(in)    :: this
-
-!  local variables
-      REAL (rprec)                        :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%te)) THEN
-         siesta_get_te_af => this%te%af
-      ELSE
-         siesta_get_te_af => null()
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_te_af', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the electron temperature gp kernel value for the two indicies.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_gp_te_ij. If no
-!>  electron temperature profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @param[in] i    ith profile position.
-!>  @param[in] j    jth profile position.
-!>  @returns The value of the gp kernel function for i, j.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_te_ij(this, i, j)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                     :: siesta_get_gp_te_ij
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: i
-      INTEGER, INTENT(in)              :: j
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%te)) THEN
-         siesta_get_gp_te_ij = pprofile_get_gp(this%te, i, j)
-      ELSE
-         siesta_get_gp_te_ij = 0.0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_te_ij', start_time)
 
       END FUNCTION
 
@@ -2241,7 +1550,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_te_cart =                                                     &
-     &   pprofile_get_value(this%te, this%get_p(x_cart, .true.))
+     &   vmec_get_te_radial(this, this%get_p(x_cart, .true.))
 
       CALL profiler_set_stop_time('siesta_get_te_cart', start_time)
 
@@ -2274,115 +1583,9 @@
       start_time = profiler_get_start_time()
 
       siesta_get_te_radial =                                                   &
-     &   pprofile_get_value(this%te, this%get_p(s, .true.))
+     &   vmec_get_te_radial(this, this%get_p(s, .true.))
 
       CALL profiler_set_stop_time('siesta_get_te_radial', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the number of ion temperature gp kernel hyper parameters.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_gp_ti_num_hyper_param. If no ion
-!>  temperature profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Number of kernel hyper parameters.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_ti_num_hyper_param(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      INTEGER :: siesta_get_gp_ti_num_hyper_param
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ti)) THEN
-         siesta_get_gp_ti_num_hyper_param =                                    &
-     &      pprofile_get_gp_num_hyper_param(this%ti)
-      ELSE
-         siesta_get_gp_ti_num_hyper_param = 0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_ti_num_hyper_param',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the ion temperature profile af array.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_ti_af. If no ion
-!>  temperature profile was created a null pointer is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Pointer to the electron temperature profile af array.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_ti_af(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ti_af
-      CLASS (siesta_class), INTENT(in)    :: this
-
-!  local variables
-      REAL (rprec)                        :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ti)) THEN
-         siesta_get_ti_af => this%ti%af
-      ELSE
-         siesta_get_ti_af => null()
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_ti_af', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the ion temperature gp kernel value for the two indicies.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_gp_te_ij. If no ion
-!>  temperature profile was created zero is returned.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @param[in] i    ith profile position.
-!>  @param[in] j    jth profile position.
-!>  @returns The value of the gp kernel function for i, j.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_ti_ij(this, i, j)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                     :: siesta_get_gp_ti_ij
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: i
-      INTEGER, INTENT(in)              :: j
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%ti)) THEN
-         siesta_get_gp_ti_ij = pprofile_get_gp(this%ti, i, j)
-      ELSE
-         siesta_get_gp_ti_ij = 0.0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_ti_ij', start_time)
 
       END FUNCTION
 
@@ -2491,7 +1694,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ti_cart =                                                     &
-     &   pprofile_get_value(this%ti, this%get_p(x_cart, .true.))
+     &   vmec_get_ti_radial(this, this%get_p(x_cart, .true.))
 
       CALL profiler_set_stop_time('siesta_get_ti_cart', start_time)
 
@@ -2524,125 +1727,9 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ti_radial =                                                   &
-     &   pprofile_get_value(this%ti, this%get_p(s, .true.))
+     &   vmec_get_ti_radial(this, this%get_p(s, .true.))
 
       CALL profiler_set_stop_time('siesta_get_ti_radial', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the number of soft x-ray emission gp kernel hyper parameters.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_gp_sxrem_num_hyper_param. If no soft x-ray
-!>  emission profile was created zero is returned.
-!>
-!>  @param[in] this  A @ref vmec_class instance.
-!>  @param[in] index Index of the soft x-ray emissivity profile.
-!>  @returns Number of kernel hyper parameters.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_sxrem_num_hyper_param(this, index)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      INTEGER :: siesta_get_gp_sxrem_num_hyper_param
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: index
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%sxrem) .and.                                         &
-     &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_gp_sxrem_num_hyper_param =                                 &
-     &      pprofile_get_gp_num_hyper_param(this%sxrem(index)%p)
-      ELSE
-         siesta_get_gp_sxrem_num_hyper_param = 0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_sxrem_num_hyper_param',       &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Gets the soft x-ray emissivity profile af array.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_sxrem_af. If no soft
-!>  x-ray emissivity profile was created a null pointer is returned.
-!>
-!>  @param[in] this  A @ref siesta_class instance.
-!>  @param[in] index Index of the soft x-ray emissivity profile.
-!>  @returns Pointer to the electron temperature profile af array.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_sxrem_af(this, index)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: siesta_get_sxrem_af
-      CLASS (siesta_class), INTENT(in)    :: this
-      INTEGER, INTENT(in)                 :: index
-
-!  local variables
-      REAL (rprec)                        :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%sxrem) .and.                                         &
-     &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_sxrem_af => this%sxrem(index)%p%af
-      ELSE
-         siesta_get_sxrem_af => null()
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_sxrem_af', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the soft x-ray emissivity gp kernel value for the two indicies.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_gp_sxrem_ij. If no
-!>  soft x-ray emissivity profile was created zero is returned.
-!>
-!>  @param[in] this  A @ref siesta_class instance.
-!>  @param[in] i     ith profile position.
-!>  @param[in] j     jth profile position.
-!>  @param[in] index Index of the soft x-ray emissivity profile.
-!>  @returns The value of the gp kernel function for i, j.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_gp_sxrem_ij(this, i, j, index)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                     :: siesta_get_gp_sxrem_ij
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: i
-      INTEGER, INTENT(in)              :: j
-      INTEGER, INTENT(in)              :: index
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (ASSOCIATED(this%sxrem) .and.                                         &
-     &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_gp_sxrem_ij =                                              &
-     &      pprofile_get_gp(this%sxrem(index)%p, i, j)
-      ELSE
-         siesta_get_gp_sxrem_ij = 0.0
-      END IF
-
-      CALL profiler_set_stop_time('siesta_get_gp_sxrem_ij', start_time)
 
       END FUNCTION
 
@@ -2764,14 +1851,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      IF (ASSOCIATED(this%sxrem) .and.                                         &
-     &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_sxrem_cart =                                               &
-     &      pprofile_get_value(this%sxrem(index)%p,                            &
-     &                         this%get_p(x_cart, .true.))
-      ELSE
-         siesta_get_sxrem_cart = 0.0
-      END IF
+      siesta_get_sxrem_cart =                                                  &
+     &   vmec_get_sxrem_radial(this, this%get_p(x_cart, .true.),               &
+     &                         index)
 
       CALL profiler_set_stop_time('siesta_get_sxrem_cart', start_time)
 
@@ -2805,14 +1887,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      IF (ASSOCIATED(this%sxrem) .and.                                         &
-     &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_sxrem_radial =                                             &
-     &      pprofile_get_value(this%sxrem(index)%p,                            &
-     &                         this%get_p(s, .true.))
-      ELSE
-         siesta_get_sxrem_radial = 0.0
-      END IF
+      siesta_get_sxrem_radial =                                                &
+     &   vmec_get_sxrem_radial(this, this%get_p(x_cart, .true.),               &
+     &                         index)
 
       CALL profiler_set_stop_time('siesta_get_sxrem_radial', start_time)
 
@@ -2845,8 +1922,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_p_cart =                                                      &
-     &   siesta_get_p_flux(this, siesta_get_suv(this, x_cart),                 &
-     &                     normalize)
+     &   siesta_get_p_flux(this, this%get_suv(x_cart), normalize)
 
       CALL profiler_set_stop_time('siesta_get_p_cart', start_time)
 
@@ -3011,7 +2087,7 @@
       start_time = profiler_get_start_time()
 
 !  Determine if the point is inside or outside the last closed flux surface.
-      flux = siesta_get_suv(this, x_cart)
+      flux = this%get_suv(x_cart)
 
 !  There is no need to shift this.
       r_cyl = cart_to_cyl(x_cart)
@@ -3154,358 +2230,6 @@
       siesta_get_plasma_edge = vmec_get_plasma_edge(this, phi, r, z)
 
       CALL profiler_set_stop_time('siesta_get_plasma_edge', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume magnetic volume integration radial grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_magnetic_volume_rgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_magnetic_volume_rgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
-     &   siesta_get_magnetic_volume_rgrid
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_magnetic_volume_rgrid => this%magnetic_cache%rsuv
-
-      CALL profiler_set_stop_time('siesta_get_magnetic_volume_rgrid',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume magnetic volume integration z grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_magnetic_volume_zgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_magnetic_volume_zgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
-     &   siesta_get_magnetic_volume_zgrid
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_magnetic_volume_zgrid => this%magnetic_cache%zsuv
-
-      CALL profiler_set_stop_time('siesta_get_magnetic_volume_zgrid',          &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume magnetic volume integration jr grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_magnetic_volume_jrgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_magnetic_volume_jrgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
-     &   siesta_get_magnetic_volume_jrgrid
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_magnetic_volume_jrgrid => this%magnetic_cache%jrsuv
-
-      CALL profiler_set_stop_time('siesta_get_magnetic_volume_jrgrid',         &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume magnetic volume integration jphi grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_magnetic_volume_jphigrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_magnetic_volume_jphigrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
-     &   siesta_get_magnetic_volume_jphigrid
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_magnetic_volume_jphigrid => this%magnetic_cache%jphisuv
-
-      CALL profiler_set_stop_time('siesta_get_magnetic_volume_jphigrid',       &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume magnetic volume integration jz grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_magnetic_volume_jzgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_magnetic_volume_jzgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
-     &   siesta_get_magnetic_volume_jzgrid
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_magnetic_volume_jzgrid => this%magnetic_cache%jzsuv
-
-      CALL profiler_set_stop_time('siesta_get_magnetic_volume_jzgrid',         &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get volume integration element.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_volume_int_element.
-!>  For vmec this is J*ds*du*dv where J is the jacobian. The jacobian is
-!>  integrated into Jr, Jphi and Jz but still need to account for the sign of
-!>  the jacobian.
-!>
-!>  * ds = 1/(ns - 1)
-!>  * du = 2*Pi/number of flux surfaces
-!>  * dv = 2*Pi/number of field periods/number of toroidal planes
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The volume integration element.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_volume_int_element(this)
-      USE read_wout_mod, only: isigng
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: siesta_get_volume_int_element
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_volume_int_element = isigng*this%magnetic_cache%ds            &
-     &                              * this%magnetic_cache%du                   &
-     &                              * this%magnetic_cache%dv
-
-      CALL profiler_set_stop_time('siesta_get_volume_int_element',             &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the conducting surface integration kr grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_con_surface_krgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_con_surface_krgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
-     &   siesta_get_con_surface_krgrid
-      CLASS (siesta_class), INTENT(in)      :: this
-
-!  local variables
-      REAL (rprec)                          :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_con_surface_krgrid => this%magnetic_cache%kruv
-
-      CALL profiler_set_stop_time('siesta_get_con_surface_krgrid',             &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the conducting surface integration kphi grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_con_surface_kphigrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_con_surface_kphigrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
-     &   siesta_get_con_surface_kphigrid
-      CLASS (siesta_class), INTENT(in)      :: this
-
-!  local variables
-      REAL (rprec)                          :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_con_surface_kphigrid => this%magnetic_cache%kphiuv
-
-      CALL profiler_set_stop_time('siesta_get_con_surface_kphigrid',           &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get the conducting surface integration kz grid points.
-!>
-!>  This method overrides
-!>  @ref equilibrium::equilibrium_get_con_surface_kzgrid.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The radial grid points.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_con_surface_kzgrid(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
-     &   siesta_get_con_surface_kzgrid
-      CLASS (siesta_class), INTENT(in)      :: this
-
-!  local variables
-      REAL (rprec)                          :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_con_surface_kzgrid => this%magnetic_cache%kzuv
-
-      CALL profiler_set_stop_time('siesta_get_con_surface_kzgrid',             &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get area integration element.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_area_int_element.
-!>  For vmec this is |J||e^s|*du*dv where J is the jacobian. A 1/J term is
-!>  integrated into kr, kphi and kz. Since due to the resulting |J|/J term, the
-!>  the sign of the jacobian must be taken into account.
-!>  @see siesta_equilibrium::siesta_set_magnetic_cache_calc equation 3.
-!>
-!>  * du = 2*Pi/number of u grid
-!>  * dv = 2*Pi/number of field periods/number of toroidal planes
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns The area integration element.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_area_int_element(this)
-      USE read_wout_mod, only: isigng
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec) :: siesta_get_area_int_element
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_area_int_element = this%magnetic_cache%du_a                   &
-     &                            * this%magnetic_cache%dv_a*isigng
-
-      CALL profiler_set_stop_time('siesta_get_area_int_element',               &
-     &                            start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get external current.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_ext_currents.
-!>  External currents are defered to the underlying vmec.
-!>
-!>  @param[in]  this           A @ref siesta_class instance.
-!>  @param[in]  num_currents   Forces the number of currents to return if
-!>                             greater than zero.
-!>  @param[out] scale_currents Informs the caller that currents need to be
-!>                             scaled.
-!>  @returns The external currents.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_ext_currents(this, num_currents,                     &
-     &                                 scale_currents)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ext_currents
-      CLASS (siesta_class), INTENT(in)    :: this
-      INTEGER, INTENT(in)                 :: num_currents
-      LOGICAL, INTENT(out)                :: scale_currents
-
-!  local variables
-      REAL (rprec)                        :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      siesta_get_ext_currents =>                                               &
-     &   vmec_get_ext_currents(this, num_currents, scale_currents)
-
-      CALL profiler_set_stop_time('vmec_get_ext_currents', start_time)
 
       END FUNCTION
 
@@ -3842,98 +2566,9 @@
 
       END FUNCTION
 
-!-------------------------------------------------------------------------------
-!>  @brief Get start of the radial grid.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_grid_start.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Start of the radial grid.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_grid_start(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAl (rprec)                     :: siesta_get_grid_start
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_grid_start = 0.0
-      CALL profiler_set_stop_time('siesta_get_grid_start', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Get radial grid size.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_get_grid_size.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns Size of the radial grid.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_get_grid_stop(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      REAL (rprec)                     :: siesta_get_grid_stop
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      siesta_get_grid_stop = 1.0
-      CALL profiler_set_stop_time('siesta_get_grid_stop', start_time)
-
-      END FUNCTION
-
 !*******************************************************************************
 !  QUERY SUBROUTINES
 !*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  @brief Checks if a parameter id is a scaler value.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_is_scaler_value.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @param[in] id   ID of the parameter.
-!>  @returns True if the parameter is a scaler and false if otherwise.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_is_scaler_value(this, id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL                          :: siesta_is_scaler_value
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: id
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      SELECT CASE (id)
-
-         CASE (siesta_phi_offset_id, siesta_z_offset_id)
-            siesta_is_scaler_value = .true.
-
-         CASE DEFAULT
-            siesta_is_scaler_value = vmec_is_scaler_value(this, id)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('siesta_is_scaler_value', start_time)
-
-      END FUNCTION
-
 !-------------------------------------------------------------------------------
 !>  @brief Checks if a parameter id is a 1d array.
 !>
@@ -3959,11 +2594,7 @@
       start_time = profiler_get_start_time()
       SELECT CASE (id)
 
-         CASE (siesta_pp_ne_b_id, siesta_pp_ne_as_id,                          &
-     &         siesta_pp_ne_af_id, siesta_pp_te_b_id,                          &
-     &         siesta_pp_te_as_id, siesta_pp_te_af_id,                         &
-     &         siesta_pp_ti_b_id, siesta_pp_ti_as_id,                          &
-     &         siesta_pp_ti_af_id, siesta_helpert_id)
+         CASE (siesta_helpert_id)
             siesta_is_1d_array = .true.
 
          CASE DEFAULT
@@ -3972,44 +2603,6 @@
       END SELECT
 
       CALL profiler_set_stop_time('siesta_is_1d_array', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Checks if a parameter id is a 2d array.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_is_2d_array.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @param[in] id   ID of the parameter.
-!>  @returns True if the parameter is a 2d array and false if otherwise.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_is_2d_array(this, id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL                          :: siesta_is_2d_array
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: id
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-      SELECT CASE (id)
-
-         CASE (siesta_pp_sxrem_b_id, siesta_pp_sxrem_as_id,                    &
-     &         siesta_pp_sxrem_af_id)
-            siesta_is_2d_array = .true.
-
-         CASE DEFAULT
-            siesta_is_2d_array = vmec_is_2d_array(this, id)
-
-      END SELECT
-
-      CALL profiler_set_stop_time('siesta_is_2d_array', start_time)
 
       END FUNCTION
 
@@ -4039,14 +2632,7 @@
       start_time = profiler_get_start_time()
       SELECT CASE (id)
 
-         CASE (siesta_pp_ne_b_id, siesta_pp_ne_as_id,                          &
-     &         siesta_pp_ne_af_id, siesta_pp_te_b_id,                          &
-     &         siesta_pp_te_as_id, siesta_pp_te_af_id,                         &
-     &         siesta_pp_ti_b_id, siesta_pp_ti_as_id,                          &
-     &         siesta_pp_ti_af_id, siesta_pp_sxrem_b_id,                       &
-     &         siesta_pp_sxrem_as_id, siesta_pp_sxrem_af_id,                   &
-     &         siesta_phi_offset_id, siesta_z_offset_id,                       &
-     &         siesta_helpert_id)
+         CASE (siesta_helpert_id)
             siesta_is_recon_param = .true.
 
          CASE DEFAULT
@@ -4055,41 +2641,6 @@
       END SELECT
 
       CALL profiler_set_stop_time('siesta_is_recon_param', start_time)
-
-      END FUNCTION
-
-!-------------------------------------------------------------------------------
-!>  @brief Checks if a the point magnetics are being used.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_is_using_point.
-!>
-!>  @param[in] this A @ref siesta_class instance.
-!>  @returns True if the point magnetic are being used.
-!-------------------------------------------------------------------------------
-      FUNCTION siesta_is_using_point(this)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      LOGICAL                          :: siesta_is_using_point
-      CLASS (siesta_class), INTENT(in) :: this
-
-!  local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-!  Some compilers will generate code that will early terminate when a first
-!  operand to a .and. operator evaluates to false. Others are not so clever.
-!  Avoid running the second ASSOCIATED check if the magnetic cache is null.
-      siesta_is_using_point = ASSOCIATED(this%magnetic_cache)
-      IF (siesta_is_using_point) THEN
-         siesta_is_using_point =                                               &
-     &      ASSOCIATED(this%magnetic_cache%kxuv_full)
-      END IF
-
-      CALL profiler_set_stop_time('siesta_is_using_point', start_time)
 
       END FUNCTION
 
@@ -4331,28 +2882,9 @@
       start_time = profiler_get_start_time()
       WRITE (iou,*)
       WRITE (iou,*) 'Equilibrium Type : SIESTA'
-      IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_write(this%ne, 'pp_ne', iou)
-      END IF
-
-      IF (ASSOCIATED(this%sxrem)) THEN
-         DO i = 1, SIZE(this%sxrem)
-            IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_write(this%sxrem(i)%p, 'pp_sxrem', iou)
-            END IF
-         END DO
-      END IF
-
-      IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_write(this%te, 'pp_te', iou)
-      END IF
-
-      IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_write(this%ti, 'pp_ti', iou)
-      END IF
 
 !  Update the namelist input variables from the equilibrium solution.
-      CALL siesta_set_namelist(this)
+      CALL vmec_set_namelist(this)
 
       CALL siesta_namelist_write(TRIM(this%siesta_file_name) // '_out')
 
@@ -4397,7 +2929,7 @@
       start_time = profiler_get_start_time()
 
 !  Update the namelist input variables from the equilibrium solution.
-      CALL siesta_set_namelist(this)
+      CALL vmec_set_namelist(this)
 
 !  Write out the final namelist input file.
       iou_nl = 0
@@ -4443,103 +2975,6 @@
 !>  @begin_table
 !>  @end_table
 !-------------------------------------------------------------------------------
-!>  @brief Define NetCDF variables for the result file
-!>
-!>  This method overrides @ref equilibrium::equilibrium_def_result. Defines
-!>  dimensions and variables for the SIESTA contribution of the result file.
-!>  Multidimensional arrays need to be transposed so arrays appear in the
-!>  correct order in non fortran languages.
-!>
-!>  @param[in] this             A @ref siesta_class instance.
-!>  @param[in] result_ncid      NetCDF file id of the result file.
-!>  @param[in] maxnsetps_dim_id NetCDF dimension id of the number of steps
-!>                              dimension.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_def_result(this, result_ncid, maxnsetps_dim_id)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: result_ncid
-      INTEGER, INTENT(in)              :: maxnsetps_dim_id
-
-!  Local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      CALL vmec_def_result(this, result_ncid, maxnsetps_dim_id)
-
-      CALL profiler_set_stop_time('siesta_def_result', start_time)
-
-      END SUBROUTINE
-
-!-------------------------------------------------------------------------------
-!>  @brief Write inital data to NetCDF result file
-!>
-!>  This method overrides @ref equilibrium::equilibrium_write_init_data.
-!>
-!>  @param[in] this        A @ref siesta_class instance.
-!>  @param[in] result_ncid NetCDF file id of the result file.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_write_init_data(this, result_ncid)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: result_ncid
-
-!  Local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-!  vmec_write_init_data will write step data for the first step. Call this
-!  before the call to siesta_write_init_data to avoid writing the step twice.
-      CALL vmec_write_init_data(this, result_ncid)
-      CALL this%write_step_data(result_ncid, 1)
-
-      CALL profiler_set_stop_time('siesta_write_init_data', start_time)
-
-      END SUBROUTINE
-
-!-------------------------------------------------------------------------------
-!>  @brief Write step data to NetCDF result file
-!>
-!>  This method overrides @ref equilibrium::equilibrium_write_step_data.
-!>
-!>  @param[in] this         A @ref siesta_class instance.
-!>  @param[in] result_ncid  NetCDF file id of the result file.
-!>  @param[in] current_step Step index to write variables to.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_write_step_data(this, result_ncid, current_step)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: result_ncid
-      INTEGER, INTENT(in)              :: current_step
-
-!  Local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-!  vmec_write_init_data called from siesta_write_init_data already write the
-!  first vmec step.
-      IF (current_step .ne. 1) THEN
-         CALL vmec_write_step_data(this, result_ncid, current_step)
-      END IF
-
-      CALL profiler_set_stop_time('siesta_write_step_data', start_time)
-
-      END SUBROUTINE
 
 !*******************************************************************************
 !  MPI SUBROUTINES

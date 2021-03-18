@@ -72,9 +72,6 @@
 !>     @item{pp_ti_b,       1D Array of function ion temperature profile parameters.,      @ref pprofile_T::pprofile_class::b}
 !>     @item{pp_ti_as,      1D Array of segment ion temperature profile s poitions.,       @ref pprofile_T::pprofile_class::as}
 !>     @item{pp_ti_af,      1D Array of segment ion temperature profile f values.,         @ref pprofile_T::pprofile_class::af}
-!>     @item{pp_ze_b,       1D Array of function charge profile parameters.,               @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_ze_as,      1D Array of segment charge profile s poitions.,                @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_ze_af,      1D Array of segment charge profile f values.,                  @ref pprofile_T::pprofile_class::af}
 !>     @item{phi_offset,    Phi angle offset in radians,                                   @ref vmec_equilibrium::vmec_class::phi_offset}
 !>     @item{z_offset,      Z offset in meters,                                            @ref vmec_equilibrium::vmec_class::z_offset}
 !>  @end_table
@@ -280,42 +277,33 @@
 !>  1D Array of segment ion temperature profile f values. Defined in
 !>  @ref pprofile_T.
       INTEGER, PARAMETER :: vmec_pp_ti_af_id    = 72
-!>  1D Array of function zeff profile parameters. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: vmec_pp_ze_b_id     = 73
-!>  1D Array of segment zeff profile s poitions. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: vmec_pp_ze_as_id    = 74
-!>  1D Array of segment zeff profile f values. Defined in
-!>  @ref pprofile_T.
-      INTEGER, PARAMETER :: vmec_pp_ze_af_id    = 75
 
 !  Derived Parameters
 !>  Internal inducance. Defined in @ref v3f_vmec_comm. Computed in @ref eqfor.
-      INTEGER, PARAMETER :: vmec_vvc_smaleli_id = 76
+      INTEGER, PARAMETER :: vmec_vvc_smaleli_id = 73
 !>  Mean elongation. Defined in @ref v3f_vmec_comm. Computed in @ref eqfor.
-      INTEGER, PARAMETER :: vmec_vvc_kappa_p_id = 77
+      INTEGER, PARAMETER :: vmec_vvc_kappa_p_id = 74
 !>  Total Beta. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_betatot_id     = 78
+      INTEGER, PARAMETER :: vmec_betatot_id     = 75
 !>  Poloidal Beta. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_betapol_id     = 79
+      INTEGER, PARAMETER :: vmec_betapol_id     = 76
 !>  Toroidal Beta. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_betator_id     = 80
+      INTEGER, PARAMETER :: vmec_betator_id     = 77
 !>  Beta on axis. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_betaxis_id     = 81
+      INTEGER, PARAMETER :: vmec_betaxis_id     = 78
 !>  Poloidal current density. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_jcuru_id       = 82
+      INTEGER, PARAMETER :: vmec_jcuru_id       = 79
 !>  Toroidal current density. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_jcurv_id       = 83
+      INTEGER, PARAMETER :: vmec_jcurv_id       = 80
 !>  Current density in direction of b field. Defined in read_wout_mod.
-      INTEGER, PARAMETER :: vmec_jdotb_id       = 84
+      INTEGER, PARAMETER :: vmec_jdotb_id       = 81
 
 !>  Plasma Phi offset. This is a parameter to allow changing the phi angle of a
 !>  quasi helical state in an RFP. Defined in @ref vmec_equilibrium.
-      INTEGER, PARAMETER :: vmec_phi_offset_id  = 85
+      INTEGER, PARAMETER :: vmec_phi_offset_id  = 82
 !>  Plasma z offset. This is a parameter to allow changing the vertical shift of
 !>  the plasma
-      INTEGER, PARAMETER :: vmec_z_offset_id    = 86
+      INTEGER, PARAMETER :: vmec_z_offset_id    = 83
 
 !>  Virtual casing grid points for vacuum field measurements.
       INTEGER, PARAMETER :: magnetic_cache_vc_min_grid_points = 101
@@ -582,7 +570,7 @@
 !-------------------------------------------------------------------------------
       INTERFACE vmec_class
          MODULE PROCEDURE vmec_construct_sub,                                  &
-     &                    vmec_construct_full
+     &                    vmec_construct
       END INTERFACE
 
 !-------------------------------------------------------------------------------
@@ -608,21 +596,31 @@
 !-------------------------------------------------------------------------------
 !>  @brief Construct a @ref vmec_class object.
 !>
-!>  Allocates memory and initializes a @ref vmec_class object. Runs vmec
-!>  for one iteration to initialize all the input parameters. Defined in
-!>  @ref vmec_input.
+!>  Initializes a @ref vmec_class object. Runs vmec for one iteration to
+!>  initialize all the input parameters. Defined in @ref vmec_input.
 !>
+!>  @param[inout] this           A @ref vmec_class instance.
 !>  @param[in]    file_name      Filename of the vmec namelist input file.
 !>  @param[in]    wout_file_name Filename of the vmec wout input file.
+!>  @param[in]    ne             @ref pprofile_T for the electron density.
+!>  @param[in]    te             @ref pprofile_T for the electron temperature.
+!>  @param[in]    ti             @ref pprofile_T for the ion temperature.
+!>  @param[in]    sxrem          @ref pprofile_T for the soft x-ray emissivity.
+!>  @param[in]    phi_offset     Initial phi offset of the plasma relative to
+!>                               the diagnostics in radians.
+!>  @param[in]    z_offset       Initial Z offset of the plasma relative to the
+!>                               machine center.
+!>  @param[in]    pol_rad_ratio  Ratio of poloidal grid to radial grid. Defines
+!>                               the gird sizes when computing magnetic
+!>                               diagnostics.
 !>  @param[in]    iou            Input/output unit to log messages to.
 !>  @param[in]    eq_comm        MPI communicator pool for VMEC.
 !>  @param[in]    recon_comm     MPI communicator pool for reconstruction.
 !>  @param[inout] state_flags    Bitwise flags to indicate which parts of the
 !>                               model changed.
-!>  @returns A pointer to a constructed @ref vmec_class object.
 !-------------------------------------------------------------------------------
       SUBROUTINE vmec_construct_sub(this, file_name, wout_file_name,           &
-     &                              ne, te, ti, ze, sxrem, phi_offset,         &
+     &                              ne, te, ti, sxrem, phi_offset,             &
      &                              z_offset, pol_rad_ratio, iou,              &
      &                              eq_comm, recon_comm, state_flags)
       USE vmec_params, only: restart_flag, readin_flag, timestep_flag,         &
@@ -636,7 +634,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CLASS (vmec_class), INTENT(inout)    :: vmec_construct_sub
+      CLASS (vmec_class), INTENT(inout)    :: this
       CHARACTER (len=*), INTENT(in)        :: file_name
       CHARACTER (len=*), INTENT(in)        :: wout_file_name
       INTEGER, INTENT(in)                  :: iou
@@ -661,7 +659,6 @@
       this%ne => ne
       this%te => te
       this%ti => ti
-      this%ze => ze
       this%sxrem => sxrem
 
       this%phi_offset = phi_offset
@@ -798,23 +795,20 @@
 
       this%vmec_context_save => vmec_context_construct()
 
-      CALL profiler_set_stop_time('vmec_construct_eq', start_time)
+      CALL profiler_set_stop_time('vmec_construct_sub', start_time)
 
       END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Construct a @ref vmec_class object.
 !>
-!>  Allocates memory and initializes a @ref vmec_class object. Runs vmec
-!>  for one iteration to initialize all the input parameters. Defined in
-!>  @ref vmec_input.
+!>  Allocates memory and initializes a @ref vmec_class object.
 !>
 !>  @param[in]    file_name      Filename of the vmec namelist input file.
 !>  @param[in]    wout_file_name Filename of the vmec wout input file.
 !>  @param[in]    ne             @ref pprofile_T for the electron density.
 !>  @param[in]    te             @ref pprofile_T for the electron temperature.
 !>  @param[in]    ti             @ref pprofile_T for the ion temperature.
-!>  @param[in]    ze             @ref pprofile_T for Z effective.
 !>  @param[in]    sxrem          @ref pprofile_T for the soft x-ray emissivity.
 !>  @param[in]    phi_offset     Initial phi offset of the plasma relative to
 !>                               the diagnostics in radians.
@@ -830,21 +824,20 @@
 !>                               model changed.
 !>  @returns A pointer to a constructed @ref vmec_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_construct(file_name, wout_file_name, ne, te,               &
-     &                        ti, ze, sxrem, phi_offset, z_offset,             &
+      FUNCTION vmec_construct(file_name, wout_file_name, ne, te, ti,           &
+     &                        sxrem, phi_offset, z_offset,                     &
      &                        pol_rad_ratio, iou, eq_comm,                     &
      &                        recon_comm, state_flags)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), POINTER           :: vmec_construct_full
+      TYPE (vmec_class), POINTER           :: vmec_construct
       CHARACTER (len=*), INTENT(in)        :: file_name
       CHARACTER (len=*), INTENT(in)        :: wout_file_name
       TYPE (pprofile_class), POINTER       :: ne
       TYPE (pprofile_class), POINTER       :: te
       TYPE (pprofile_class), POINTER       :: ti
-      TYPE (pprofile_class), POINTER       :: ze
       TYPE (pprofile_pointer), DIMENSION(:), POINTER  :: sxrem
       REAL (rprec), INTENT(in)             :: phi_offset
       REAL (rprec), INTENT(in)             :: z_offset
@@ -860,14 +853,14 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      ALLOCATE(vmec_construct_full)
+      ALLOCATE(vmec_construct)
 
-      CALL vmec_construct_sub(vmec_construct_full, file_name,                  &
-     &                        wout_file_name, ne, te, ti, ze, sxrem,           &
+      CALL vmec_construct_sub(vmec_construct, file_name,                       &
+     &                        wout_file_name, ne, te, ti, sxrem,               &
      &                        phi_offset, z_offset, pol_rad_ratio, iou,        &
      &                        eq_comm, recon_comm, state_flags)
 
-      CALL profiler_set_stop_time('vmec_construct_full', start_time)
+      CALL profiler_set_stop_time('vmec_construct', start_time)
 
       END FUNCTION
 
@@ -908,11 +901,6 @@
       IF (ASSOCIATED(this%ti)) THEN
          CALL pprofile_destruct(this%ti)
          this%ti => null()
-      END IF
-
-      IF (ASSOCIATED(this%ze)) THEN
-         CALL pprofile_destruct(this%ze)
-         this%ze => null()
       END IF
 
       IF (ASSOCIATED(this%sxrem)) THEN
@@ -1201,18 +1189,6 @@
          CASE (vmec_pp_ti_af_id)
             state_flags = IBSET(state_flags, model_state_ti_flag)
             this%ti%af(i_index) = value
-
-         CASE (vmec_pp_ze_b_id)
-            state_flags = IBSET(state_flags, model_state_ze_flag)
-            this%ze%b(i_index) = value
-
-         CASE (vmec_pp_ze_as_id)
-            state_flags = IBSET(state_flags, model_state_ze_flag)
-            this%ze%as(i_index) = value
-
-         CASE (vmec_pp_ze_af_id)
-            state_flags = IBSET(state_flags, model_state_ze_flag)
-            this%ze%af(i_index) = value
 
 !  There are multiple soft x-ray emission profiles. These need to be offset by
 !  the array index.
@@ -2272,15 +2248,6 @@
          CASE ('pp_ti_af')
             vmec_get_param_id = vmec_pp_ti_af_id
 
-         CASE ('pp_ze_b')
-            vmec_get_param_id = vmec_pp_ze_b_id
-
-         CASE ('pp_ze_as')
-            vmec_get_param_id = vmec_pp_ze_as_id
-
-         CASE ('pp_ze_af')
-            vmec_get_param_id = vmec_pp_ze_af_id
-
          CASE ('vvc_smaleli')
             vmec_get_param_id = vmec_vvc_smaleli_id
 
@@ -2545,15 +2512,6 @@
          CASE (vmec_pp_ti_af_id)
             vmec_get_param_value = this%ti%af(i_index)
 
-         CASE (vmec_pp_ze_b_id)
-            vmec_get_param_value = this%ze%b(i_index)
-
-         CASE (vmec_pp_ze_as_id)
-            vmec_get_param_value = this%ze%as(i_index)
-
-         CASE (vmec_pp_ze_af_id)
-            vmec_get_param_value = this%ze%af(i_index)
-
          CASE (vmec_vvc_smaleli_id)
             vmec_get_param_value = vvc_smaleli
 
@@ -2795,15 +2753,6 @@
 
          CASE (vmec_pp_ti_af_id)
             vmec_get_param_name = 'pp_ti_af'
-
-         CASE (vmec_pp_ze_b_id)
-            vmec_get_param_name = 'pp_ze_b'
-
-         CASE (vmec_pp_ze_as_id)
-            vmec_get_param_name = 'pp_ze_as'
-
-         CASE (vmec_pp_ze_af_id)
-            vmec_get_param_name = 'pp_ze_af'
 
          CASE (vmec_vvc_smaleli_id)
             vmec_get_param_name = 'vvc_smaleli'
@@ -5034,7 +4983,6 @@
      &         vmec_pp_ne_b_id, vmec_pp_ne_as_id, vmec_pp_ne_af_id,            &
      &         vmec_pp_te_b_id, vmec_pp_te_as_id, vmec_pp_te_af_id,            &
      &         vmec_pp_ti_b_id, vmec_pp_ti_as_id, vmec_pp_ti_af_id,            &
-     &         vmec_pp_ze_b_id, vmec_pp_ze_as_id, vmec_pp_ze_af_id,            &
      &         vmec_extcur_id, vmec_phi_id, vmec_iotaf_id,                     &
      &         vmec_iotas_id, vmec_jcuru_id, vmec_jcurv_id,                    &
      &         vmec_jdotb_id, vmec_raxis_cc_id, vmec_raxis_cs_id,              &
@@ -5129,7 +5077,6 @@
      &         vmec_pp_ne_b_id, vmec_pp_ne_as_id, vmec_pp_ne_af_id,            &
      &         vmec_pp_te_b_id, vmec_pp_te_as_id, vmec_pp_te_af_id,            &
      &         vmec_pp_ti_b_id, vmec_pp_ti_as_id, vmec_pp_ti_af_id,            &
-     &         vmec_pp_ze_b_id, vmec_pp_ze_as_id, vmec_pp_ze_af_id,            &
      &         vmec_pp_sxrem_b_id, vmec_pp_sxrem_as_id,                        &
      &         vmec_pp_sxrem_af_id, vmec_extcur_id, vmec_curtor_id,            &
      &         vmec_phiedge_id, vmec_pres_scale_id, vmec_bloat_id,             &
@@ -5582,12 +5529,8 @@
          CALL pprofile_write(this%ti, 'pp_ti', iou)
       END IF
 
-      IF (ASSOCIATED(this%ze)) THEN
-         CALL pprofile_write(this%ze, 'pp_ze', iou)
-      END IF
-
 !  Update the namelist input variables from the equilibrium solution.
-      CALL vmec_set_namelist(this)
+      CALL this%set_namelist()
 
       iou_nl = 0
       CALL safe_open(iou_nl, status,                                           &
