@@ -1283,14 +1283,14 @@
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%phi_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL vmec_set_magnetic_cache(this)
+               CALL this%set_magnetic_cache()
             END IF
 
          CASE (vmec_z_offset_id)
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%z_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL vmec_set_magnetic_cache(this)
+               CALL this%set_magnetic_cache()
             END IF
 
          CASE DEFAULT
@@ -5356,7 +5356,7 @@
 
                vmec_converge = .true.
                IF (ASSOCIATED(this%magnetic_cache)) THEN
-                  CALL vmec_set_magnetic_cache(this)
+                  CALL this%set_magnetic_cache()
                END IF
 
             CASE DEFAULT
@@ -5512,7 +5512,7 @@
       CALL LoadRZL
 
       IF (ASSOCIATED(this%magnetic_cache)) THEN
-         CALL vmec_set_magnetic_cache(this)
+         CALL this%set_magnetic_cache()
       END IF
 
       IF (ASSOCIATED(this%ne)) THEN
@@ -6054,7 +6054,7 @@
          CALL LoadRZL
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL vmec_set_magnetic_cache(this)
+            CALL this%set_magnetic_cache()
          END IF
       END IF
 
@@ -6103,7 +6103,7 @@
          CALL LoadRZL
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL vmec_set_magnetic_cache(this)
+            CALL this%set_magnetic_cache()
          END IF
       END IF
 
