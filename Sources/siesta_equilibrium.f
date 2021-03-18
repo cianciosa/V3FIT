@@ -784,14 +784,14 @@
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%phi_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL siesta_set_magnetic_cache(this)
+               CALL this%set_magnetic_cache()
             END IF
 
          CASE (siesta_z_offset_id)
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%z_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL siesta_set_magnetic_cache(this)
+               CALL this%set_magnetic_cache()
             END IF
 
          CASE (siesta_helpert_id)
@@ -4231,7 +4231,7 @@
          END IF
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL siesta_set_magnetic_cache(this)
+            CALL this%set_magnetic_cache()
          END IF
       END IF
 
@@ -4692,7 +4692,7 @@
          END IF
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL siesta_set_magnetic_cache(this)
+            CALL this%set_magnetic_cache()
          END IF
       END IF
 #endif
