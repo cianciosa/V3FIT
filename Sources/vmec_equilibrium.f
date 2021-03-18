@@ -569,8 +569,7 @@
 !>  @ref vmec_construct_full or @ref vmec_construct_eq
 !-------------------------------------------------------------------------------
       INTERFACE vmec_class
-         MODULE PROCEDURE vmec_construct_sub,                                  &
-     &                    vmec_construct
+         MODULE PROCEDURE vmec_construct
       END INTERFACE
 
 !-------------------------------------------------------------------------------
