@@ -3057,7 +3057,7 @@
      &                                                 .false.)
          END IF
       ELSE
-         siesta_get_B_vec = siesta_get_int_b_plasma(this, flux)
+         siesta_get_B_vec = this%get_int_b_plasma(flux)
       END IF
 
       IF (.not.cyl) THEN
