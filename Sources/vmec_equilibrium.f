@@ -519,6 +519,7 @@
          PROCEDURE :: get_B_vec => vmec_get_B_vec
          PROCEDURE :: get_Int_B_dphi => vmec_get_Int_B_dphi
          PROCEDURE :: get_suv => vmec_get_suv
+         PROCEDURE :: get_s => vmec_get_s
          PROCEDURE :: get_plasma_edge => vmec_get_plasma_edge
          PROCEDURE :: get_magnetic_volume_rgrid =>                             &
      &                   vmec_get_magnetic_volume_rgrid
