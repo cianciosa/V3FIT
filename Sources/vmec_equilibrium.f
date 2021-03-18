@@ -854,9 +854,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      vmec_construct_full => vmec_construct(file_name, wout_file_name,         &
-     &                                      iou, eq_comm, recon_comm,          &
-     &                                      state_flags)
+      vmec_construct_full => vmec_class(file_name, wout_file_name,             &
+     &                                  iou, eq_comm, recon_comm,              &
+     &                                  state_flags)
 
       vmec_construct_full%ne => ne
       vmec_construct_full%te => te
