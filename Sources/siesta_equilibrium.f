@@ -317,7 +317,6 @@
          siesta_construct%siesta_file_name = TRIM(file_name)
 
          CALL siesta_namelist_read(TRIM(file_name))
-         wout_file = vmec%wout_file_name
          WRITE (siesta_construct%restart_file_name,1000)                       &
      &      TRIM(restart_ext)
 
