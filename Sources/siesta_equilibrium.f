@@ -2559,7 +2559,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ti_radial =                                                   &
-     &   pprofile_get_value(this%ti, this%get_p(this, s, .true.))
+     &   pprofile_get_value(this%ti, this%get_p(s, .true.))
 
       CALL profiler_set_stop_time('siesta_get_ti_radial', start_time)
 
