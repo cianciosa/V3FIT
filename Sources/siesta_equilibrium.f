@@ -438,7 +438,7 @@
             helpert(i_index) = value
 
          CASE DEFAULT
-            CALL vmec_set_param(this%vmec, id, i_index, j_index, value,        &
+            CALL vmec_set_param(this, id, i_index, j_index, value,             &
      &                          eq_comm, state_flags)
 
       END SELECT
