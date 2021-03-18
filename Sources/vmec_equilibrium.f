@@ -543,6 +543,7 @@
          PROCEDURE :: get_area_int_element =>                                  &
      &                   vmec_get_area_int_element
          PROCEDURE :: get_ext_currents => vmec_get_ext_currents
+         PROCEDURE :: get_B_vac => vmec_get_B_vac
          PROCEDURE :: get_ext_b_plasma => vmec_get_ext_b_plasma
          PROCEDURE :: get_int_b_plasma => vmec_get_int_b_plasma
 
