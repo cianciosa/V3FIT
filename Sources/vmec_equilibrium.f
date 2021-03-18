@@ -514,7 +514,6 @@
          PROCEDURE :: get_p_cart => vmec_get_p_cart
          PROCEDURE :: get_p_radial => vmec_get_p_radial
          GENERIC   :: get_p => get_p_cart, get_p_radial
-         PROCEDURE :: get_p_flux => vmec_get_p_flux
 
          PROCEDURE :: get_B_vec => vmec_get_B_vec
          PROCEDURE :: get_Int_B_dphi => vmec_get_Int_B_dphi
