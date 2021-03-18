@@ -31,24 +31,19 @@
 !>  @par Sub Classes:
 !>  @ref vmec_equilibrium
 !-------------------------------------------------------------------------------
-      TYPE, ABSTRACT :: equilibrium_class
+      TYPE :: equilibrium_class
 !>  Controls if an equilibrium is forced to be resolved or not.
          LOGICAL :: force_solve
       CONTAINS
-         PROCEDURE (equilibrium_set_param), DEFERRED         ::                &
-     &      set_param
          PROCEDURE                                           ::                &
      &      set_magnetic_cache_response =>                                     &
      &         equilibrium_set_magnetic_cache_response
          PROCEDURE                                           ::                &
      &      set_magnetic_cache_point =>                                        &
      &         equilibrium_set_magnetic_cache_point
-         PROCEDURE (equilibrium_get_param_id), DEFERRED      ::                &
-     &      get_param_id
-         PROCEDURE (equilibrium_get_param_value), DEFERRED   ::                &
-     &      get_param_value
-         PROCEDURE (equilibrium_get_param_name), DEFERRED    ::                &
-     &      get_param_name
+         GENERIC                                             ::                &
+     &      set_magnetic_cache => set_magnetic_cache_response,                 &
+     &                            set_magnetic_cache_point
 
          PROCEDURE                                           ::                &
      &      get_gp_ne_num_hyper_param =>                                       &
@@ -139,8 +134,6 @@
      &      get_p => get_p_cart, get_p_radial
 
          PROCEDURE                                           ::                &
-     &      get_B_vec => equilibrium_get_B_vec
-         PROCEDURE                                           ::                &
      &      get_plasma_edge => equilibrium_get_plasma_edge
          PROCEDURE                                           ::                &
      &      get_magnetic_volume_rgrid =>                                       &
@@ -172,8 +165,6 @@
          PROCEDURE                                           ::                &
      &      get_area_int_element =>                                            &
      &         equilibrium_get_area_int_element
-         PROCEDURE (equilibrium_get_ext_currents), DEFERRED  ::                &
-     &      get_ext_currents
          PROCEDURE                                           ::                &
      &      get_ext_b_plasma => equilibrium_get_ext_b_plasma
          PROCEDURE                                           ::                &
@@ -181,15 +172,11 @@
          PROCEDURE                                           ::                &
      &      get_grid_start => equilibrium_get_grid_start
          PROCEDURE                                           ::                &
-            get_grid_stop => equilibrium_get_grid_stop
+     &      get_grid_stop => equilibrium_get_grid_stop
          PROCEDURE                                           ::                &
      &      is_scaler_value => equilibrium_is_scaler_value
-         PROCEDURE (equilibrium_is_1d_array), DEFERRED       ::                &
-     &      is_1d_array
          PROCEDURE                                           ::                &
-     &      equilibrium_is_2d_array => is_2d_array
-         PROCEDURE (equilibrium_is_recon_param), DEFERRED    ::                &
-     &      is_recon_param
+     &      is_2d_array => equilibrium_is_2d_array
          PROCEDURE                                           ::                &
      &      is_using_point => equilibrium_is_using_point
          PROCEDURE                                           ::                &
@@ -200,9 +187,6 @@
      &      save_state => equilibrium_save_state
          PROCEDURE                                           ::                &
      &      reset_state => equilibrium_reset_state
-         PROCEDURE (equilibrium_write), DEFERRED             :: write
-         PROCEDURE (equilibrium_write_input), DEFERRED       ::                &
-     &      write_input
          PROCEDURE                                           ::                &
      &      def_result => equilibrium_def_result
          PROCEDURE                                           ::                &
@@ -229,142 +213,6 @@
 !-------------------------------------------------------------------------------
       INTERFACE equilibrium_construct
          MODULE PROCEDURE equilibrium_construct
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for set_param methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_set_param
-         SUBROUTINE set_param(this, id, i_index, j_index, value,               &
-     &                        eq_comm, state_flags)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(inout) :: this
-         INTEGER, INTENT(in)                      :: id
-         INTEGER, INTENT(in)                      :: i_index
-         INTEGER, INTENT(in)                      :: j_index
-         REAL (rprec), INTENT(in)                 :: value
-         INTEGER, INTENT(in)                      :: eq_comm
-         INTEGER, INTENT(inout)                   :: state_flags
-         END SUBROUTINE
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_param_id methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_param_id
-         FUNCTION get_param_id(this, param_name)
-         IMPORT
-         INTEGER                               :: get_param_id
-         CLASS (equilibrium_class), INTENT(in) :: this
-         CHARACTER (len=*), INTENT(in)         :: param_name
-         END FUNCTION
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_param_name methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_param_name
-         FUNCTION get_param_name(this, id)
-         IMPORT
-         REAL (rprec)                          :: get_param_name
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: id
-         END FUNCTION
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_param_value methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_param_value
-         FUNCTION get_param_value(this, id, i_index, j_index)
-         IMPORT
-         REAL (rprec) :: equilibrium_get_param_value
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: id
-         INTEGER, INTENT(in)                   :: i_index
-         INTEGER, INTENT(in)                   :: j_index
-         END FUNCTION
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_B_vec methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_B_vec
-         FUNCTION get_B_vec(this, x_cart, cyl)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in)  :: this
-         REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-         LOGICAL, INTENT(in)                    :: cyl
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_Int_B_dphi methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_Int_B_dphi
-         FUNCTION get_Int_B_dphi(this, x_cart, cyl)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         REAL (rprec), INTENT(in)              :: r
-         REAL (rprec), INTENT(in)              :: theta
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for get_ext_currents methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_get_ext_currents
-         FUNCTION get_ext_currents(this, num_currents, scale_currents)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER                               :: num_currents
-         LOGICAL, INTENT(out)                  :: scale_currents
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for is_1d_array methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_is_1d_array
-         FUNCTION is_1d_array(this, id)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: id
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for is_recon_param methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_is_recon_param
-         FUNCTION is_recon_param(this, id)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: id
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for write methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_write
-         FUNCTION write(this, iou)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: iou
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Abstract Interface for write_input methods.
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_write_input
-         FUNCTION write_input(this, iou)
-         IMPORT
-         CLASS (equilibrium_class), INTENT(in) :: this
-         INTEGER, INTENT(in)                   :: current_step
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the equilibrium set magnetic cache
-!-------------------------------------------------------------------------------
-      INTERFACE equilibrium_set_magnetic_cache
-         MODULE PROCEDURE equilibrium_set_magnetic_cache_response,             &
-     &                    equilibrium_set_magnetic_cache_point
       END INTERFACE
 
       CONTAINS
@@ -531,10 +379,10 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_gp_ne_num_hyper_param
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -562,11 +410,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER  :: equilibrium_get_ne_af
-      TYPE (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(:), POINTER   :: equilibrium_get_ne_af
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -596,12 +444,12 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ne_ij
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: i
-      INTEGER, INTENT(in)                  :: j
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: i
+      INTEGER, INTENT(in)                   :: j
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -634,7 +482,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ne_pi
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -673,12 +521,12 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ne_pp
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -710,7 +558,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ne_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -746,11 +594,11 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ne_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: r
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -779,10 +627,10 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_gp_te_num_hyper_param
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -810,11 +658,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER  :: equilibrium_get_te_af
-      TYPE (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(:), POINTER   :: equilibrium_get_te_af
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -846,12 +694,12 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_te_ij
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: i
-      INTEGER, INTENT(in)                  :: j
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: i
+      INTEGER, INTENT(in)                   :: j
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -885,7 +733,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_te_pi
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -924,7 +772,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_te_pp
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -961,7 +809,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_te_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -997,11 +845,11 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_te_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: r
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1030,10 +878,10 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_gp_ti_num_hyper_param
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1061,11 +909,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER  :: equilibrium_get_ti_af
-      TYPE (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(:), POINTER   :: equilibrium_get_ti_af
+      ClASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1097,12 +945,12 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ti_ij
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: i
-      INTEGER, INTENT(in)                  :: j
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: i
+      INTEGER, INTENT(in)                   :: j
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1135,7 +983,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ti_pi
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -1174,7 +1022,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_ti_pp
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -1211,7 +1059,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ti_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -1247,11 +1095,11 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ti_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: r
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1281,11 +1129,11 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_gp_sxrem_num_hyper_param
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: index
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: index
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1314,12 +1162,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER  :: equilibrium_get_sxrem_af
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: index
+      REAL (rprec), DIMENSION(:), POINTER   :: equilibrium_get_sxrem_af
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: index
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1350,13 +1198,13 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_sxrem_ij
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: i
-      INTEGER, INTENT(in)                  :: j
-      INTEGER, INTENT(in)                  :: index
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: i
+      INTEGER, INTENT(in)                   :: j
+      INTEGER, INTENT(in)                   :: index
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1391,7 +1239,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_sxrem_pi
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
       INTEGER, INTENT(in)                    :: index
@@ -1432,13 +1280,13 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_gp_sxrem_pp
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
       INTEGER, INTENT(in)                    :: index
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1471,7 +1319,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_sxrem_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: index
 
@@ -1509,12 +1357,12 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_sxrem_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
-      INTEGER, INTENT(in)                  :: index
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: r
+      INTEGER, INTENT(in)                   :: index
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1546,7 +1394,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_p_cart
-      TYPE (equilibrium_class), INTENT(in)   :: this
+      CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -1581,11 +1429,11 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_p_radial
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)             :: r
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: r
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1625,13 +1473,13 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_plasma_edge
-      TYPE (equilibrium_class), INTENT(in)             :: this
-      REAL (rprec), INTENT (in)                        :: phi
-      REAL (rprec), DIMENSION(:), POINTER              :: r
-      REAL (rprec), DIMENSION(:), POINTER              :: z
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT (in)             :: phi
+      REAL (rprec), DIMENSION(:), POINTER   :: r
+      REAL (rprec), DIMENSION(:), POINTER   :: z
 
 !  local variables
-      REAL (rprec)                                     :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1663,10 +1511,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   equilibrium_get_magnetic_volume_rgrid
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1696,10 +1544,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   equilibrium_get_magnetic_volume_zgrid
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1729,10 +1577,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   equilibrium_get_magnetic_volume_jrgrid
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1762,10 +1610,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   equilibrium_get_magnetic_volume_jphigrid
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1795,10 +1643,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   equilibrium_get_magnetic_volume_jzgrid
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1827,10 +1675,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_volume_int_element
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1860,7 +1708,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   equilibrium_get_con_surface_krgrid
-      TYPE (equilibrium_class), INTENT(in)  :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1893,7 +1741,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   equilibrium_get_con_surface_kphigrid
-      TYPE (equilibrium_class), INTENT(in)  :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1926,7 +1774,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   equilibrium_get_con_surface_kzgrid
-      TYPE (equilibrium_class), INTENT(in)  :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1958,10 +1806,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_area_int_element
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1993,12 +1841,12 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3) :: equilibrium_get_ext_b_plasma
-      TYPE (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), DIMENSION(3)           :: position
-      LOGICAL, INTENT(in)                  :: axi_only
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(3)            :: position
+      LOGICAL, INTENT(in)                   :: axi_only
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2027,10 +1875,10 @@
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_grid_size
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2059,10 +1907,10 @@
 
 !  Declare Arguments
       REAl (rprec) :: equilibrium_get_grid_start
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2091,10 +1939,10 @@
 
 !  Declare Arguments
       REAl (rprec) :: equilibrium_get_grid_stop
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2127,11 +1975,11 @@
 
 !  Declare Arguments
       LOGICAL :: equilibrium_is_scaler_value
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: id
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2161,11 +2009,11 @@
 
 !  Declare Arguments
       LOGICAL :: equilibrium_is_2d_array
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: id
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: id
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2193,10 +2041,10 @@
 
 !  Declare Arguments
       LOGICAL :: equilibrium_is_using_point
-      TYPE (equilibrium_class), INTENT(in) :: this
+      CLASS (equilibrium_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2229,21 +2077,22 @@
 !-------------------------------------------------------------------------------
       FUNCTION equilibrium_converge(this, num_iter, iou, eq_comm,              &
      &                              state_flags)
+      USE mpi_inc
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                                 :: equilibrium_converge
-      TYPE (equilibrium_class), INTENT(inout) :: this
-      INTEGER, INTENT(inout)                  :: num_iter
-      INTEGER, INTENT(in)                     :: iou
-      INTEGER, INTENT(in)                     :: eq_comm
-      INTEGER, INTENT(in)                     :: state_flags
+      LOGICAL                                  :: equilibrium_converge
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      INTEGER, INTENT(inout)                   :: num_iter
+      INTEGER, INTENT(in)                      :: iou
+      INTEGER, INTENT(in)                      :: eq_comm
+      INTEGER, INTENT(in)                      :: state_flags
 
 !  local variables
-      INTEGER                                 :: error
-      INTEGER                                 :: eq_rank
-      REAL (rprec)                            :: start_time
+      INTEGER                                  :: error
+      INTEGER                                  :: eq_rank
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2274,15 +2123,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: index
-      INTEGER, INTENT(in)                  :: eq_comm
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: index
+      INTEGER, INTENT(in)                   :: eq_comm
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
+
       CALL profiler_set_stop_time('equilibrium_read_vac_file',                 &
      &                            start_time)
 
@@ -2303,10 +2153,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
+      CLASS (equilibrium_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2330,23 +2180,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
+      CLASS (equilibrium_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      SELECT CASE (this%type)
-
-         CASE (equilibrium_vmec_type)
-            CALL vmec_reset_state(this%vmec)
-
-         CASE (equilibrium_siesta_type)
-            CALL siesta_reset_state(this%siesta)
-
-      END SELECT
 
       CALL profiler_set_stop_time('equilibrium_reset_state',                   &
      &                            start_time)
@@ -2356,6 +2196,39 @@
 !*******************************************************************************
 !  NETCDF SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Define NetCDF variables for the result file
+!>
+!>  This method is virtual. The actual defining of the equilibrium variables
+!>  should be handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_def_result
+!>  @see siesta_equilibrium::siesta_def_result
+!>
+!>  @param[in] this             A @ref equilibrium_class instance.
+!>  @param[in] result_ncid      NetCDF file id of the result file.
+!>  @param[in] maxnsetps_dim_id NetCDF dimension id of the number of steps
+!>                              dimension.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_def_result(this, result_ncid,                     &
+     &                                  maxnsetps_dim_id)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: result_ncid
+      INTEGER, INTENT(in)                   :: maxnsetps_dim_id
+
+!  local variables
+      REAL (rprec)                         :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      CALL profiler_set_stop_time('equilibrium_def_result', start_time)
+
+      END SUBROUTINE
+
 !-------------------------------------------------------------------------------
 !>  @brief Write inital data to NetCDF result file
 !>
@@ -2372,11 +2245,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: result_ncid
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: result_ncid
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2404,12 +2277,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: result_ncid
-      INTEGER, INTENT(in)                  :: current_step
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: result_ncid
+      INTEGER, INTENT(in)                   :: current_step
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2436,12 +2309,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                  :: result_ncid
-      INTEGER, INTENT(in)                  :: current_step
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: result_ncid
+      INTEGER, INTENT(in)                   :: current_step
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2467,13 +2340,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                     :: recon_comm
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      REAL (rprec)                            :: start_time
-      INTEGER                                 :: error
+      REAL (rprec)                             :: start_time
+      INTEGER                                  :: error
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2498,15 +2371,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (equilibrium_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                     :: index
-      INTEGER, INTENT(in)                     :: recon_comm
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: index
+      INTEGER, INTENT(in)                      :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      REAL (rprec)                            :: start_time
-      INTEGER                                 :: mpi_rank
-      INTEGER                                 :: error
+      REAL (rprec)                             :: start_time
+      INTEGER                                  :: mpi_rank
+      INTEGER                                  :: error
 
 !  Start of executable code
       start_time = profiler_get_start_time()
