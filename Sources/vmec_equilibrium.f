@@ -581,7 +581,7 @@
 !>  @ref vmec_construct_full or @ref vmec_construct_eq
 !-------------------------------------------------------------------------------
       INTERFACE vmec_class
-         MODULE PROCEDURE vmec_construct_eq,                                   &
+         MODULE PROCEDURE vmec_construct_sub,                                  &
      &                    vmec_construct_full
       END INTERFACE
 
@@ -621,8 +621,10 @@
 !>                               model changed.
 !>  @returns A pointer to a constructed @ref vmec_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_construct_eq(file_name, wout_file_name, iou,               &
-     &                           eq_comm, recon_comm, state_flags)
+      SUBROUTINE vmec_construct_sub(this, file_name, wout_file_name,           &
+     &                              ne, te, ti, ze, sxrem, phi_offset,         &
+     &                              z_offset, pol_rad_ratio, iou,              &
+     &                              eq_comm, recon_comm, state_flags)
       USE vmec_params, only: restart_flag, readin_flag, timestep_flag,         &
      &                       successful_term_flag, norm_term_flag,             &
      &                       more_iter_flag
@@ -634,7 +636,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_class), POINTER           :: vmec_construct_eq
+      CLASS (vmec_class), INTENT(inout)    :: vmec_construct_sub
       CHARACTER (len=*), INTENT(in)        :: file_name
       CHARACTER (len=*), INTENT(in)        :: wout_file_name
       INTEGER, INTENT(in)                  :: iou
@@ -655,6 +657,17 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
+
+      this%ne => ne
+      this%te => te
+      this%ti => ti
+      this%ze => ze
+      this%sxrem => sxrem
+
+      this%phi_offset = phi_offset
+      this%z_offset = z_offset
+
+      this%pol_rad_ratio = pol_rad_ratio
 
       state_flags = IBSET(state_flags, model_state_vmec_flag)
 
@@ -678,8 +691,6 @@
      &                 'file ' // TRIM(file_name)
       END IF
 
-      ALLOCATE(vmec_construct_eq)
-
 !  Initialize VMEC by taking a single step.
       ictrl_array = 0
       ictrl_array(1) = IOR(ictrl_array(1), restart_flag)
@@ -690,7 +701,7 @@
 
       l_v3fit = .true.
 
-      vmec_construct_eq%vmec_file_name = TRIM(file_name)
+      this%vmec_file_name = TRIM(file_name)
 
 !  Only the rank zero reconstruction pool runs the inital convergence. Initalize
 !  VMEC on that pool then broad cast the size of the largest NS value to the
@@ -702,13 +713,12 @@
 
 !  runvmec deletes the string holding the wout file to read. As a result save
 !  the wout filename before using it.
-            vmec_construct_eq%wout_file_name = wout_file_name
+            this%wout_file_name = wout_file_name
             CALL runvmec(ictrl_array, file_name, .false., eq_comm,             &
      &                   wout_file_name)
 
             IF (eq_rank .eq. 0) THEN
-               CALL read_wout_file(vmec_construct_eq%wout_file_name,           &
-     &                             error)
+               CALL read_wout_file(this%wout_file_name, error)
                CALL assert_eq(error, 0, 'Error loading initialized ' //        &
      &                               'wout file.')
                CALL LoadRZL
@@ -734,29 +744,28 @@
             END DO
          END IF
 
-         vmec_construct_eq%ns_index = MAXLOC(ns_array, 1)
+         this%ns_index = MAXLOC(ns_array, 1)
          IF (eq_rank .eq. 0) THEN
-            CALL MPI_BCAST(vmec_construct_eq%ns_index, 1, MPI_INTEGER,         &
-     &                     0, recon_comm, error)
+            CALL MPI_BCAST(this%ns_index, 1, MPI_INTEGER, 0,                   &
+     &                     recon_comm, error)
          END IF
       ELSE
          IF (eq_rank .eq. 0) THEN
-            CALL MPI_BCAST(vmec_construct_eq%ns_index, 1, MPI_INTEGER,         &
-     &                     0, recon_comm, error)
+            CALL MPI_BCAST(this%ns_index, 1, MPI_INTEGER, 0,                   &
+     &                     recon_comm, error)
          END IF
-         CALL MPI_BCAST(vmec_construct_eq%ns_index, 1, MPI_INTEGER, 0,         &
-     &                  eq_comm, error)
+         CALL MPI_BCAST(this%ns_index, 1, MPI_INTEGER, 0, eq_comm,             &
+     &                  error)
 
-         ictrl_array(4) = vmec_construct_eq%ns_index
+         ictrl_array(4) = this%ns_index
          IF (wout_file_name .ne. '') THEN
             state_flags = IBCLR(state_flags, model_state_vmec_flag)
 
-            vmec_construct_eq%wout_file_name = wout_file_name
+            this%wout_file_name = wout_file_name
             CALL runvmec(ictrl_array, file_name, .false., eq_comm,             &
      &                   wout_file_name)
             IF (eq_rank .eq. 0) THEN
-               CALL read_wout_file(vmec_construct_eq%wout_file_name,           &
-     &                             error)
+               CALL read_wout_file(this%wout_file_name, error)
                CALL assert_eq(error, 0, 'Error loading initialized ' //        &
      &                               'wout file.')
                CALL LoadRZL
@@ -774,10 +783,10 @@
             index_dat = INDEX(file_name, 'input.')
             index_end = LEN_TRIM(file_name)
             IF (index_dat .gt. 0) THEN
-               vmec_construct_eq%wout_file_name = 'wout_' //                   &
+               this%wout_file_name = 'wout_' //                                &
      &            TRIM(file_name(index_dat + 6:index_end)) // '.nc'
             ELSE
-               vmec_construct_eq%wout_file_name = 'wout_' //                   &
+               this%wout_file_name = 'wout_' //                                &
      &            TRIM(file_name(1:index_end)) // '.nc'
             END IF
 
@@ -787,11 +796,11 @@
 
       END SELECT
 
-      vmec_construct_eq%vmec_context_save => vmec_context_construct()
+      this%vmec_context_save => vmec_context_construct()
 
       CALL profiler_set_stop_time('vmec_construct_eq', start_time)
 
-      END FUNCTION
+      END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Construct a @ref vmec_class object.
@@ -821,10 +830,10 @@
 !>                               model changed.
 !>  @returns A pointer to a constructed @ref vmec_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_construct_full(file_name, wout_file_name, ne, te,          &
-     &                             ti, ze, sxrem, phi_offset, z_offset,        &
-     &                             pol_rad_ratio, iou, eq_comm,                &
-     &                             recon_comm, state_flags)
+      FUNCTION vmec_construct(file_name, wout_file_name, ne, te,               &
+     &                        ti, ze, sxrem, phi_offset, z_offset,             &
+     &                        pol_rad_ratio, iou, eq_comm,                     &
+     &                        recon_comm, state_flags)
 
       IMPLICIT NONE
 
@@ -851,20 +860,12 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      vmec_construct_full => vmec_class(file_name, wout_file_name,             &
-     &                                  iou, eq_comm, recon_comm,              &
-     &                                  state_flags)
+      ALLOCATE(vmec_construct_full)
 
-      vmec_construct_full%ne => ne
-      vmec_construct_full%te => te
-      vmec_construct_full%ti => ti
-      vmec_construct_full%ze => ze
-      vmec_construct_full%sxrem => sxrem
-
-      vmec_construct_full%phi_offset = phi_offset
-      vmec_construct_full%z_offset = z_offset
-
-      vmec_construct_full%pol_rad_ratio = pol_rad_ratio
+      CALL vmec_construct_sub(vmec_construct_full, file_name,                  &
+     &                        wout_file_name, ne, te, ti, ze, sxrem,           &
+     &                        phi_offset, z_offset, pol_rad_ratio, iou,        &
+     &                        eq_comm, recon_comm, state_flags)
 
       CALL profiler_set_stop_time('vmec_construct_full', start_time)
 

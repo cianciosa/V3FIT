@@ -403,12 +403,15 @@
 !>                                  object.
 !>  @param[inout] state_flags       Bitwise flags to indicate which parts of the
 !>                                  model changed.
+!>  @param[in]    vmec_namelist     Filename of the vmec namelist input file.
+!>  @param[in]    wout_file_name    Filename of the vmec wout input file.
 !>  @returns A pointer to a constructed @ref siesta_class object.
 !-------------------------------------------------------------------------------
       FUNCTION siesta_construct(file_name, restart_file_name,                  &
      &                          ne, te, ti, sxrem, phi_offset, z_offset,       &
      &                          pol_rad_ratio, iou, eq_comm, recon_comm,       &
-     &                          vmec, state_flags)
+     &                          state_flags, vmec_namelist,                    &
+     &                          wout_file_name)
       USE safe_open_mod
       USE model_state
       USE file_opts
@@ -431,8 +434,9 @@
       INTEGER, INTENT(in)                  :: iou
       INTEGER, INTENT(in)                  :: eq_comm
       INTEGER, INTENT(in)                  :: recon_comm
-      TYPE (vmec_class), POINTER           :: vmec
       INTEGER, INTENT(inout)               :: state_flags
+      CHARACTER (len=*), INTENT(in)        :: vmec_namelist
+      CHARACTER (len=*), INTENT(in)        :: wout_file_name
 
 !  local variables
       INTEGER                              :: eq_rank
@@ -445,6 +449,11 @@
       start_time = profiler_get_start_time()
 
       ALLOCATE(siesta_construct)
+
+      CALL vmec_class(siesta_construct, vmec_namelist, wout_file_name,         &
+     &                ne, te, ti, sxrem, phi_offset, z_offset,                 &
+     &                pol_rad_ratio, iou, eq_comm, recon_comm,                 &
+     &                state_flags)
 
       eq_rank = 0
       recon_rank = 0
@@ -459,8 +468,6 @@
       CALL MPI_BCAST(recon_rank, 1, MPI_INTEGER, 0, eq_comm, error)
 #endif
 
-      siesta_construct%vmec => vmec
-
       IF (eq_rank .eq. 0) THEN
 !  Save a copy of the jcf orginal jcf file.
          CALL copy_file(TRIM(file_name), TRIM(file_name) // '_save',           &
@@ -471,15 +478,6 @@
          WRITE (iou,*) ' *** Initializing SIESTA equilibrium from ' //         &
      &                 'file ' // TRIM(file_name)
 
-         siesta_construct%ne => ne
-         siesta_construct%te => te
-         siesta_construct%ti => ti
-         siesta_construct%sxrem => sxrem
-
-         siesta_construct%phi_offset = phi_offset
-         siesta_construct%z_offset = z_offset
-
-         siesta_construct%pol_rad_ratio = pol_rad_ratio
          siesta_construct%siesta_file_name = TRIM(file_name)
 
          CALL siesta_namelist_read(TRIM(file_name))
@@ -643,11 +641,6 @@
       IF (ASSOCIATED(this%context)) THEN
          CALL siesta_context_destruct(this%context)
          this%context => null()
-      END IF
-
-      IF (ASSOCIATED(this%vmec)) THEN
-         CALL vmec_destruct(this%vmec)
-         this%vmec => null()
       END IF
 
       END SUBROUTINE
@@ -908,9 +901,9 @@
          ALLOCATE(this%magnetic_cache)
       END IF
 
-      rbc00 = vmec_get_param_value(this%vmec, vmec_rbc_id, 0, 0)
-      rbc01 = vmec_get_param_value(this%vmec, vmec_rbc_id, 0, 1)
-      zbs01 = vmec_get_param_value(this%vmec, vmec_zbs_id, 0, 1)
+      rbc00 = vmec_get_param_value(this, vmec_rbc_id, 0, 0)
+      rbc01 = vmec_get_param_value(this, vmec_rbc_id, 0, 1)
+      zbs01 = vmec_get_param_value(this, vmec_zbs_id, 0, 1)
 
 !  Set the grid size based on the size of the rough size of the plasma.
       v_size = MAX(INT(twopi*rbc00/magnetic_cache_vc_grid_dim),             &
@@ -1527,7 +1520,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL vmec_set_namelist(this%vmec)
+      CALL vmec_set_namelist(this)
 
       CALL profiler_set_stop_time('siesta_set_namelist', start_time)
 
@@ -1608,8 +1601,7 @@
             siesta_get_param_id = siesta_helpert_id
 
          CASE DEFAULT
-            siesta_get_param_id = vmec_get_param_id(this%vmec,                 &
-     &                                              param_name)
+            siesta_get_param_id = vmec_get_param_id(this, param_name)
 
       END SELECT
 
@@ -1695,7 +1687,7 @@
 
          CASE DEFAULT
             siesta_get_param_value =                                           &
-     &         vmec_get_param_value(this%vmec, id, i_index, j_index)
+     &         vmec_get_param_value(this, id, i_index, j_index)
 
       END SELECT
 
@@ -1775,8 +1767,7 @@
             siesta_get_param_name = 'helpert'
 
          CASE DEFAULT
-            siesta_get_param_name =                                            &
-     &         vmec_get_param_name(this%vmec, id)
+            siesta_get_param_name = vmec_get_param_name(this, id)
 
       END SELECT
 
@@ -3028,9 +3019,8 @@
       siesta_get_B_vec = 0.0
       IF (flux(1) .gt. 1.0) THEN
          IF (lfreeb) THEN
-            siesta_get_B_vec = vmec_get_B_vac(this%vmec, r_cyl)                &
-     &                       + siesta_get_ext_b_plasma(this, r_cyl,            &
-     &                                                 .false.)
+            siesta_get_B_vec = vmec_get_B_vac(this, r_cyl)                     &
+     &                       + this%get_ext_b_plasma(r_cyl, .false.)
          END IF
       ELSE
          siesta_get_B_vec = this%get_int_b_plasma(flux)
@@ -3118,7 +3108,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      flux = vmec_get_suv(this%vmec, x_cart)
+      flux = vmec_get_suv(this, x_cart)
 
       siesta_get_suv =                                                         &
      &   (/ siesta_to_siesta_s(flux(1)), flux(2), flux(3) /)
@@ -3161,8 +3151,7 @@
 
 !  The inital VMEC defines the boundary.
 !  FIXME: Won't be the case for free boundary siesta.
-      siesta_get_plasma_edge = vmec_get_plasma_edge(this%vmec, phi, r,         &
-     &                                              z)
+      siesta_get_plasma_edge = vmec_get_plasma_edge(this, phi, r, z)
 
       CALL profiler_set_stop_time('siesta_get_plasma_edge', start_time)
 
@@ -3514,7 +3503,7 @@
       start_time = profiler_get_start_time()
 
       siesta_get_ext_currents =>                                               &
-     &   vmec_get_ext_currents(this%vmec, num_currents, scale_currents)
+     &   vmec_get_ext_currents(this, num_currents, scale_currents)
 
       CALL profiler_set_stop_time('vmec_get_ext_currents', start_time)
 
@@ -3937,7 +3926,7 @@
             siesta_is_scaler_value = .true.
 
          CASE DEFAULT
-            siesta_is_scaler_value = vmec_is_scaler_value(this%vmec, id)
+            siesta_is_scaler_value = vmec_is_scaler_value(this, id)
 
       END SELECT
 
@@ -3978,7 +3967,7 @@
             siesta_is_1d_array = .true.
 
          CASE DEFAULT
-            siesta_is_1d_array = vmec_is_1d_array(this%vmec, id)
+            siesta_is_1d_array = vmec_is_1d_array(this, id)
 
       END SELECT
 
@@ -4016,7 +4005,7 @@
             siesta_is_2d_array = .true.
 
          CASE DEFAULT
-            siesta_is_2d_array = vmec_is_2d_array(this%vmec, id)
+            siesta_is_2d_array = vmec_is_2d_array(this, id)
 
       END SELECT
 
@@ -4061,8 +4050,7 @@
             siesta_is_recon_param = .true.
 
          CASE DEFAULT
-            siesta_is_recon_param =                                            &
-     &         vmec_is_recon_param(this%vmec, id)
+            siesta_is_recon_param = vmec_is_recon_param(this, id)
 
       END SELECT
 
@@ -4101,7 +4089,7 @@
      &      ASSOCIATED(this%magnetic_cache%kxuv_full)
       END IF
 
-      CALL profiler_set_stop_time('vmec_is_using_point', start_time)
+      CALL profiler_set_stop_time('siesta_is_using_point', start_time)
 
       END FUNCTION
 
@@ -4155,8 +4143,7 @@
 
       siesta_converge = .true.
       IF (BTEST(state_flags, model_state_vmec_flag)) THEN
-         siesta_converge = vmec_converge(this%vmec, num_iter, iou,             &
-     &                                   eq_comm)
+         siesta_converge = vmec_converge(this, num_iter, iou, eq_comm)
       END IF
 
 !  FIXME: This is currently a hack. Eventuially siesta will be updated to have
@@ -4232,7 +4219,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL vmec_save_state(this%vmec)
+      CALL vmec_save_state(this)
 
 !  Cache the restart file by appending _cache to a copy. Use copy here to keep
 !  the orginal file intact.
@@ -4285,7 +4272,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL vmec_reset_state(this%vmec)
+      CALL vmec_reset_state(this)
 
 !  Reset the restart file.
       CALL copy_file(TRIM(this%restart_file_name) // '_cache',                 &
@@ -4372,7 +4359,7 @@
       CALL move_file(TRIM(this%siesta_file_name) // '_save',                   &
      &               TRIM(this%siesta_file_name), status)
 
-      CALL vmec_write(this%vmec, iou)
+      CALL vmec_write(this, iou)
 
       CALL profiler_set_stop_time('siesta_write', start_time)
 
@@ -4427,7 +4414,7 @@
       CALL copy_file(this%restart_file_name, TRIM(filename), status)
       CALL assert_eq(status, 0, 'Error copying wout file.')
 
-      CALL vmec_write_input(this%vmec, current_step)
+      CALL vmec_write_input(this, current_step)
 
       CALL profiler_set_stop_time('vmec_write_input', start_time)
 
@@ -4483,7 +4470,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL vmec_def_result(this%vmec, result_ncid, maxnsetps_dim_id)
+      CALL vmec_def_result(this, result_ncid, maxnsetps_dim_id)
 
       CALL profiler_set_stop_time('siesta_def_result', start_time)
 
@@ -4513,8 +4500,8 @@
 
 !  vmec_write_init_data will write step data for the first step. Call this
 !  before the call to siesta_write_init_data to avoid writing the step twice.
-      CALL vmec_write_init_data(this%vmec, result_ncid)
-      CALL siesta_write_step_data(this, result_ncid, 1)
+      CALL vmec_write_init_data(this, result_ncid)
+      CALL this%write_step_data(result_ncid, 1)
 
       CALL profiler_set_stop_time('siesta_write_init_data', start_time)
 
@@ -4547,38 +4534,8 @@
 !  vmec_write_init_data called from siesta_write_init_data already write the
 !  first vmec step.
       IF (current_step .ne. 1) THEN
-         CALL vmec_write_step_data(this%vmec, result_ncid, current_step)
+         CALL vmec_write_step_data(this, result_ncid, current_step)
       END IF
-
-      CALL profiler_set_stop_time('siesta_write_step_data', start_time)
-
-      END SUBROUTINE
-
-!-------------------------------------------------------------------------------
-!>  @brief Restart from a result file.
-!>
-!>  This method overrides @ref equilibrium::equilibrium_restart.
-!>
-!>  @param[in] this         A @ref siesta_class instance.
-!>  @param[in] result_ncid  NetCDF file id of the result file.
-!>  @param[in] current_step Step index to write variables to.
-!-------------------------------------------------------------------------------
-      SUBROUTINE siesta_restart(this, result_ncid, current_step)
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)              :: result_ncid
-      INTEGER, INTENT(in)              :: current_step
-
-!  Local variables
-      REAL (rprec)                     :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      CALL vmec_restart(this%vmec, result_ncid, current_step)
 
       CALL profiler_set_stop_time('siesta_write_step_data', start_time)
 
@@ -4621,7 +4578,7 @@
 
 !  Copy the vmec state first to ensure the wout file is loaded before seting the
 !  siesta magnetic cache.
-      CALL vmec_sync_state(this%vmec, recon_comm)
+      CALL vmec_sync_state(this, recon_comm)
 
 !  If this is the child process, load the wout file.
       IF (mpi_rank .gt. 0) THEN
@@ -4673,7 +4630,7 @@
 
 !  Copy the vmec state first to ensure the wout file is loaded before seting the
 !  siesta magnetic cache.
-      CALL vmec_sync_child(this%vmec, index, recon_comm)
+      CALL vmec_sync_child(this, index, recon_comm)
 
 !  If this is the parent process, load the wout file.
       IF (mpi_rank .eq. 0) THEN

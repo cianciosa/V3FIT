@@ -1020,7 +1020,8 @@
 #else
      &                           0, 0,                                         &
 #endif
-     &                           vmec, state_flags)
+     &                           vmec, state_flags,                            &
+     &                           vmec_nli_filename, vmec_wout_input)
 
 !  If the woutfile in the v3fit namelist input file is specifed, assume that the
 !  equilibrium is converged.
