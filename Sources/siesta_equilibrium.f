@@ -2693,12 +2693,9 @@
 
       siesta_converge = .true.
       IF (BTEST(state_flags, model_state_vmec_flag)) THEN
-         siesta_converge = vmec_converge(this, num_iter, iou, eq_comm)
+         siesta_converge = vmec_converge(this, num_iter, iou, eq_comm,         &
+     &                                   state_flags)
       END IF
-
-!  FIXME: This is currently a hack. Eventuially siesta will be updated to have
-!         a run siesta routine like vmec. For now run vmec as an external
-!         command.
 
       eq_size = 1
       eq_rank = 0

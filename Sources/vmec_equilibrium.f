@@ -5142,13 +5142,15 @@
 !>  vmec equilibrium and loads the resulting wout file in preparation of
 !>  computing modeled signals.
 !>
-!>  @param[inout] this     A @ref vmec_class instance.
-!>  @param[inout] num_iter Counter to track the number of iterations.
-!>  @param[in]    iou      Input/Output unit of the runlog file.
-!>  @param[in]    eq_comm  MPI communicator pool for VMEC.
+!>  @param[inout] this        A @ref vmec_class instance.
+!>  @param[inout] num_iter    Counter to track the number of iterations.
+!>  @param[in]    iou         Input/Output unit of the runlog file.
+!>  @param[in]    eq_comm     MPI communicator pool for VMEC.
+!>  @param[in]    state_flags Bitwise flags to indicate which parts of the model
+!>                            changed.
 !>  @returns True if the convergece was sucessful and false otherwise.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_converge(this, num_iter, iou, eq_comm)
+      FUNCTION vmec_converge(this, num_iter, iou, eq_comm, state_flags)
       USE vmec_input, only: delt, niter, nstep
       USE vmec_params, only: timestep_flag, output_flag,                       &
      &                       reset_jacdt_flag, jac75_flag,                     &
@@ -5166,6 +5168,7 @@
       INTEGER, INTENT(inout)             :: num_iter
       INTEGER, INTENT(in)                :: iou
       INTEGER, INTENT(in)                :: eq_comm
+      INTEGER, INTENT(in)                :: state_flags
 
 !  local variables
 !  delt_local   Value of delt on entry. Store, for restoration after error
