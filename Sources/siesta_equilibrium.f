@@ -676,8 +676,6 @@
          this%vmec => null()
       END IF
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -708,17 +706,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                :: id
-      INTEGER, INTENT(in)                :: i_index
-      INTEGER, INTENT(in)                :: j_index
-      REAL (rprec), INTENT(in)           :: value
-      INTEGER, INTENT(in)                :: eq_comm
-      INTEGER, INTENT(inout)             :: state_flags
+      CLASS (siesta_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                 :: id
+      INTEGER, INTENT(in)                 :: i_index
+      INTEGER, INTENT(in)                 :: j_index
+      REAL (rprec), INTENT(in)            :: value
+      INTEGER, INTENT(in)                 :: eq_comm
+      INTEGER, INTENT(inout)              :: state_flags
 
 !  local variables
-      INTEGER                            :: error
-      REAL (rprec)                       :: start_time
+      INTEGER                             :: error
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -830,7 +828,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout)         :: this
+      CLASS (siesta_class), INTENT(inout)        :: this
       TYPE (magnetic_response_class), INTENT(in) :: response_object
 
 !  local variables
@@ -918,13 +916,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
-      LOGICAL, INTENT(in)                :: use_axi
+      CLASS (siesta_class), INTENT(inout) :: this
+      LOGICAL, INTENT(in)                 :: use_axi
 
 !  local variables
-      INTEGER                            :: u_size, v_size
-      REAL (rprec)                       :: rbc00, rbc01, zbs01
-      REAL (rprec)                       :: start_time
+      INTEGER                             :: u_size
+      INTEGER                             :: v_size
+      REAL (rprec)                        :: rbc00
+      REAL (rprec)                        :: rbc01
+      REAL (rprec)                        :: zbs01
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -990,34 +991,34 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout)        :: this
+      CLASS (siesta_class), INTENT(inout)        :: this
 
 !  local variables
-      INTEGER                                   :: i, j, k
-      REAL (rprec)                              :: s, u, v
-      INTEGER                                   :: numS, numU, numV
-      INTEGER                                   :: m, n
-      INTEGER                                   :: mpol, ntor
-      INTEGER                                   :: nfp
-      REAL (rprec)                              :: r, rs, ru, rv
-      REAL (rprec)                              :: z, zs, zu, zv
-      REAL (rprec)                              :: js, ju, jv
-      REAL (rprec)                              :: bs, bu, bv
-      REAL (rprec)                              :: kr, kp
-      REAL (rprec)                              :: theta, phi
-      REAL (rprec), DIMENSION(:,:), ALLOCATABLE :: bsubuc, bsubus
-      REAL (rprec), DIMENSION(:,:), ALLOCATABLE :: bsubvc, bsubvs
-      REAL (rprec), DIMENSION(:), ALLOCATABLE   :: rmncint, rmnsint
-      REAL (rprec), DIMENSION(:), ALLOCATABLE   :: zmncint, zmnsint
-      REAL (rprec)                              :: cosphi
-      REAL (rprec)                              :: sinphi
-      REAL (rprec), DIMENSION(:,:), ALLOCATABLE :: cosmn
-      REAL (rprec), DIMENSION(:,:), ALLOCATABLE :: sinmn
-      REAL (rprec), DIMENSION(:), ALLOCATABLE   :: cosmn_vmec
-      REAL (rprec), DIMENSION(:), ALLOCATABLE   :: sinmn_vmec
-      REAL (rprec)                              :: wlow, whigh
-      INTEGER                                   :: ilow, ihigh
-      REAL (rprec)                              :: start_time
+      INTEGER                                    :: i, j, k
+      REAL (rprec)                               :: s, u, v
+      INTEGER                                    :: numS, numU, numV
+      INTEGER                                    :: m, n
+      INTEGER                                    :: mpol, ntor
+      INTEGER                                    :: nfp
+      REAL (rprec)                               :: r, rs, ru, rv
+      REAL (rprec)                               :: z, zs, zu, zv
+      REAL (rprec)                               :: js, ju, jv
+      REAL (rprec)                               :: bs, bu, bv
+      REAL (rprec)                               :: kr, kp
+      REAL (rprec)                               :: theta, phi
+      REAL (rprec), DIMENSION(:,:), ALLOCATABLE  :: bsubuc, bsubus
+      REAL (rprec), DIMENSION(:,:), ALLOCATABLE  :: bsubvc, bsubvs
+      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: rmncint, rmnsint
+      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: zmncint, zmnsint
+      REAL (rprec)                               :: cosphi
+      REAL (rprec)                               :: sinphi
+      REAL (rprec), DIMENSION(:,:), ALLOCATABLE  :: cosmn
+      REAL (rprec), DIMENSION(:,:), ALLOCATABLE  :: sinmn
+      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: cosmn_vmec
+      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: sinmn_vmec
+      REAL (rprec)                               :: wlow, whigh
+      INTEGER                                    :: ilow, ihigh
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code.
       start_time = profiler_get_start_time()
@@ -1544,10 +1545,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1575,12 +1576,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                         :: siesta_get_param_id
-      TYPE (siesta_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)   :: param_name
+      INTEGER                          :: siesta_get_param_id
+      CLASS (siesta_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)    :: param_name
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1659,14 +1660,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_param_value
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
-      INTEGER, INTENT(in)             :: i_index
-      INTEGER, INTENT(in)             :: j_index
+      REAL (rprec)                     :: siesta_get_param_value
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
+      INTEGER, INTENT(in)              :: i_index
+      INTEGER, INTENT(in)              :: j_index
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1742,12 +1743,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER(len=data_name_length) :: siesta_get_param_name
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      CHARACTER(len=data_name_length)  :: siesta_get_param_name
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1825,10 +1826,10 @@
 
 !  Declare Arguments
       INTEGER :: siesta_get_gp_ne_num_hyper_param
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1860,7 +1861,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ne_af
-      TYPE (siesta_class), INTENT(in)     :: this
+      CLASS (siesta_class), INTENT(in)    :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -1892,13 +1893,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_gp_ne_ij
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: i
-      INTEGER, INTENT(in)             :: j
+      REAL (rprec)                     :: siesta_get_gp_ne_ij
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: i
+      INTEGER, INTENT(in)              :: j
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1930,7 +1931,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_ne_pi
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -1972,7 +1973,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_ne_pp
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -2011,7 +2012,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_ne_cart
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -2043,12 +2044,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_ne_radial
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: s
+      REAL (rprec)                     :: siesta_get_ne_radial
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: s
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2076,10 +2077,10 @@
 
 !  Declare Arguments
       INTEGER :: siesta_get_gp_te_num_hyper_param
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2111,7 +2112,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: siesta_get_te_af
-      TYPE (siesta_class), INTENT(in)     :: this
+      CLASS (siesta_class), INTENT(in)    :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -2145,13 +2146,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_gp_te_ij
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: i
-      INTEGER, INTENT(in)             :: j
+      REAL (rprec)                     :: siesta_get_gp_te_ij
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: i
+      INTEGER, INTENT(in)              :: j
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2184,7 +2185,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_te_pi
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -2228,7 +2229,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_te_pp
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -2267,7 +2268,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_te_cart
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -2299,12 +2300,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_te_radial
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: s
+      REAL (rprec)                     :: siesta_get_te_radial
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: s
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2332,10 +2333,10 @@
 
 !  Declare Arguments
       INTEGER :: siesta_get_gp_ti_num_hyper_param
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2367,7 +2368,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ti_af
-      TYPE (siesta_class), INTENT(in)     :: this
+      CLASS (siesta_class), INTENT(in)    :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -2401,13 +2402,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_gp_ti_ij
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: i
-      INTEGER, INTENT(in)             :: j
+      REAL (rprec)                     :: siesta_get_gp_ti_ij
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: i
+      INTEGER, INTENT(in)              :: j
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2439,7 +2440,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_ti_pi
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -2479,7 +2480,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_ti_pp
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -2518,7 +2519,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_ti_cart
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -2550,12 +2551,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_ti_radial
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: s
+      REAL (rprec)                     :: siesta_get_ti_radial
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: s
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2584,11 +2585,11 @@
 
 !  Declare Arguments
       INTEGER :: siesta_get_gp_sxrem_num_hyper_param
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: index
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: index
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2622,7 +2623,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: siesta_get_sxrem_af
-      TYPE (siesta_class), INTENT(in)     :: this
+      CLASS (siesta_class), INTENT(in)    :: this
       INTEGER, INTENT(in)                 :: index
 
 !  local variables
@@ -2659,14 +2660,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_gp_sxrem_ij
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: i
-      INTEGER, INTENT(in)             :: j
-      INTEGER, INTENT(in)             :: index
+      REAL (rprec)                     :: siesta_get_gp_sxrem_ij
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: i
+      INTEGER, INTENT(in)              :: j
+      INTEGER, INTENT(in)              :: index
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2702,7 +2703,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_sxrem_pi
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
       INTEGER, INTENT(in)                    :: index
@@ -2749,7 +2750,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_gp_sxrem_pp
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
       INTEGER, INTENT(in)                    :: index
@@ -2792,7 +2793,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_sxrem_cart
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: index
 
@@ -2832,13 +2833,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_sxrem_radial
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: s
-      INTEGER, INTENT(in)             :: index
+      REAL (rprec)                     :: siesta_get_sxrem_radial
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: s
+      INTEGER, INTENT(in)              :: index
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2872,7 +2873,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_p_cart
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       LOGICAL, INTENT(in)                    :: normalize
 
@@ -2905,14 +2906,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_p_radial
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: s
-      LOGICAL, INTENT(in)             :: normalize
+      REAL (rprec)                     :: siesta_get_p_radial
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: s
+      LOGICAL, INTENT(in)              :: normalize
 
 !  local variables
-      REAL (rprec), DIMENSION(3)      :: flux
-      REAL (rprec)                    :: start_time
+      REAL (rprec), DIMENSION(3)       :: flux
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2942,7 +2943,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: siesta_get_p_flux
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: flux
       LOGICAL, INTENT(in)                    :: normalize
 
@@ -3036,7 +3037,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: siesta_get_B_vec
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       LOGICAL, INTENT(in)                    :: cyl
 
@@ -3092,16 +3093,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_Int_B_dphi
-      TYPE (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: r
-      REAL (rprec), INTENT(in)        :: theta
+      REAL (rprec)                     :: siesta_get_Int_B_dphi
+      CLASS (siesta_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: r
+      REAL (rprec), INTENT(in)         :: theta
 
 !  local variables
-      REAL (rprec)                    :: bsubv00c, ds
-      INTEGER                         :: i
-      REAL (rprec), DIMENSION(2)      :: s
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: bsubv00c
+      REAL (rprec)                     :: ds
+      INTEGER                          :: i
+      REAL (rprec), DIMENSION(2)       :: s
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3136,7 +3138,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: siesta_get_suv
-      TYPE (siesta_class), INTENT(in)        :: this
+      CLASS (siesta_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -3176,13 +3178,13 @@
 
 !  Declare Arguments
       INTEGER :: siesta_get_plasma_edge
-      TYPE (siesta_class), INTENT(in)     :: this
-      REAL (rprec), INTENT (in)           :: phi
-      REAL (rprec), DIMENSION(:), POINTER :: r
-      REAL (rprec), DIMENSION(:), POINTER :: z
+      CLASS (siesta_class), INTENT(in)     :: this
+      REAL (rprec), INTENT (in)            :: phi
+      REAL (rprec), DIMENSION(:), POINTER  :: r
+      REAL (rprec), DIMENSION(:), POINTER  :: z
 
 !  local variables
-      REAL (rprec)                        :: start_time
+      REAL (rprec)                         :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3212,10 +3214,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   siesta_get_magnetic_volume_rgrid
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3242,10 +3244,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   siesta_get_magnetic_volume_zgrid
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3272,10 +3274,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   siesta_get_magnetic_volume_jrgrid
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3302,10 +3304,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   siesta_get_magnetic_volume_jphigrid
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3332,10 +3334,10 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:,:), POINTER ::                               &
      &   siesta_get_magnetic_volume_jzgrid
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3368,10 +3370,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: siesta_get_volume_int_element
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3400,7 +3402,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   siesta_get_con_surface_krgrid
-      TYPE (siesta_class), INTENT(in)       :: this
+      CLASS (siesta_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -3430,7 +3432,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   siesta_get_con_surface_kphigrid
-      TYPE (siesta_class), INTENT(in)       :: this
+      CLASS (siesta_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -3460,7 +3462,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(:,:), POINTER ::                                 &
      &   siesta_get_con_surface_kzgrid
-      TYPE (siesta_class), INTENT(in)       :: this
+      CLASS (siesta_class), INTENT(in)      :: this
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -3496,10 +3498,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: siesta_get_area_int_element
-      TYPE (siesta_class), INTENT(in) :: this
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3531,7 +3533,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: siesta_get_ext_currents
-      TYPE (siesta_class), INTENT(in)     :: this
+      CLASS (siesta_class), INTENT(in)    :: this
       INTEGER, INTENT(in)                 :: num_currents
       LOGICAL, INTENT(out)                :: scale_currents
 
@@ -3571,14 +3573,15 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)              :: siesta_get_ext_b_plasma
-      TYPE (siesta_class), INTENT(in)         :: this
+      CLASS (siesta_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in)  :: position
       LOGICAL, INTENT(in)                     :: axi_only
 
 !  local variables
       REAL (rprec), DIMENSION(3)              :: x_cart
       REAL (rprec), DIMENSION(3)              :: r_vec
-      INTEGER                                 :: u, v
+      INTEGER                                 :: u
+      INTEGER                                 :: v
       REAL (rprec)                            :: length
       REAL (rprec), DIMENSION(:,:,:), POINTER :: x_prime
       REAL (rprec), DIMENSION(:,:), POINTER   :: kxuv
@@ -3681,7 +3684,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)              :: siesta_get_int_b_plasma
-      TYPE (siesta_class), INTENT(in)         :: this
+      CLASS (siesta_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in)  :: flux
 
 !  local variables
@@ -3861,11 +3864,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                         :: siesta_get_grid_size
-      TYPE (siesta_class), INTENT(in) :: this
+      INTEGER                          :: siesta_get_grid_size
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3893,11 +3896,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAl (rprec)                    :: siesta_get_grid_start
-      TYPE (siesta_class), INTENT(in) :: this
+      REAl (rprec)                     :: siesta_get_grid_start
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3919,11 +3922,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: siesta_get_grid_stop
-      TYPE (siesta_class), INTENT(in) :: this
+      REAL (rprec)                     :: siesta_get_grid_stop
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3949,12 +3952,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: siesta_is_scaler_value
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: siesta_is_scaler_value
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3986,12 +3989,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: siesta_is_1d_array
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: siesta_is_1d_array
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                  :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4027,12 +4030,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: siesta_is_2d_array
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: siesta_is_2d_array
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4066,12 +4069,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: siesta_is_recon_param
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: siesta_is_recon_param
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4110,11 +4113,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: siesta_is_using_point
-      TYPE (siesta_class), INTENT(in) :: this
+      LOGICAL                          :: siesta_is_using_point
+      CLASS (siesta_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4162,20 +4165,20 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                            :: siesta_converge
-      TYPE (siesta_class), INTENT(inout) :: this
-      INTEGER, INTENT(inout)             :: num_iter
-      INTEGER, INTENT(in)                :: iou
-      INTEGER, INTENT(in)                :: eq_comm
-      INTEGER, INTENT(in)                :: state_flags
+      LOGICAL                             :: siesta_converge
+      CLASS (siesta_class), INTENT(inout) :: this
+      INTEGER, INTENT(inout)              :: num_iter
+      INTEGER, INTENT(in)                 :: iou
+      INTEGER, INTENT(in)                 :: eq_comm
+      INTEGER, INTENT(in)                 :: state_flags
 
 !  local variables
-      INTEGER                            :: eq_size
-      INTEGER                            :: eq_rank
-      INTEGER                            :: status
-      INTEGER                            :: child_comm
-      TYPE (siesta_run_class), POINTER   :: run_context
-      REAL (rprec)                       :: start_time
+      INTEGER                             :: eq_size
+      INTEGER                             :: eq_rank
+      INTEGER                             :: status
+      INTEGER                             :: child_comm
+      TYPE (siesta_run_class), POINTER    :: run_context
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4252,9 +4255,9 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: index
-      INTEGER, INTENT(in)             :: eq_comm
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: index
+      INTEGER, INTENT(in)              :: eq_comm
 
 !  Start of executable code
       CALL vmec_read_vac_file(this%vmec, index, eq_comm)
@@ -4274,12 +4277,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
+      CLASS (siesta_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                            :: error
-      INTEGER                            :: i
-      REAL (rprec)                       :: start_time
+      INTEGER                             :: error
+      INTEGER                             :: i
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4327,12 +4330,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
+      CLASS (siesta_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                            :: error
-      INTEGER                            :: i
-      REAL (rprec)                       :: start_time
+      INTEGER                             :: error
+      INTEGER                             :: i
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4384,13 +4387,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: iou
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: iou
 
 !  local variables
-      INTEGER                       :: i
-      INTEGER                       :: status
-      REAL (rprec)                  :: start_time
+      INTEGER                          :: i
+      INTEGER                          :: status
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4449,14 +4452,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in)      :: this
-      INTEGER, INTENT(in)                  :: current_step
+      CLASS (siesta_class), INTENT(in)      :: this
+      INTEGER, INTENT(in)                   :: current_step
 
 !  local variables
-      INTEGER                              :: iou_nl
-      INTEGER                              :: status
-      CHARACTER (len=path_length)          :: filename
-      REAL (rprec)                         :: start_time
+      INTEGER                               :: iou_nl
+      INTEGER                               :: status
+      CHARACTER (len=path_length)           :: filename
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4525,12 +4528,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: result_ncid
-      INTEGER, INTENT(in)             :: maxnsetps_dim_id
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: result_ncid
+      INTEGER, INTENT(in)              :: maxnsetps_dim_id
 
 !  Local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4554,11 +4557,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: result_ncid
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: result_ncid
 
 !  Local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4586,12 +4589,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: result_ncid
-      INTEGER, INTENT(in)             :: current_step
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: result_ncid
+      INTEGER, INTENT(in)              :: current_step
 
 !  Local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4620,12 +4623,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: result_ncid
-      INTEGER, INTENT(in)             :: current_step
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: result_ncid
+      INTEGER, INTENT(in)              :: current_step
 
 !  Local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -4654,14 +4657,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                :: recon_comm
+      CLASS (siesta_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                 :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                            :: i
-      INTEGER                            :: error
-      INTEGER                            :: mpi_rank
+      INTEGER                             :: i
+      INTEGER                             :: error
+      INTEGER                             :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
@@ -4711,14 +4714,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                :: index
-      INTEGER, INTENT(in)                :: recon_comm
+      CLASS (siesta_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                 :: index
+      INTEGER, INTENT(in)                 :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                            :: error
-      INTEGER                            :: mpi_rank
+      INTEGER                             :: error
+      INTEGER                             :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
