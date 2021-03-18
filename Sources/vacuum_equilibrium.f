@@ -67,6 +67,19 @@
          CHARACTER (len=path_length) :: vacuum_file_name
 !>  Array of external currents
          REAL (rprec), DIMENSION(:), POINTER  :: extcur => null()
+      CONTAINS
+         PROCEDURE :: set_param => vacuum_set_param
+         PROCEDURE :: get_param_id => vacuum_get_param_id
+         PROCEDURE :: get_param_value => vacuum_get_param_value
+         PROCEDURE :: get_param_name => vacuum_get_param_name
+         PROCEDURE :: get_B_vec => vacuum_get_B_vec
+         PROCEDURE :: get_Int_B_dphi => vacuum_get_Int_B_dphi
+         PROCEDURE :: get_ext_currents => vacuum_get_ext_currents
+         PROCEDURE :: is_1d_array => vacuum_is_1d_array
+         PROCEDURE :: is_recon_param => vacuum_is_recon_param
+         PROCEDURE :: write => vacuum_write
+         PROCEDURE :: write_input => vacuum_write_input
+         FINAL     :: vacuum_destruct
       END TYPE
 
       CONTAINS
@@ -167,15 +180,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vacuum_class), POINTER :: this
+      TYPE (vacuum_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%extcur)) THEN
          DEALLOCATE(this%extcur)
          this%extcur => null()
       END IF
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -199,13 +210,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vacuum_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                :: id
-      INTEGER, INTENT(in)                :: i_index
-      REAL (rprec), INTENT(in)           :: value
+      CLASS (vacuum_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                 :: id
+      INTEGER, INTENT(in)                 :: i_index
+      REAL (rprec), INTENT(in)            :: value
 
 !  local variables
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -238,9 +249,9 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                         :: vacuum_get_param_id
-      TYPE (vacuum_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)   :: param_name
+      INTEGER                          :: vacuum_get_param_id
+      CLASS (vacuum_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)    :: param_name
 
 !  local variables
       REAL (rprec)                    :: start_time
@@ -280,13 +291,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: vacuum_get_param_value
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
-      INTEGER, INTENT(in)             :: i_index
+      REAL (rprec)                     :: vacuum_get_param_value
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
+      INTEGER, INTENT(in)              :: i_index
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -319,12 +330,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER(len=data_name_length) :: vacuum_get_param_name
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      CHARACTER(len=data_name_length)  :: vacuum_get_param_name
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -361,7 +372,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)             :: vacuum_get_B_vec
-      TYPE (vacuum_class), INTENT(in)        :: this
+      CLASS (vacuum_class), INTENT(in)       :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       LOGICAL, INTENT(in)                    :: cyl
 
@@ -407,17 +418,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: vacuum_get_Int_B_dphi
-      TYPE (vacuum_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)        :: r
-      REAL (rprec), INTENT(in)        :: theta
+      REAL (rprec)                     :: vacuum_get_Int_B_dphi
+      CLASS (vacuum_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)         :: r
+      REAL (rprec), INTENT(in)         :: theta
 
 !  local variables
-      REAL (rprec), DIMENSION(3)      :: b_cart
-      REAL (rprec), DIMENSION(3)      :: r_cyl
-      REAL (rprec), DIMENSION(3)      :: dl
-      REAL (rprec)                    :: dphi
-      REAL (rprec)                    :: start_time
+      REAL (rprec), DIMENSION(3)       :: b_cart
+      REAL (rprec), DIMENSION(3)       :: r_cyl
+      REAL (rprec), DIMENSION(3)       :: dl
+      REAL (rprec)                     :: dphi
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -492,12 +503,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: vacuum_is_1d_array
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: vacuum_is_1d_array
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -531,12 +542,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: vacuum_is_recon_param
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: id
+      LOGICAL                          :: vacuum_is_recon_param
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: id
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -571,11 +582,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: iou
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: iou
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
