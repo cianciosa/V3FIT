@@ -637,6 +637,13 @@
       CLASS (vmec_class), INTENT(inout)    :: this
       CHARACTER (len=*), INTENT(in)        :: file_name
       CHARACTER (len=*), INTENT(in)        :: wout_file_name
+      TYPE (pprofile_class), POINTER       :: ne
+      TYPE (pprofile_class), POINTER       :: te
+      TYPE (pprofile_class), POINTER       :: ti
+      TYPE (pprofile_pointer), DIMENSION(:), POINTER  :: sxrem
+      REAL (rprec), INTENT(in)             :: phi_offset
+      REAL (rprec), INTENT(in)             :: z_offset
+      REAL (rprec), INTENT(in)             :: pol_rad_ratio
       INTEGER, INTENT(in)                  :: iou
       INTEGER, INTENT(in)                  :: eq_comm
       INTEGER, INTENT(in)                  :: recon_comm
