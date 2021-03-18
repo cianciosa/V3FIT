@@ -4740,7 +4740,7 @@
          CALL siesta_context_read(this%context, this%restart_file_name)
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL this%set_magnetic_cache(this)
+            CALL this%set_magnetic_cache()
          END IF
       END IF
 
