@@ -470,7 +470,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vacuum_get_ext_currents
-      TYPE (vacuum_class), INTENT(in)     :: this
+      CLASS (vacuum_class), INTENT(in)    :: this
       LOGICAL, INTENT(out)                :: scale_currents
 
 !  local variables
@@ -614,12 +614,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vacuum_class), INTENT(in) :: this
-      INTEGER, INTENT(in)             :: current_step
+      CLASS (vacuum_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: current_step
 
 !  local variables
-      CHARACTER (len=path_length)     :: filename
-      REAL (rprec)                    :: start_time
+      CHARACTER (len=path_length)      :: filename
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
