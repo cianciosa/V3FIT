@@ -8,7 +8,7 @@ parser.add_option("-f", "--file", dest="filename", help="File name to test.", me
 parser.add_option("-S", "--s_name1", dest="s_name1", help="s_name to search for", metavar="S_NAME1")
 parser.add_option("-s", "--s_name2", dest="s_name2", help="s_name to search for", metavar="S_NAME2")
 parser.add_option("-a", "--attribute", dest="attribute", help="Attribute to search for", metavar="ATTRIBUTE")
-parser.add_option("-r", "--range", dest="range", help="Range of allowed deviation between the two signals.", metavar="RANGE", default=0)
+parser.add_option("-r", "--range", dest="range", help="Range of allowed deviation between the two signals.", metavar="RANGE", default=0.0)
 (option, args) = parser.parse_args()
 
 recout_file = open(option.filename, "r")
@@ -43,7 +43,7 @@ for line in recout_file.readlines():
 					value1 = float(split_str[index + j - s_index])
 				if string == option.s_name2:
 					value2 = float(split_str[index + j - s_index])
-			test_passed = abs(value1 - value2) <= option.range
+			test_passed = abs(value1 - value2) <= float(option.range)
 
 recout_file.close
 
