@@ -156,8 +156,7 @@
      &    BTEST(a_model%state_flags, model_state_siesta_flag) .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
          extcurz_get_modeled_signal(1) =                                       &
-     &      equilibrium_get_Int_B_dphi(a_model%equilibrium, this%r,            &
-     &                                 this%theta)/mu0
+     &      a_model%equilibrium%get_Int_B_dphi(this%r, this%theta)/mu0
 
          CALL this%scale_and_offset(a_model,                                   &
      &                              extcurz_get_modeled_signal(1))

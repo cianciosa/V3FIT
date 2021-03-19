@@ -142,8 +142,8 @@
 
          DO phi_index = 1, SIZE(this%phi)
             num_theta =                                                        &
-     &         equilibrium_get_plasma_edge(a_model%equilibrium,                &
-     &                                     this%phi(phi_index), r, z)
+     &         a_model%equilibrium%get_plasma_edge(this%phi(phi_index),        &
+     &                                             r, z)
 
             fval = this%get_max_fval(num_theta, phi_index, r, z, rphiz)
 

@@ -369,7 +369,7 @@
 
          thomson_p_get_modeled_signal = 0.0
          thomson_p_get_modeled_signal(1) =                                     &
-     &      equilibrium_get_p(a_model%equilibrium, this%xcart)
+     &      a_model%equilibrium%get_p(this%xcart, .false.)
 
          CALL this%scale_and_offset(a_model,                                   &
      &                              thomson_p_get_modeled_signal(1))

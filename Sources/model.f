@@ -460,7 +460,7 @@
 
       model_construct%equilibrium => equilibrium
 
-      grid_size = equilibrium_get_grid_size(equilibrium)
+      grid_size = equilibrium%get_grid_size()
 
       IF (grid_size .gt. 0) THEN
          CALL model_set_grid_params(model_construct, grid_size)
@@ -525,7 +525,7 @@
       END IF
 
       IF (ASSOCIATED(this%equilibrium)) THEN
-         CALL equilibrium_destruct(this%equilibrium)
+         DEALLOCATE(this%equilibrium)
          this%equilibrium => null()
       END IF
 
@@ -735,8 +735,8 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      this%grid_start = equilibrium_get_grid_start(this%equilibrium)
-      grid_stop = equilibrium_get_grid_stop(this%equilibrium)
+      this%grid_start = this%equilibrium%get_grid_start()
+      grid_stop = this%equilibrium%get_grid_stop()
 
       this%grid_step = (grid_stop - this%grid_start)/(size - 1)
 
@@ -1089,7 +1089,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_ne_num_hyper_param =                                        &
-     &   equilibrium_get_gp_ne_num_hyper_param(this%equilibrium)
+     &   this%equilibrium%get_gp_ne_num_hyper_param()
 
       CALL profiler_set_stop_time('model_get_gp_ne_num_hyper_param',           &
      &                            start_time)
@@ -1152,8 +1152,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_ne_ij = this%ne_unit                                        &
-     &                   * equilibrium_get_gp_ne_ij(this%equilibrium,          &
-     &                                              i, j)
+     &                   * this%equilibrium%get_gp_ne(i, j)
       model_get_gp_ne_ij = MAX(model_get_gp_ne_ij, this%ne_min)
 
       CALL profiler_set_stop_time('model_get_gp_ne_ij', start_time)
@@ -1188,8 +1187,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_ne_pi = this%ne_unit                                        &
-     &                   * equilibrium_get_gp_ne_pi(this%equilibrium,          &
-     &                                              x_cart, i)
+     &                   * this%equilibrium%get_gp_ne(x_cart, i)
       model_get_gp_ne_pi = MAX(model_get_gp_ne_pi, this%ne_min)
 
       CALL profiler_set_stop_time('model_get_gp_ne_pi', start_time)
@@ -1225,8 +1223,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_ne_pp = this%ne_unit                                        &
-     &                   * equilibrium_get_gp_ne_pp(this%equilibrium,          &
-     &                                              x_cart, y_cart)
+     &                   * this%equilibrium%get_gp_ne(x_cart, y_cart)
       model_get_gp_ne_pp = MAX(model_get_gp_ne_pp, this%ne_min)
 
       CALL profiler_set_stop_time('model_get_gp_ne_pp', start_time)
@@ -1271,7 +1268,8 @@
             model_get_ne_cart = model_get_te(this, x_cart)
             IF (model_get_ne_cart .gt. 0.0) THEN
                model_get_ne_cart = eV_per_Joule*this%pressure_fraction         &
-     &                           * this%equilibrium%get_p(x_cart)              &
+     &                           * this%equilibrium%get_p(x_cart,              &
+     &                                                    .false.)             &
      &                           / model_get_ne_cart
             END IF
 
@@ -1291,17 +1289,17 @@
 !>  based on the type of @ref model_class::ne_type.
 !>
 !>  @param[in] this A @ref model_class instance.
-!>  @param[in] r    Radial position to get the electron density at.
+!>  @param[in] s    Radial position to get the electron density at.
 !>  @returns The electron density at r.
 !-------------------------------------------------------------------------------
-      FUNCTION model_get_ne_radial(this, r)
+      FUNCTION model_get_ne_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec)                   :: model_get_ne_radial
       TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: r
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
       REAL (rprec)                   :: start_time
@@ -1312,17 +1310,17 @@
       SELECT CASE (this%ne_type)
 
          CASE (model_ne_type)
-            model_get_ne_radial = this%equilibrium%get_ne(r)
+            model_get_ne_radial = this%equilibrium%get_ne(s)
             model_get_ne_radial = MAX(this%ne_min,                             &
      &                                this%ne_unit*model_get_ne_radial)
 
          CASE (model_ne_te_p_type)
 !  Electron temperature of zero can cause divide by zero errors. Check the value
 !  of the temperature first. If it is zero return zero density.
-            model_get_ne_radial = model_get_te(this, r)
+            model_get_ne_radial = model_get_te(this, s)
             IF (model_get_ne_radial .gt. 0.0) THEN
                model_get_ne_radial = eV_per_Joule*this%pressure_fraction       &
-     &                             * this%equilibrium%get_p(r)                 &
+     &                             * this%equilibrium%get_p(s, .false.)        &
      &                             / model_get_ne_radial
             END IF
 
@@ -1359,7 +1357,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_te_num_hyper_param =                                        &
-     &   equilibrium_get_gp_te_num_hyper_param(this%equilibrium)
+     &   this%equilibrium%get_gp_te_num_hyper_param()
 
       CALL profiler_set_stop_time('model_get_gp_te_num_hyper_param',           &
      &                            start_time)
@@ -1421,8 +1419,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_te_ij = equilibrium_get_gp_te_ij(this%equilibrium,          &
-     &                                              i, j)
+      model_get_gp_te_ij = this%equilibrium%get_gp_te(i, j)
       model_get_gp_te_ij = MAX(model_get_gp_te_ij, this%te_min)
 
       CALL profiler_set_stop_time('model_get_gp_te_ij', start_time)
@@ -1457,8 +1454,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_te_pi = equilibrium_get_gp_te_pi(this%equilibrium,          &
-     &                                              x_cart, i)
+      model_get_gp_te_pi = this%equilibrium%get_gp_te(x_cart, i)
       model_get_gp_te_pi = MAX(model_get_gp_te_pi, this%te_min)
 
       CALL profiler_set_stop_time('model_get_gp_te_pi', start_time)
@@ -1492,8 +1488,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_te_pp = equilibrium_get_gp_te_pp(this%equilibrium,          &
-     &                                              x_cart, y_cart)
+      model_get_gp_te_pp = this%equilibrium%get_gp_te_pp(x_cart, y_cart)
       model_get_gp_te_pp = MAX(model_get_gp_te_pp, this%te_min)
 
       CALL profiler_set_stop_time('model_get_gp_te_pp', start_time)
@@ -1537,7 +1532,8 @@
             model_get_te_cart = model_get_ne(this, x_cart)
             IF (model_get_te_cart .gt. 0.0) THEN
                model_get_te_cart = eV_per_Joule*this%pressure_fraction         &
-     &                           * this%equilibrium%get_p(x_cart)              &
+     &                           * this%equilibrium%get_p(x_cart,              &
+     &                                                    .false.)             &
      &                           / model_get_te_cart
             END IF
 
@@ -1557,17 +1553,17 @@
 !>  computed based on the type of @ref model_class::te_type.
 !>
 !>  @param[in] this A @ref model_class instance.
-!>  @param[in] r    Radial position to get the electron temperature at.
+!>  @param[in] s    Radial position to get the electron temperature at.
 !>  @returns The electron temperature at r.
 !-------------------------------------------------------------------------------
-      FUNCTION model_get_te_radial(this, r)
+      FUNCTION model_get_te_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec)                   :: model_get_te_radial
       TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: r
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
       REAL (rprec)                   :: start_time
@@ -1578,16 +1574,16 @@
       SELECT CASE (this%te_type)
 
          CASE (model_te_type)
-            model_get_te_radial = this%equilibrium%get_te(r)
+            model_get_te_radial = this%equilibrium%get_te(s)
             model_get_te_radial = MAX(this%te_min, model_get_te_radial)
 
          CASE (model_te_ne_p_type)
 !  Electron densities of zero can cause divide by zero errors. Check the value
 !  of the density first. If it is zero return zero temperature.
-            model_get_te_radial = model_get_ne(this, r)
+            model_get_te_radial = model_get_ne(this, s)
             IF (model_get_te_radial .gt. 0.0) THEN
                model_get_te_radial = eV_per_Joule*this%pressure_fraction       &
-     &                             * this%equilibrium%get_p(r)                 &
+     &                             * this%equilibrium%get_p(s, .false.)        &
      &                             / model_get_te_radial
             END IF
 
@@ -1624,7 +1620,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_ti_num_hyper_param =                                        &
-     &   equilibrium_get_gp_ti_num_hyper_param(this%equilibrium)
+     &   this%equilibrium%get_gp_ti_num_hyper_param()
 
       CALL profiler_set_stop_time('model_get_gp_ti_num_hyper_param',           &
      &                            start_time)
@@ -1686,8 +1682,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_ti_ij = equilibrium_get_gp_ti_ij(this%equilibrium,          &
-     &                                              i, j)
+      model_get_gp_ti_ij = this%equilibrium%get_gp_ti(i, j)
       model_get_gp_ti_ij = MAX(model_get_gp_ti_ij, this%ti_min)
 
       CALL profiler_set_stop_time('model_get_gp_ti_ij', start_time)
@@ -1721,8 +1716,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_ti_pi = equilibrium_get_gp_ti_pi(this%equilibrium,          &
-     &                                              x_cart, i)
+      model_get_gp_ti_pi = this%equilibrium%get_gp_ti(x_cart, i)
       model_get_gp_ti_pi = MAX(model_get_gp_ti_pi, this%ti_min)
 
       CALL profiler_set_stop_time('model_get_gp_ti_pi', start_time)
@@ -1756,8 +1750,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      model_get_gp_ti_pp = equilibrium_get_gp_ti_pp(this%equilibrium,          &
-     &                                              x_cart, y_cart)
+      model_get_gp_ti_pp = this%equilibrium%get_gp_ti(x_cart, y_cart)
       model_get_gp_ti_pp = MAX(model_get_gp_ti_pp, this%ti_min)
 
       CALL profiler_set_stop_time('model_get_gp_ti_pp', start_time)
@@ -1811,17 +1804,17 @@
 !>  computed based on the type of @ref model_class::ti_type.
 !>
 !>  @param[in] this A @ref model_class instance.
-!>  @param[in] r    Radial position to get the ion temperature at.
+!>  @param[in] s    Radial position to get the ion temperature at.
 !>  @returns The ion temperature at r.
 !-------------------------------------------------------------------------------
-      FUNCTION model_get_ti_radial(this, r)
+      FUNCTION model_get_ti_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec)                   :: model_get_ti_radial
       TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: r
+      REAL (rprec), INTENT(in)       :: s
 
 !  local variables
       REAL (rprec)                   :: start_time
@@ -1832,7 +1825,7 @@
       SELECT CASE (this%ti_type)
 
          CASE (model_ti_type)
-            model_get_ti_radial = this%equilibrium%get_ti(r)
+            model_get_ti_radial = this%equilibrium%get_ti(s)
             model_get_ti_radial = MAX(this%ti_min, model_get_ti_radial)
 
          CASE DEFAULT
@@ -1870,8 +1863,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_sxrem_num_hyper_param =                                     &
-     &   equilibrium_get_gp_sxrem_num_hyper_param(this%equilibrium,            &
-     &                                            index)
+     &   this%equilibrium%get_gp_sxrem_num_hyper_param(index)
 
       CALL profiler_set_stop_time('model_get_gp_sxrem_num_hyper_param',        &
      &                            start_time)
@@ -1938,7 +1930,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_sxrem_ij =                                                  &
-     &   equilibrium_get_gp_sxrem_ij(this%equilibrium, i, j, index)
+     &   this%equilibrium%get_gp_sxrem(i, j, index)
       model_get_gp_sxrem_ij = MAX(model_get_gp_sxrem_ij,                       &
      &                            this%sxrem_min(index))
 
@@ -1977,7 +1969,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_sxrem_pi =                                                  &
-     &   equilibrium_get_gp_sxrem_pi(this%equilibrium, x_cart, i, index)
+     &   this%equilibrium%get_gp_sxrem(x_cart, i, index)
       model_get_gp_sxrem_pi = MAX(model_get_gp_sxrem_pi,                       &
      &                            this%sxrem_min(index))
 
@@ -2016,8 +2008,7 @@
       start_time = profiler_get_start_time()
 
       model_get_gp_sxrem_pp =                                                  &
-     &   equilibrium_get_gp_sxrem_pp(this%equilibrium, x_cart, y_cart,         &
-     &                               index)
+     &   this%equilibrium%get_gp_sxrem(x_cart, y_cart, index)
       model_get_gp_sxrem_pp = MAX(model_get_gp_sxrem_pp,                       &
      &                            this%sxrem_min(index))
 
@@ -2082,18 +2073,18 @@
 !>  is computed based on the type of @ref model_class::sxrem_type.
 !>
 !>  @param[in] this  A @ref model_class instance.
-!>  @param[in] r     Radial position to get the soft x-ray emissivity at.
+!>  @param[in] s     Radial position to get the soft x-ray emissivity at.
 !>  @param[in] index Index of the soft x-ray emissivity model.
 !>  @returns The soft x-ray emissivity at r.
 !-------------------------------------------------------------------------------
-      FUNCTION model_get_sxrem_radial(this, r, index)
+      FUNCTION model_get_sxrem_radial(this, s, index)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec)                   :: model_get_sxrem_radial
       TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: r
+      REAL (rprec), INTENT(in)       :: s
       INTEGER, INTENT(in)            :: index
 
 !  local variables
@@ -2106,15 +2097,15 @@
 
          CASE (model_sxrem_type)
             model_get_sxrem_radial =                                           &
-     &         this%equilibrium%get_sxrem(r, index)
+     &         this%equilibrium%get_sxrem(s, index)
             model_get_sxrem_radial = MAX(model_get_sxrem_radial,               &
      &                                   this%sxrem_min(index))
 
          CASE (model_sxrem_te_ne_type)
             model_get_sxrem_radial =                                           &
      &         emission_get_emission(this%emission,                            &
-     &                               model_get_te(this, r),                    &
-     &                               model_get_ne(this, r), index)
+     &                               model_get_te(this, s),                    &
+     &                               model_get_ne(this, s), index)
 
          CASE DEFAULT
             model_get_sxrem_radial = 0.0_rprec
@@ -2445,7 +2436,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL equilibrium_reset_state(this%equilibrium)
+      CALL this%equilibrium%reset_state()
       CALL model_set_grid_profiles(this)
       this%state_flags = model_state_all_off
 
@@ -2473,7 +2464,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL equilibrium_save_state(this%equilibrium)
+      CALL this%equilibrium%save_state()
 
       CALL profiler_set_stop_time('model_save_state', start_time)
 
@@ -2528,9 +2519,9 @@
      &                  error)
 #endif
 
-         model_converge = equilibrium_converge(this%equilibrium,               &
-     &                                         num_iter, iou, eq_comm,         &
-     &                                         this%state_flags)
+         model_converge = this%equilibrium%converge(num_iter, iou,             &
+     &                                              eq_comm,                   &
+     &                                              this%state_flags)
       ELSE
          model_converge = .true.
       END IF
@@ -2825,8 +2816,7 @@
      &                         varid=coosig_w_var_id)
       END IF
 
-      CALL equilibrium_def_result(this%equilibrium, result_ncid,               &
-     &                            maxnsteps_dim_id)
+      CALL this%equilibrium%def_result(result_ncid, maxnsteps_dim_id)
 
       CALL profiler_set_stop_time('model_def_result', start_time)
 
@@ -2893,7 +2883,7 @@
          END DO
       END IF
 
-      CALL equilibrium_write_init_data(this%equilibrium, result_ncid)
+      CALL this%equilibrium%write_init_data(result_ncid)
 
       CALL profiler_set_stop_time('model_write_init_data', start_time)
 
@@ -3018,8 +3008,7 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      CALL equilibrium_write_step_data(this%equilibrium, result_ncid,          &
-     &                                 current_step)
+      CALL this%equilibrium%write_step_data(result_ncid, current_step)
 
       CALL profiler_set_stop_time('model_write_step_data', start_time)
 
@@ -3146,8 +3135,7 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
 
-      CALL equilibrium_restart(this%equilibrium, result_ncid,                  &
-     &                         current_step)
+      CALL this%equilibrium%restart(result_ncid, current_step)
 
       this%state_flags = model_state_all_off
 
@@ -3184,12 +3172,12 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL equilibrium_sync_state(this%equilibrium, recon_comm)
+      CALL this%equilibrium%sync_state(recon_comm)
 
       CALL MPI_BCAST(this%state_flags, 1, MPI_INTEGER, 0, recon_comm,          &
      &               error)
 
-      grid_size = equilibrium_get_grid_size(this%equilibrium)
+      grid_size = this%equilibrium%get_grid_size()
       IF (grid_size .gt. 0) THEN
          CALL MPI_BCAST(this%ne_grid, grid_size, MPI_REAL8, 0,                 &
      &                  recon_comm, error)
@@ -3236,9 +3224,9 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL equilibrium_sync_child(this%equilibrium, index, recon_comm)
+      CALL this%equilibrium%sync_child(index, recon_comm)
 
-      grid_size = equilibrium_get_grid_size(this%equilibrium)
+      grid_size = this%equilibrium%get_grid_size()
       IF (grid_size .gt. 0) THEN
          CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
 

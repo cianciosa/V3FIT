@@ -314,8 +314,7 @@
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
 !  Get the magnetic field vector.
-         b_cyl = equilibrium_get_B_vec(a_model%equilibrium, this%point,        &
-     &                                 .true.)
+         b_cyl = a_model%equilibrium%get_B_vec(this%point, .true.)
 
          mse_get_modeled_signal(2) =                                           &
      &         -(b_cyl(3)*COS(this%delta)*COS(this%omega + this%alpha) +       &

@@ -118,7 +118,7 @@
          PROCEDURE :: set_magnetic_cache_calc =>                               &
      &                   siesta_set_magnetic_cache_calc
 
-         PROCEDURE :: get_type => siesta_get_type()
+         PROCEDURE :: get_type => siesta_get_type
 
          PROCEDURE :: get_param_id => siesta_get_param_id
          PROCEDURE :: get_param_value => siesta_get_param_value
@@ -399,14 +399,14 @@
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%phi_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL this%set_magnetic_cache()
+               CALL this%set_magnetic_cache_calc()
             END IF
 
          CASE (vmec_z_offset_id)
             state_flags = IBSET(state_flags, model_state_shift_flag)
             this%z_offset = value
             IF (ASSOCIATED(this%magnetic_cache)) THEN
-               CALL this%set_magnetic_cache()
+               CALL this%set_magnetic_cache_calc()
             END IF
 
          CASE (siesta_helpert_id)
@@ -517,7 +517,7 @@
 
 !  If the equilibrium is already converged, compute the magnetic cache as well.
       IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
-         CALL this%set_magnetic_cache()
+         CALL this%set_magnetic_cache_calc()
       END IF
 
       CALL profiler_set_stop_time('siesta_set_magnetic_cache_responce',        &
@@ -600,7 +600,7 @@
 
 !  If the equilibrium is already converged, compute the magnetic cache as well.
       IF (.not.BTEST(state_flags, model_state_siesta_flag)) THEN
-         CALL this%set_magnetic_cache()
+         CALL this%set_magnetic_cache_calc()
       END IF
 
       CALL profiler_set_stop_time('siesta_set_magnetic_cache_point',           &
@@ -2137,11 +2137,11 @@
 !>  computes Int[B*dl]
 !>
 !>  @param[in] this  A @ref siesta_class instance.
-!>  @param[in] r     S position to integrate about.
+!>  @param[in] s     S position to integrate about.
 !>  @param[in] theta U angle to integrate about.
 !>  @returns The loop integrated magnetic field at x_cart.
 !-------------------------------------------------------------------------------
-      FUNCTION siesta_get_Int_B_dphi(this, r, theta)
+      FUNCTION siesta_get_Int_B_dphi(this, s, theta)
       USE line_segment, only: line_seg
       USE stel_constants, only: twopi
       USE read_wout_mod, only: bsubvmnc, ns
@@ -2151,25 +2151,25 @@
 !  Declare Arguments
       REAL (rprec)                     :: siesta_get_Int_B_dphi
       CLASS (siesta_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)         :: r
+      REAL (rprec), INTENT(in)         :: s
       REAL (rprec), INTENT(in)         :: theta
 
 !  local variables
       REAL (rprec)                     :: bsubv00c
       REAL (rprec)                     :: ds
       INTEGER                          :: i
-      REAL (rprec), DIMENSION(2)       :: s
+      REAL (rprec), DIMENSION(2)       :: r
       REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
       ds = 1.0/(ns - 1)
 
-      s(1) = 1.0 - 1.5*ds
-      s(2) = 1.0 - 0.5*ds
+      r(1) = 1.0 - 1.5*ds
+      r(2) = 1.0 - 0.5*ds
 
-      CALL line_seg(r, bsubv00c,                                               &
-     &              s, this%context%bsubvmnch(0,0,ns - 1:ns), 2)
+      CALL line_seg(s, bsubv00c, r,                                            &
+     &              this%context%bsubvmnch(0,0,ns - 1:ns), 2)
 
       siesta_get_Int_B_dphi = twopi*bsubv00c/this%context%b_factor
 
@@ -2760,7 +2760,7 @@
          END IF
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL this%set_magnetic_cache()
+            CALL this%set_magnetic_cache_calc()
          END IF
       END IF
 
@@ -3050,7 +3050,7 @@
          END IF
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL this%set_magnetic_cache()
+            CALL this%set_magnetic_cache_calc()
          END IF
       END IF
 #endif
@@ -3098,7 +3098,7 @@
          CALL siesta_context_read(this%context, this%restart_file_name)
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
-            CALL this%set_magnetic_cache()
+            CALL this%set_magnetic_cache_calc()
          END IF
       END IF
 

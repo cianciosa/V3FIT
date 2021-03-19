@@ -32,11 +32,9 @@
 !*******************************************************************************
 
       MODULE vacuum_equilibrium
-      USE stel_kinds
-      USE data_parameters
       USE biotsavart
       USE mpi_inc
-      USE profiler
+      USE equilibrium
 
       IMPLICIT NONE
 
@@ -69,7 +67,7 @@
          REAL (rprec), DIMENSION(:), POINTER  :: extcur => null()
       CONTAINS
          PROCEDURE :: set_param => vacuum_set_param
-         PROCEDURE :: get_type => vacuum_get_type()
+         PROCEDURE :: get_type => vacuum_get_type
          PROCEDURE :: get_param_id => vacuum_get_param_id
          PROCEDURE :: get_param_value => vacuum_get_param_value
          PROCEDURE :: get_param_name => vacuum_get_param_name
@@ -210,7 +208,8 @@
 !>  @param[inout] state_flags Bitwise flags to indicate which parts of the model
 !>                            changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE vacuum_set_param(this, id, i_index, value)
+      SUBROUTINE vacuum_set_param(this, id, i_index, j_index, value,           &
+     &                            eq_comm, state_flags)
 
       IMPLICIT NONE
 
@@ -318,9 +317,10 @@
 !>  @param[in] this    A @ref vacuum_class instance.
 !>  @param[in] id      ID of the parameter.
 !>  @param[in] i_index The ith index of the parameter.
+!>  @param[in] j_index The jth index of the parameter.
 !>  @returns The value of the parameter.
 !-------------------------------------------------------------------------------
-      FUNCTION vacuum_get_param_value(this, id, i_index)
+      FUNCTION vacuum_get_param_value(this, id, i_index, j_index)
 
       IMPLICIT NONE
 
@@ -329,6 +329,7 @@
       CLASS (vacuum_class), INTENT(in) :: this
       INTEGER, INTENT(in)              :: id
       INTEGER, INTENT(in)              :: i_index
+      INTEGER, INTENT(in)              :: j_index
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -442,11 +443,11 @@
 !>  a loop at that r-z position. This computes Int[B*dl]
 !>
 !>  @param[in] this  A @ref vacuum_class instance.
-!>  @param[in] r     Radial position to integrate about.
+!>  @param[in] s     Radial position to integrate about.
 !>  @param[in] theta Theta angle to integrate about.
 !>  @returns The loop integrated magnetic field at x_cart.
 !-------------------------------------------------------------------------------
-      FUNCTION vacuum_get_Int_B_dphi(this, r, theta)
+      FUNCTION vacuum_get_Int_B_dphi(this, s, theta)
       USE stel_constants, only: twopi
       USE coordinate_utilities, ONLY : cyl_to_cart_vec, cyl_to_cart
 
@@ -455,7 +456,7 @@
 !  Declare Arguments
       REAL (rprec)                     :: vacuum_get_Int_B_dphi
       CLASS (vacuum_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)         :: r
+      REAL (rprec), INTENT(in)         :: s
       REAL (rprec), INTENT(in)         :: theta
 
 !  local variables
@@ -470,9 +471,9 @@
 
       vacuum_get_Int_B_dphi = 0.0
 
-      r_cyl(1) = r*cos(theta)
+      r_cyl(1) = s*cos(theta)
       r_cyl(2) = 0.0
-      r_cyl(3) = r*sin(theta)
+      r_cyl(3) = s*sin(theta)
 
       dphi = 0.001/r_cyl(1)
       DO WHILE (r_cyl(2) .lt. twopi)
@@ -495,17 +496,21 @@
 !>  @ref vacuum_class. Return a pointer to it.
 !>
 !>  @param[in]  this           A @ref vacuum_class instance.
+!>  @param[in]  num_currents   Forces the number of currents to return if
+!>                             greater than zero.
 !>  @param[out] scale_currents Informs the caller that currents need to be
 !>                             scaled.
 !>  @returns The external currents.
 !-------------------------------------------------------------------------------
-      FUNCTION vacuum_get_ext_currents(this, scale_currents)
+      FUNCTION vacuum_get_ext_currents(this, num_currents,                     &
+     &                                 scale_currents)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: vacuum_get_ext_currents
       CLASS (vacuum_class), INTENT(in)    :: this
+      INTEGER, INTENT(in)                 :: num_currents
       LOGICAL, INTENT(out)                :: scale_currents
 
 !  local variables

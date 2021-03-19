@@ -488,10 +488,8 @@
 
       temp_context = TRANSFER(context, temp_context)
 
-      bcart1 = equilibrium_get_B_vec(temp_context%model%equilibrium,           &
-     &                               xcart1, .false.)
-      bcart2 = equilibrium_get_B_vec(temp_context%model%equilibrium,           &
-     &                               xcart2, .false.)
+      bcart1 = temp_context%model%equilibrium%get_B_vec(xcart1, .false.)
+      bcart2 = temp_context%model%equilibrium%get_B_vec(xcart2, .false.)
 
       bmod1 = SQRT(DOT_PRODUCT(bcart1, bcart1))
       bmod2 = SQRT(DOT_PRODUCT(bcart2, bcart2))

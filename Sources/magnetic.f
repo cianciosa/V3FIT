@@ -269,18 +269,16 @@
 
       magnetic_get_modeled_signal_point = 0.0
 
-      b_field = equilibrium_get_ext_b_plasma(a_model%equilibrium,              &
-     &                                       this%response%position,           &
-     &                                       .false.)
+      b_field = a_model%equilibrium%get_ext_b_plasma(                          &
+     &             this%response%position, .false.)
 
       magnetic_get_modeled_signal_point(2) =                                   &
      &   DOT_PRODUCT(b_field, this%response%direction)
 
 !  Axisymmetric component.
       IF (BTEST(this%control_flags, magnetic_3D_flag)) THEN
-         b_field = equilibrium_get_ext_b_plasma(a_model%equilibrium,           &
-     &                                          this%response%position,        &
-     &                                          .true.)
+         b_field = a_model%equilibrium%get_ext_b_plasma(                       &
+     &                this%response%position, .true.)
 
          magnetic_get_modeled_signal_point(4) =                                &
      &      DOT_PRODUCT(b_field, this%response%direction)
@@ -389,16 +387,14 @@
 !  Get the volume integration grid points.
 !  NOTE: Do not deallocate any of these arrays. They are owned by the
 !  equilibrium
-      rvolgrid =>                                                              &
-     &   equilibrium_get_magnetic_volume_rgrid(a_model%equilibrium)
-      zvolgrid =>                                                              &
-     &   equilibrium_get_magnetic_volume_zgrid(a_model%equilibrium)
+      rvolgrid => a_model%equilibrium%get_magnetic_volume_rgrid()
+      zvolgrid => a_model%equilibrium%get_magnetic_volume_zgrid()
       jrvolgrid =>                                                             &
-     &   equilibrium_get_magnetic_volume_jrgrid(a_model%equilibrium)
+     &   a_model%equilibrium%get_magnetic_volume_jrgrid()
       jphivolgrid =>                                                           &
-     &   equilibrium_get_magnetic_volume_jphigrid(a_model%equilibrium)
+     &   a_model%equilibrium%get_magnetic_volume_jphigrid()
       jzvolgrid =>                                                             &
-     &   equilibrium_get_magnetic_volume_jzgrid(a_model%equilibrium)
+     &   a_model%equilibrium%get_magnetic_volume_jzgrid()
 
 !  The equilibrium may return null pointers indicating the lack of a plasma.
       IF (ASSOCIATED(rvolgrid) .and. ASSOCIATED(zvolgrid) .and.                &
@@ -487,7 +483,7 @@
 !  Finish integration with the volume element.
          magnetic_get_modeled_signal_coil(2)                                   &
      &      = magnetic_get_modeled_signal_coil(2)                              &
-     &      * equilibrium_get_volume_int_element(a_model%equilibrium)
+     &      * a_model%equilibrium%get_volume_int_element()
 
 !  Deallocate work arrays.
 !  NOTE: Do not deallocate any of the vol grid arrays that were obtained from
@@ -504,12 +500,9 @@
 
          num_phi = compression_get_dimension2(this%response%a_s_r)
 
-         krgrid =>                                                             &
-     &      equilibrium_get_con_surface_krgrid(a_model%equilibrium)
-         kphigrid =>                                                           &
-     &      equilibrium_get_con_surface_kphigrid(a_model%equilibrium)
-         kzgrid =>                                                             &
-     &      equilibrium_get_con_surface_kzgrid(a_model%equilibrium)
+         krgrid => a_model%equilibrium%get_con_surface_krgrid()
+         kphigrid =>a_model%equilibrium%get_con_surface_kphigrid()
+         kzgrid => a_model%equilibrium%get_con_surface_kzgrid()
 
          IF (ASSOCIATED(krgrid) .and. ASSOCIATED(kphigrid) .and.               &
      &       ASSOCIATED(kzgrid)) THEN
@@ -544,7 +537,7 @@
 !  Finish integration with the area element.
             magnetic_get_modeled_signal_coil(4)                                &
      &         = magnetic_get_modeled_signal_coil(4)                           &
-     &         * equilibrium_get_area_int_element(a_model%equilibrium)
+     &         * a_model%equilibrium%get_area_int_element()
 
             DEALLOCATE(sumphi)
          END IF
@@ -620,9 +613,8 @@
          END IF
 
 !  Calculate the induced signal from external currents.
-         extcur => equilibrium_get_ext_currents(a_model%equilibrium,           &
-     &                                          num_currents,                  &
-     &                                          scale_current)
+         extcur => a_model%equilibrium%get_ext_currents(num_currents,          &
+     &                                                  scale_current)
 
 !  If there are no external current extcur will be a null pointer.
          IF (ASSOCIATED(extcur)) THEN

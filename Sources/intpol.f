@@ -860,7 +860,7 @@
 
       a_model = TRANSFER(context, a_model)
 
-      bcart = equilibrium_get_B_vec(a_model%equilibrium, xcart, .false.)
+      bcart = a_model%equilibrium%get_B_vec(xcart, .false.)
       pol_function =                                                           &
      &   model_get_ne(a_model, xcart)*DOT_PRODUCT(bcart, dxcart)
 
@@ -954,8 +954,7 @@
       start_time = profiler_get_start_time()
 
       gp_context = TRANSFER(context, gp_context)
-      bcart = equilibrium_get_B_vec(gp_context%model%equilibrium, xcart,       &
-     &                              .false.)
+      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
       gp_pol_function_i = model_get_gp_ne(gp_context%model, xcart,             &
      &                                    gp_context%i)                        *
      &                  * DOT_PRODUCT(bcart, dxcart)
@@ -1048,8 +1047,7 @@
       start_time = profiler_get_start_time()
 
       gp_context = TRANSFER(context, gp_context)
-      bcart = equilibrium_get_B_vec(gp_context%model%equilibrium, xcart,       &
-     &                              .false.)
+      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
       gp_pol_function_s = gp_context%signal%get_gp(gp_context%model,           &
      &                                             xcart,                      &
      &                                             gp_context%flags)           &
@@ -1139,8 +1137,7 @@
 
 !  This is the second signal so put xcart in the second position.
       gp_context = TRANSFER(context, gp_context)
-      bcart = equilibrium_get_B_vec(gp_context%model%equilibrium, xcart,       &
-     &                              .false.)
+      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
       gp_pol_function_x = model_get_gp_ne(gp_context%model,                    &
      &                                    xcart, gp_context%xcart)             &
      &                  * DOT_PRODUCT(bcart, dxcart)

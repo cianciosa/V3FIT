@@ -148,6 +148,11 @@
      &      get_p => get_p_cart, get_p_radial
 
          PROCEDURE                                           ::                &
+     &      get_B_vec => equilibrium_get_B_vec
+         PROCEDURE                                           ::                &
+     &      get_Int_B_dphi => equilibrium_get_Int_B_dphi
+
+         PROCEDURE                                           ::                &
      &      get_plasma_edge => equilibrium_get_plasma_edge
          PROCEDURE                                           ::                &
      &      get_magnetic_volume_rgrid =>                                       &
@@ -179,6 +184,8 @@
          PROCEDURE                                           ::                &
      &      get_area_int_element =>                                            &
      &         equilibrium_get_area_int_element
+         PROCEDURE                                           ::                &
+     &      get_ext_currents => equilibrium_get_ext_currents
          PROCEDURE                                           ::                &
      &      get_ext_b_plasma => equilibrium_get_ext_b_plasma
          PROCEDURE                                           ::                &
@@ -757,19 +764,19 @@
 !>  @see siesta_equilibrium::siesta_get_ne
 !>
 !>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] r    Radial position to get the electron density at.
+!>  @param[in] s    Radial position to get the electron density at.
 !>  @returns The electron density at r.
 !>  @note Note the electron density is not relevant to all equilibrium types.
 !>  For instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_ne_radial(this, r)
+      FUNCTION equilibrium_get_ne_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ne_radial
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)              :: r
+      REAL (rprec), INTENT(in)              :: s
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1008,19 +1015,19 @@
 !>  @see siesta_equilibrium::siesta_get_te
 !>
 !>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] r    Cartesian position to get the electron temperature at.
+!>  @param[in] s    Cartesian position to get the electron temperature at.
 !>  @returns The electron temperature at r.
 !>  @note Note the electron temperature is not relevant to all equilibrium
 !>  types. For instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_te_radial(this, r)
+      FUNCTION equilibrium_get_te_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_te_radial
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)              :: r
+      REAL (rprec), INTENT(in)              :: s
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1263,14 +1270,14 @@
 !>  @note Note the ion temperature is not relevant to all equilibrium
 !>  types. For instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_ti_radial(this, r)
+      FUNCTION equilibrium_get_ti_radial(this, s)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_ti_radial
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)              :: r
+      REAL (rprec), INTENT(in)              :: s
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1519,20 +1526,20 @@
 !>  @see siesta_equilibrium::siesta_get_sxrem
 !>
 !>  @param[in] this  A @ref equilibrium_class instance.
-!>  @param[in] r     Cartesian position to get the soft x-ray emissivity at.
+!>  @param[in] s     Cartesian position to get the soft x-ray emissivity at.
 !>  @param[in] index Index of the soft x-ray emissivity profile to use.
 !>  @returns The soft x-ray emissivity at x_cart.
 !>  @note Note the soft x-ray emissivity is not relevant to all equilibrium
 !>  types. For instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_sxrem_radial(this, r, index)
+      FUNCTION equilibrium_get_sxrem_radial(this, s, index)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_sxrem_radial
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)              :: r
+      REAL (rprec), INTENT(in)              :: s
       INTEGER, INTENT(in)                   :: index
 
 !  local variables
@@ -1558,11 +1565,12 @@
 !>
 !>  @param[in] this   A @ref equilibrium_class instance.
 !>  @param[in] x_cart Cartesian position to get the plasma pressure at.
+!>  @param[in] normalize Normalize the pressure value.
 !>  @returns The plasma pressure at x_cart.
 !>  @note Note the plasma pressure is not relevant to all equilibrium types. For
 !>  instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_p_cart(this, x_cart)
+      FUNCTION equilibrium_get_p_cart(this, x_cart, normalize)
 
       IMPLICIT NONE
 
@@ -1570,6 +1578,7 @@
       REAL (rprec) :: equilibrium_get_p_cart
       CLASS (equilibrium_class), INTENT(in)  :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+      LOGICAL, INTENT(in)                    :: normalize
 
 !  local variables
       REAL (rprec)                           :: start_time
@@ -1591,20 +1600,22 @@
 !>  @see vmec_equilibrium::vmec_get_p
 !>  @see siesta_equilibrium::siesta_get_p
 !>
-!>  @param[in] this A @ref equilibrium_class instance.
-!>  @param[in] r    Cartesian position to get the plasma pressure at.
+!>  @param[in] this      A @ref equilibrium_class instance.
+!>  @param[in] s         Cartesian position to get the plasma pressure at.
+!>  @param[in] normalize Normalize the pressure value.
 !>  @returns The plasma pressure at r.
 !>  @note Note the plasma pressure is not relevant to all equilibrium types. For
 !>  instance, vacuum equilibrium should not override this method.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_p_radial(this, r)
+      FUNCTION equilibrium_get_p_radial(this, s, normalize)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec) :: equilibrium_get_p_radial
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)              :: r
+      REAL (rprec), INTENT(in)              :: s
+      LOGICAL, INTENT(in)                   :: normalize
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -1616,6 +1627,68 @@
 
       CALL profiler_set_stop_time('equilibrium_get_p_radial',                  &
      &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Gets the magnetic field vector at a position.
+!>
+!>  This method is virtual. The actual getting of the magnetic field vector
+!>  should be handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_get_B_vec
+!>  @see vacuum_equilibrium::vacuum_get_B_vec
+!>  @see siesta_equilibrium::siesta_get_B_vec
+!>
+!>  @param[in] this   A @ref equilibrium_class instance.
+!>  @param[in] x_cart Cartesian position to get the magnetic field vector at.
+!>  @param[in] cyl    Flag that specifies if the bfield should be returned in
+!>                    cartesian or cylindical coordinates.
+!>  @returns The magnetic field vector at x_cart.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_B_vec(this, x_cart, cyl)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec), DIMENSION(3) :: equilibrium_get_B_vec
+      CLASS (equilibrium_class), INTENT(in)   :: this
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+      LOGICAL, INTENT(in)                    :: cyl
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_B_vec not over ' //                &
+     &                     'written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Gets the loop integrated magnetic field at a position.
+!>
+!>  This method is virtual. The actual getting of the loop integrated magnetic
+!>  field should be handled by a subclass method. Returns the closed loop
+!>  integration of the magnetic field to determine the enclosed current.
+!>  @see vmec_equilibrium::vmec_get_Int_B_dphi
+!>  @see vacuum_equilibrium::vacuum_get_Int_B_dphi
+!>  @see siesta_equilibrium::siesta_get_Int_B_dphi
+!>
+!>  @param[in] this  A @ref equilibrium_class instance.
+!>  @param[in] s     Radial position to integrate about.
+!>  @param[in] theta Poloidal angle to integrate about.
+!>  @returns The loop integrated magnetic field at x_cart.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_Int_B_dphi(this, s, theta)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec) :: equilibrium_get_Int_B_dphi
+      CLASS (equilibrium_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)              :: s
+      REAL (rprec), INTENT(in)              :: theta
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_Int_B_dphi not over ' //           &
+     &                     'written for ' // this%get_type())
 
       END FUNCTION
 
@@ -1996,6 +2069,45 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
+!>  @brief Get external current.
+!>
+!>  This method is virtual. The actual getting of the external current should be
+!>  handled by a subclass method. To void extra memory operations, arrays are
+!>  returned as pointers. The memory management is handled by the equilibrium
+!>  subclass instance. If the equilibrium has no external currents return a
+!>  null() pointer or don't override this method. MAKEGRID has a mode where
+!>  currents maybe scaled. Inform the signal using this to scale the currents
+!>  if need be.
+!>  @see vmec_equilibrium::vmec_get_ext_currents
+!>  @see vacuum_equilibrium::vacuum_get_ext_currents
+!>  @see siesta_equilibrium::siesta_get_ext_currents
+!>
+!>  @param[in]  this           A @ref equilibrium_class instance.
+!>  @param[in]  num_currents   Forces the number of currents to return if
+!>                             greater than zero.
+!>  @param[out] scale_currents Informs the caller that currents need to be
+!>                             scaled.
+!>  @returns The external currents.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_get_ext_currents(this, num_currents,                &
+     &                                      scale_currents)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec), DIMENSION(:), POINTER  ::                                  &
+     &   equilibrium_get_ext_currents
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: num_currents
+      LOGICAL, INTENT(out)                  :: scale_currents
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_get_ext_currents not over ' //         &
+     &                     'written for ' // this%get_type())
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
 !>  @brief Get external plasma magnetic field.
 !>
 !>  This method is virtual. The actual getting of the external current should be
@@ -2015,12 +2127,12 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3) :: equilibrium_get_ext_b_plasma
-      CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), DIMENSION(3)            :: position
-      LOGICAL, INTENT(in)                   :: axi_only
+      CLASS (equilibrium_class), INTENT(in)  :: this
+      REAL (rprec), DIMENSION(3), INTENT(in) :: position
+      LOGICAL, INTENT(in)                    :: axi_only
 
 !  local variables
-      REAL (rprec)                          :: start_time
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
