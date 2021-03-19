@@ -136,7 +136,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class representing a parameterized profile.
 !-------------------------------------------------------------------------------
-      TYPE pprofile_class
+      TYPE :: pprofile_class
 !>  Parameterized profile type
          INTEGER :: p_type = pprofile_none_type
 !>  Array of coefficients for the functional profiles.
@@ -152,6 +152,19 @@
          REAL (rprec), DIMENSION(:), POINTER  :: cache => null()
 !>  Cached value of the af array.
          REAL (rprec), DIMENSION(:), POINTER  :: cache_hyper => null()
+      CONTAINS
+         PROCEDURE :: get_value => pprofile_get_value
+         PROCEDURE :: get_p_type_name => pprofile_get_p_type_name
+         PROCEDURE :: get_gp_ij => pprofile_get_gp_ij
+         PROCEDURE :: get_gp_pi => pprofile_get_gp_pi
+         PROCEDURE :: get_gp_pp => pprofile_get_gp_pp
+         GENERIC   :: get_gp => get_gp_ij, get_gp_pi, get_gp_pp
+         PROCEDURE :: get_gp_num_hyper_param =>                                &
+     &                   pprofile_get_gp_num_hyper_param
+         PROCEDURE :: write => pprofile_write                                  &
+         PROCEDURE :: save_state => pprofile_save_state
+         PROCEDURE :: reset_state => pprofile_reset_state
+         FINAL     :: pprofile_destruct
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -166,12 +179,10 @@
 ! SECTION III. INTERFACE BLOCKS
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  Interface for the guassian process kernel values.
+!>  Interface for sxrem ti constructor.
 !-------------------------------------------------------------------------------
-      INTERFACE pprofile_get_gp
-         MODULE PROCEDURE pprofile_get_gp_ij,                                  &
-     &                    pprofile_get_gp_pi,                                  &
-     &                    pprofile_get_gp_pp
+      INTERFACE pprofile_class
+         MODULE PROCEDURE pprofile_construct
       END INTERFACE
 
       PRIVATE findMaxIndex
@@ -303,7 +314,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments 
-      TYPE (pprofile_class), POINTER :: this
+      TYPE (pprofile_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%as)) THEN
@@ -325,8 +336,6 @@
          DEALLOCATE(this%cache_hyper)
          this%cache_hyper => null()
       END IF
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -353,17 +362,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: pprofile_get_value
-      TYPE (pprofile_class), INTENT (in) :: this
-      REAL (rprec), INTENT(in)           :: s_arg
+      REAL (rprec)                        :: pprofile_get_value
+      CLASS (pprofile_class), INTENT (in) :: this
+      REAL (rprec), INTENT(in)            :: s_arg
 
 !  local variables
-      REAL (rprec)                       :: s_use
-      REAL (rprec)                       :: s_01
-      LOGICAL                            :: l_01
-      INTEGER                            :: i
-      INTEGER                            :: iflag
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: s_use
+      REAL (rprec)                        :: s_01
+      LOGICAL                             :: l_01
+      INTEGER                             :: i
+      INTEGER                             :: iflag
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -475,11 +484,11 @@
       FUNCTION pprofile_get_p_type_name(this)
 
 !  Declare Arguments
-      CHARACTER (len=p_type_len)        :: pprofile_get_p_type_name
-      TYPE (pprofile_class), INTENT(in) :: this
+      CHARACTER (len=p_type_len)         :: pprofile_get_p_type_name
+      CLASS (pprofile_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -539,10 +548,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: pprofile_get_gp_ij
-      TYPE (pprofile_class), INTENT (in) :: this
-      INTEGER, INTENT(in)                :: i
-      INTEGER, INTENT(in)                :: j
+      REAL (rprec)                        :: pprofile_get_gp_ij
+      CLASS (pprofile_class), INTENT (in) :: this
+      INTEGER, INTENT(in)                 :: i
+      INTEGER, INTENT(in)                 :: j
 
 !  local variables
       REAL (rprec)                       :: start_time
@@ -587,13 +596,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: pprofile_get_gp_pi
-      TYPE (pprofile_class), INTENT (in) :: this
-      REAL (rprec), INTENT(in)           :: p
-      INTEGER, INTENT(in)                :: i
+      REAL (rprec)                        :: pprofile_get_gp_pi
+      CLASS (pprofile_class), INTENT (in) :: this
+      REAL (rprec), INTENT(in)            :: p
+      INTEGER, INTENT(in)                 :: i
 
 !  local variables
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -633,13 +642,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: pprofile_get_gp_pp
-      TYPE (pprofile_class), INTENT (in) :: this
-      REAL (rprec), INTENT(in)           :: p1
-      REAL (rprec), INTENT(in)           :: p2
+      REAL (rprec)                        :: pprofile_get_gp_pp
+      CLASS (pprofile_class), INTENT (in) :: this
+      REAL (rprec), INTENT(in)            :: p1
+      REAL (rprec), INTENT(in)            :: p2
 
 !  local variables
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -676,10 +685,10 @@
 
 !  Declare Arguments
       INTEGER :: pprofile_get_gp_num_hyper_param
-      TYPE (pprofile_class), INTENT (in) :: this
+      CLASS (pprofile_class), INTENT (in) :: this
 
 !  local variables
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -715,9 +724,9 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (pprofile_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)     :: id
-      INTEGER, INTENT(in)               :: iou
+      CLASS (pprofile_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)      :: id
+      INTEGER, INTENT(in)                :: iou
 
 !  local variables
       INTEGER                           :: i
@@ -728,7 +737,7 @@
 
 !  Actual write. Could do a select-case on p_type.
       WRITE(iou,1100) id
-      WRITE(iou,1200) TRIM(pprofile_get_p_type_name(this))
+      WRITE(iou,1200) TRIM(this%get_p_type_name())
       
       SELECT CASE(this%p_type)
          
@@ -782,10 +791,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (pprofile_class), INTENT(inout) :: this
+      CLASS (pprofile_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                     :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -815,10 +824,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (pprofile_class), INTENT(inout) :: this
+      CLASS (pprofile_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                     :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()

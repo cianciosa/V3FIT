@@ -845,10 +845,10 @@
 
       ALLOCATE(sxr(num_sxrem_p))
       DO i = 1, num_sxrem_p
-         sxr(i)%p => pprofile_construct(TRIM(pp_sxrem_ptype_a(i)),             &
-     &                                  pp_sxrem_b_a(i,:),                     &
-     &                                  pp_sxrem_as_a(i,:),                    &
-     &                                  pp_sxrem_af_a(i,:))
+         sxr(i)%p => pprofile_class(TRIM(pp_sxrem_ptype_a(i)),                 &
+     &                                   pp_sxrem_b_a(i,:),                    &
+     &                                   pp_sxrem_as_a(i,:),                   &
+     &                                   pp_sxrem_af_a(i,:))
       END DO
 
 !  Create an emission object if an emission file was provided.
@@ -858,15 +858,12 @@
 
       state_flags = model_state_all_off
       vmec => vmec_class(vmec_nli_filename, vmec_wout_input,                   &
-     &                   pprofile_construct(TRIM(pp_ne_ptype),                 &
-     &                                      pp_ne_b, pp_ne_as,                 &
-     &                                      pp_ne_af),                         &
-     &                   pprofile_construct(TRIM(pp_te_ptype),                 &
-     &                                      pp_te_b, pp_te_as,                 &
-     &                                      pp_te_af),                         &
-     &                   pprofile_construct(TRIM(pp_ti_ptype),                 &
-     &                                      pp_ti_b, pp_ti_as,                 &
-     &                                      pp_ti_af),                         &
+     &                   pprofile_class(TRIM(pp_ne_ptype),                     &
+     &                                  pp_ne_b, pp_ne_as, pp_ne_af),          &
+     &                   pprofile_class(TRIM(pp_te_ptype),                     &
+     &                                  pp_te_b, pp_te_as, pp_te_af),          &
+     &                   pprofile_class(TRIM(pp_ti_ptype),                     &
+     &                                  pp_ti_b, pp_ti_as, pp_ti_af),          &
      &                   sxr, phi_offset, z_offset, pol_rad_ratio,             &
      &                   context%runlog_iou,                                   &
 #if defined(MPI_OPT)
@@ -975,10 +972,10 @@
 
       ALLOCATE(sxr(num_sxrem_p))
       DO i = 1, num_sxrem_p
-         sxr(i)%p => pprofile_construct(TRIM(pp_sxrem_ptype_a(i)),             &
-     &                                  pp_sxrem_b_a(i,:),                     &
-     &                                  pp_sxrem_as_a(i,:),                    &
-     &                                  pp_sxrem_af_a(i,:))
+         sxr(i)%p => pprofile_class(TRIM(pp_sxrem_ptype_a(i)),                 &
+     &                              pp_sxrem_b_a(i,:),                         &
+     &                              pp_sxrem_as_a(i,:),                        &
+     &                              pp_sxrem_af_a(i,:))
       END DO
 
 !  Create a emission object if an emission file was provided.
@@ -990,15 +987,15 @@
 
       siesta => siesta_class(siesta_nli_filename,                              &
      &                       siesta_restart_filename,                          &
-     &                       pprofile_construct(TRIM(pp_ne_ptype),             &
-     &                                          pp_ne_b, pp_ne_as,             &
-     &                                          pp_ne_af),                     &
-     &                       pprofile_construct(TRIM(pp_te_ptype),             &
-     &                                          pp_te_b, pp_te_as,             &
-     &                                          pp_te_af),                     &
-     &                       pprofile_construct(TRIM(pp_ti_ptype),             &
-     &                                          pp_ti_b, pp_ti_as,             &
-     &                                          pp_ti_af),                     &
+     &                       pprofile_class(TRIM(pp_ne_ptype),                 &
+     &                                      pp_ne_b, pp_ne_as,                 &
+     &                                      pp_ne_af),                         &
+     &                       pprofile_class(TRIM(pp_te_ptype),                 &
+     &                                      pp_te_b, pp_te_as,                 &
+     &                                      pp_te_af),                         &
+     &                       pprofile_class(TRIM(pp_ti_ptype),                 &
+     &                                      pp_ti_b, pp_ti_as,                 &
+     &                                      pp_ti_af),                         &
      &                       sxr, phi_offset, z_offset,                        &
      &                       pol_rad_ratio, context%runlog_iou,                &
 #if defined(MPI_OPT)

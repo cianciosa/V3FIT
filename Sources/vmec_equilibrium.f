@@ -2867,7 +2867,7 @@
 
       IF (ASSOCIATED(this%ne)) THEN
          vmec_get_gp_ne_num_hyper_param =                                      &
-     &      pprofile_get_gp_num_hyper_param(this%ne)
+     &      this%ne%get_gp_num_hyper_param()
       ELSE
          vmec_get_gp_ne_num_hyper_param = 0
       END IF
@@ -2938,7 +2938,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%ne)) THEN
-         vmec_get_gp_ne_ij = pprofile_get_gp(this%ne, i, j)
+         vmec_get_gp_ne_ij = this%ne%get_gp(i, j)
       ELSE
          vmec_get_gp_ne_ij = 0.0
       END IF
@@ -2977,7 +2977,7 @@
 
       s = this%get_s(x_cart)
       IF (ASSOCIATED(this%ne) .and. (s .le. 1.0)) THEN
-         vmec_get_gp_ne_pi = pprofile_get_gp(this%ne, s, i)
+         vmec_get_gp_ne_pi = this%ne%get_gp(s, i)
       ELSE
          vmec_get_gp_ne_pi = 0.0
       END IF
@@ -3020,7 +3020,7 @@
       s2 = this%get_s(y_cart)
       IF (ASSOCIATED(this%ne) .and. (s1 .le. 1.0) .and.                        &
      &    (s2 .le. 1.0)) THEN
-         vmec_get_gp_ne_pp = pprofile_get_gp(this%ne, s1, s2)
+         vmec_get_gp_ne_pp = this%ne%get_gp(s1, s2)
       ELSE
          vmec_get_gp_ne_pp = 0.0
       END IF
@@ -3085,7 +3085,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%ne)) THEN
-         vmec_get_ne_radial = pprofile_get_value(this%ne, s)
+         vmec_get_ne_radial = this%ne%get_value(s)
       ELSE
          vmec_get_ne_radial = 0.0
       END IF
@@ -3120,7 +3120,7 @@
 
       IF (ASSOCIATED(this%te)) THEN
          vmec_get_gp_te_num_hyper_param =                                      &
-     &      pprofile_get_gp_num_hyper_param(this%te)
+     &      this%te%get_gp_num_hyper_param()
       ELSE
          vmec_get_gp_te_num_hyper_param = 0
       END IF
@@ -3191,7 +3191,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%te)) THEN
-         vmec_get_gp_te_ij = pprofile_get_gp(this%te, i, j)
+         vmec_get_gp_te_ij = this%te%get_gp(i, j)
       ELSE
          vmec_get_gp_te_ij = 0.0
       END IF
@@ -3231,7 +3231,7 @@
 
       s = vmec_get_s(this, x_cart)
       IF (ASSOCIATED(this%te) .and. (s .le. 1.0)) THEN
-         vmec_get_gp_te_pi = pprofile_get_gp(this%te, s, i)
+         vmec_get_gp_te_pi = this%te%get_gp(s, i)
       ELSE
          vmec_get_gp_te_pi = 0.0
       END IF
@@ -3276,7 +3276,7 @@
       s2 = vmec_get_s(this, y_cart)
       IF (ASSOCIATED(this%te) .and. (s1 .le. 1.0) .and.                        &
      &    (s2 .le. 1.0)) THEN
-         vmec_get_gp_te_pp = pprofile_get_gp(this%te, s1, s2)
+         vmec_get_gp_te_pp = this%te%get_gp(s1, s2)
       ELSE
          vmec_get_gp_te_pp = 0.0
       END IF
@@ -3340,7 +3340,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
       IF (ASSOCIATED(this%te)) THEN
-         vmec_get_te_radial = pprofile_get_value(this%te, s)
+         vmec_get_te_radial = this%te%get_value(s)
       ELSE
          vmec_get_te_radial = 0.0
       END IF
@@ -3375,7 +3375,7 @@
 
       IF (ASSOCIATED(this%ti)) THEN
          vmec_get_gp_ti_num_hyper_param =                                      &
-     &      pprofile_get_gp_num_hyper_param(this%ti)
+     &      this%ti%get_gp_num_hyper_param()
       ELSE
          vmec_get_gp_ti_num_hyper_param = 0
       END IF
@@ -3446,7 +3446,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%ti)) THEN
-         vmec_get_gp_ti_ij = pprofile_get_gp(this%ti, i, j)
+         vmec_get_gp_ti_ij = this%ti%get_gp(i, j)
       ELSE
          vmec_get_gp_ti_ij = 0.0
       END IF
@@ -3486,7 +3486,7 @@
 
       s = vmec_get_s(this, x_cart)
       IF (ASSOCIATED(this%ti) .and. (s .le. 1.0)) THEN
-         vmec_get_gp_ti_pi = pprofile_get_gp(this%ti, s, i)
+         vmec_get_gp_ti_pi = this%ti%get_gp(s, i)
       ELSE
          vmec_get_gp_ti_pi = 0.0
       END IF
@@ -3529,7 +3529,7 @@
       s2 = this%get_s(y_cart)
       IF (ASSOCIATED(this%ti) .and. (s1 .le. 1.0) .and.                        &
      &    (s2 .le. 1.0)) THEN
-         vmec_get_gp_ti_pp = pprofile_get_gp(this%ti, s1, s2)
+         vmec_get_gp_ti_pp = this%ti%get_gp(s1, s2)
       ELSE
          vmec_get_gp_ti_pp = 0.0
       END IF
@@ -3593,7 +3593,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
       IF (ASSOCIATED(this%ti)) THEN
-         vmec_get_ti_radial = pprofile_get_value(this%ti, s)
+         vmec_get_ti_radial = this%ti%get_value(s)
       ELSE
          vmec_get_ti_radial = 0.0
       END IF
@@ -3631,7 +3631,7 @@
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem))) THEN
          vmec_get_gp_sxrem_num_hyper_param =                                   &
-     &      pprofile_get_gp_num_hyper_param(this%sxrem(index)%p)
+     &      this%sxrem(index)%p%get_gp_num_hyper_param()
       ELSE
          vmec_get_gp_sxrem_num_hyper_param = 0
       END IF
@@ -3708,8 +3708,7 @@
 
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem))) THEN
-         vmec_get_gp_sxrem_ij =                                                &
-     &      pprofile_get_gp(this%sxrem(index)%p, i, j)
+         vmec_get_gp_sxrem_ij = this%sxrem(index)%p%get_gp(i, j)
       ELSE
          vmec_get_gp_sxrem_ij = 0.0
       END IF
@@ -3752,8 +3751,7 @@
       s = this%get_s(x_cart)
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem)) .and. (s .le. 1.0)) THEN
-         vmec_get_gp_sxrem_pi = pprofile_get_gp(this%sxrem(index)%p,           &
-     &                                          s, i)
+         vmec_get_gp_sxrem_pi = this%sxrem(index)%p%get_gp(s, i)
       ELSE
          vmec_get_gp_sxrem_pi = 0.0
       END IF
@@ -3801,8 +3799,7 @@
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem)) .and.                                  &
      &    (s1 .le. 1.0) .and. (s2 .le. 1.0)) THEN
-         vmec_get_gp_sxrem_pp =                                                &
-     &      pprofile_get_gp(this%sxrem(index)%p, s1, s2)
+         vmec_get_gp_sxrem_pp = this%sxrem(index)%p%get_gp(s1, s2)
       ELSE
          vmec_get_gp_sxrem_pp = 0.0
       END IF
@@ -3874,7 +3871,7 @@
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem))) THEN
          vmec_get_sxrem_radial =                                               &
-     &      pprofile_get_value(this%sxrem(index)%p, s)
+     &      this%sxrem(index)%p%get_value(s)
       ELSE
          vmec_get_sxrem_radial = 0.0
       END IF
@@ -5455,18 +5452,18 @@
       CALL assert_eq(error, 0, 'Error copying wout file.')
 
       IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_save_state(this%ne)
+         CALL this%ne%save_state()
       END IF
       IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_save_state(this%te)
+         CALL this%te%save_state()
       END IF
       IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_save_state(this%ti)
+         CALL this%ti%save_state()
       END IF
       IF (ASSOCIATED(this%sxrem)) THEN
          DO i = 1, SIZE(this%sxrem)
             IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_save_state(this%sxrem(i)%p)
+               CALL this%sxrem(i)%p%save_state()
             END IF
          END DO
       END IF
@@ -5517,18 +5514,18 @@
       END IF
 
       IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_reset_state(this%ne)
+         CALL this%ne%reset_state()
       END IF
       IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_reset_state(this%te)
+         CALL this%te%reset_state()
       END IF
       IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_reset_state(this%ti)
+         CALL this%ti%reset_state()
       END IF
       IF (ASSOCIATED(this%sxrem)) THEN
          DO i = 1, SIZE(this%sxrem)
             IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_reset_state(this%sxrem(i)%p)
+               CALL this%sxrem(i)%p%reset_state()
             END IF
          END DO
       END IF
@@ -5566,23 +5563,23 @@
       WRITE (iou,*)
       WRITE (iou,*) 'Equilibrium Type : VMEC'
       IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_write(this%ne, 'pp_ne', iou)
+         CALL this%ne%write('pp_ne', iou)
       END IF
 
       IF (ASSOCIATED(this%sxrem)) THEN
          DO i = 1, SIZE(this%sxrem)
             IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_write(this%sxrem(i)%p, 'pp_sxrem', iou)
+               CALL this%sxrem(i)%p%write('pp_sxrem', iou)
             END IF
          END DO
       END IF
 
       IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_write(this%te, 'pp_te', iou)
+         CALL this%te%write('pp_te', iou)
       END IF
 
       IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_write(this%ti, 'pp_ti', iou)
+         CALL this%ti%write('pp_ti', iou)
       END IF
 
 !  Update the namelist input variables from the equilibrium solution.

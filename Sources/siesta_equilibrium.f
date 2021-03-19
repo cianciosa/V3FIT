@@ -1346,10 +1346,8 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%ne)) THEN
-         siesta_get_gp_ne_pi = pprofile_get_gp(this%ne,                        &
-     &                                         this%get_p(x_cart,              &
-     &                                                    .true.),             &
-     &                                         i)
+         siesta_get_gp_ne_pi =                                                 &
+     &      this%ne%get_gp(this%get_p(x_cart, .true.), i)
       ELSE
          siesta_get_gp_ne_pi = 0.0
       END IF
@@ -1388,8 +1386,8 @@
 
       IF (ASSOCIATED(this%ne)) THEN
          siesta_get_gp_ne_pp =                                                 &
-     &      pprofile_get_gp(this%ne, this%get_p(x_cart, .true.),               &
-     &                      this%get_p(y_cart, .true.))
+     &      this%ne%get_gp(this%get_p(x_cart, .true.),                         &
+     &                     this%get_p(y_cart, .true.))
       ELSE
          siesta_get_gp_ne_pp = 0.0
       END IF
@@ -1493,10 +1491,8 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%te)) THEN
-         siesta_get_gp_te_pi = pprofile_get_gp(this%te,                        &
-     &                                         this%get_p(x_cart,              &
-     &                                                    .true.),             &
-     &                                         i)
+         siesta_get_gp_te_pi =                                                 &
+     &      this%te%get_gp(this%get_p(x_cart, .true.), i)
       ELSE
          siesta_get_gp_te_pi = 0.0
       END IF
@@ -1537,8 +1533,8 @@
 
       IF (ASSOCIATED(this%te)) THEN
          siesta_get_gp_te_pp =                                                 &
-     &      pprofile_get_gp(this%te, this%get_p(x_cart, .true.),               &
-     &                      this%get_p(y_cart, .true.))
+     &      this%te%get_gp(this%get_p(x_cart, .true.),                         &
+     &                     this%get_p(y_cart, .true.))
       ELSE
          siesta_get_gp_te_pp = 0.0
       END IF
@@ -1642,7 +1638,7 @@
 
       IF (ASSOCIATED(this%ti)) THEN
          siesta_get_gp_ti_pi =                                                 &
-     &      pprofile_get_gp(this%ti, this%get_p(x_cart, .true.), i)
+     &      this%ti%get_gp(this%get_p(x_cart, .true.), i)
       ELSE
          siesta_get_gp_ti_pi = 0.0
       END IF
@@ -1681,8 +1677,8 @@
 
       IF (ASSOCIATED(this%ti)) THEN
          siesta_get_gp_ti_pp =                                                 &
-     &      pprofile_get_gp(this%ti, this%get_p(x_cart, .true.),               &
-     &                      this%get_p(y_cart, .true.))
+     &      this%ti%get_gp(this%get_p(x_cart, .true.),                         &
+     &                     this%get_p(y_cart, .true.))
       ELSE
          siesta_get_gp_ti_pp = 0.0
       END IF
@@ -1789,10 +1785,8 @@
 
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem))) THEN
-         siesta_get_gp_sxrem_pi = pprofile_get_gp(this%sxrem(index)%p,         &
-     &                                            this%get_p(x_cart,           &
-     &                                                       .true.),          &
-     &                                            i)
+         siesta_get_gp_sxrem_pi =                                              &
+     &      this%sxrem(index)%p%get_gp(this%get_p(x_cart, .true.), i)
       ELSE
          siesta_get_gp_sxrem_pi = 0.0
       END IF
@@ -1836,9 +1830,8 @@
       IF (ASSOCIATED(this%sxrem) .and.                                         &
      &    (index .le. SIZE(this%sxrem))) THEN
          siesta_get_gp_sxrem_pp =                                              &
-     &      pprofile_get_gp(this%sxrem(index)%p,                               &
-     &                      this%get_p(x_cart, .true.),                        &
-     &                      this%get_p(y_cart, .true.))
+     &      this%sxrem(index)%p%get_gp(this%get_p(x_cart, .true.),             &
+     &                                 this%get_p(y_cart, .true.))
       ELSE
          siesta_get_gp_sxrem_pp = 0.0
       END IF
@@ -2804,23 +2797,6 @@
      &               error)
       CALL assert_eq(error, 0, 'Error copying restart file.')
 
-      IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_save_state(this%ne)
-      END IF
-      IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_save_state(this%te)
-      END IF
-      IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_save_state(this%ti)
-      END IF
-      IF (ASSOCIATED(this%sxrem)) THEN
-         DO i = 1, SIZE(this%sxrem)
-            IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_save_state(this%sxrem(i)%p)
-            END IF
-         END DO
-      END IF
-
       CALL profiler_set_stop_time('siesta_save_state', start_time)
 
       END SUBROUTINE
@@ -2856,23 +2832,6 @@
       CALL assert_eq(error, 0, 'Error moving wout file.')
 
       CALL siesta_context_read(this%context, this%restart_file_name)
-
-      IF (ASSOCIATED(this%ne)) THEN
-         CALL pprofile_reset_state(this%ne)
-      END IF
-      IF (ASSOCIATED(this%te)) THEN
-         CALL pprofile_reset_state(this%te)
-      END IF
-      IF (ASSOCIATED(this%ti)) THEN
-         CALL pprofile_reset_state(this%ti)
-      END IF
-      IF (ASSOCIATED(this%sxrem)) THEN
-         DO i = 1, SIZE(this%sxrem)
-            IF (ASSOCIATED(this%sxrem(i)%p)) THEN
-               CALL pprofile_reset_state(this%sxrem(i)%p)
-            END IF
-         END DO
-      END IF
 
       CALL profiler_set_stop_time('siesta_reset_state', start_time)
 
