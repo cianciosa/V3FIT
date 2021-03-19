@@ -34,15 +34,13 @@
       INTEGER, PARAMETER :: model_state_ti_flag     = 4
 !>  Shift parameter changed bit position.
       INTEGER, PARAMETER :: model_state_shift_flag  = 5
-!>  Effective charge profile changed bit position.
-      INTEGER, PARAMETER :: model_state_ze_flag     = 6
 !>  Model state factor changed bit position.
-      INTEGER, PARAMETER :: model_state_signal_flag = 7
+      INTEGER, PARAMETER :: model_state_signal_flag = 6
 !>  Soft x-ray emissivity profile changed bit position. This flag needs to
 !>  always be the last flag an can be no larger than 31 minus the maximum number
 !>  of possible sxrem profiles @ref data_parameters::max_sxrem_profiles. If the
 !>  number of model states exceeds 31, then the size of
 !>  @ref model::model_class%state_flags needs to be increased.
-      INTEGER, PARAMETER :: model_state_sxrem_flag  = 8
+      INTEGER, PARAMETER :: model_state_sxrem_flag  = 7
 
       END MODULE

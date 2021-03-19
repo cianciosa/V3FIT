@@ -214,6 +214,8 @@
 
          PROCEDURE                                           ::                &
      &      write => equilibrium_write
+         PROCEDURE                                           ::                &
+     &      write_input => equilibrium_write_input
 
          PROCEDURE                                           ::                &
      &      def_result => equilibrium_def_result
@@ -248,10 +250,9 @@
 !  CONSTRUCTION SUBROUTINES
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  @brief Construct a @ref equilibrium_class containing a @ref vmec_equilibrium
-!>  object.
+!>  @brief Construct a @ref equilibrium_class.
 !>
-!>  Allocates memory and initializes a @ref equilibrium_class object.
+!>  Allocates memory for a @ref equilibrium_class object.
 !>
 !>  @param[in] vmec_object An instance of a @ref vmec_equilibrium subclass.
 !>  @param[in] force_solve If true, forces the equilbirum to resolve every time.
@@ -273,12 +274,41 @@
 
       ALLOCATE(equilibrium_construct)
 
-      equilibrium_construct%force_solve = force_solve
+      CALL equilibrium_construct_sub(equilibrium_construct, force_solve)
 
-      CALL profiler_set_stop_time('equilibrium_construct_vmec',                &
-     &                            start_time)
+      CALL profiler_set_stop_time('equilibrium_construct', start_time)
 
       END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Construct a @ref equilibrium_class.
+!>
+!>  Initializes a @ref equilibrium_class object.
+!>
+!>  @param[in] vmec_object An instance of a @ref vmec_equilibrium subclass.
+!>  @param[in] force_solve If true, forces the equilbirum to resolve every time.
+!>  @returns A pointer to a constructed @ref equilibrium_class object.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_construct_sub(this, force_solve)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(inout) :: this
+      LOGICAL, INTENT(in)                      :: force_solve
+
+!  local variables
+      REAL (rprec)                             :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      this%force_solve = force_solve
+
+      CALL profiler_set_stop_time('equilibrium_construct_sub',                 &
+     &                            start_time)
+
+      END SUBROUTINE
 
 !*******************************************************************************
 !  DESTRUCTION SUBROUTINES
@@ -2531,6 +2561,32 @@
 !  Start of executable code
       CALL assert(.false., 'equilibrium_write not over written ' //            &
      &                     'for ' // this%get_type())
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Write out the equilibrium to an output file.
+!>
+!>  This method is virtual. The actual writing of the equilibrium should be
+!>  handled by a subclass method.
+!>  @see vmec_equilibrium::vmec_write
+!>  @see vacuum_equilibrium::vacuum_write
+!>  @see siesta_equilibrium::siesta_write
+!>
+!>  @param[in] this         A @ref equilibrium_class instance.
+!>  @param[in] current_step Step number to append to input filename.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_write_input(this, current_step)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: current_step
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_write_input not over ' //              &
+     &                     'written for ' // this%get_type())
 
       END SUBROUTINE
 

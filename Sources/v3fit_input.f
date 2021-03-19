@@ -77,11 +77,6 @@
 !>     @item{pp_ti_b,          Array of b_coefficients for the i-temperature profile.,            v3fit_input::pp_ti_b}
 !>     @item{pp_ti_as,         Array of as_coefficients i-temperature splines.,                   v3fit_input::pp_ti_as}
 !>     @item{pp_ti_af,         Array of af_coefficients i-temperature splines.,                   v3fit_input::pp_ti_af}
-!>     @item{pp_ze_ptype,      Model z effective profile\, parameterized profile type.
-!>                             Valid profile types are defined in @ref profile_sec,               v3fit_input::pp_ze_ptype}
-!>     @item{pp_ze_b,          Array of b_coefficients for the effective charge profile.,         v3fit_input::pp_ze_b}
-!>     @item{pp_ze_as,         Array of as_coefficients effective charge splines.,                v3fit_input::pp_ze_as}
-!>     @item{pp_ze_af,         Array of af_coefficients effectgive charge splines.,               v3fit_input::pp_ze_af}
 !>     @item{sxrem_te,         Array of temperature points for the sxrem ratio function.,         v3fit_input::sxrem_te_a}
 !>     @item{sxrem_ratio,      Array of ratio points for the sxrem ratio function.,               v3fit_input::sxrem_ratio_a}
 !>  @end_table
@@ -95,9 +90,6 @@
 !>                                -# @fixed_width{'none'}    Not part of the model.
 !>                                -# @fixed_width{'pp_ne'}   Calculated from the parameterized profile pp_ne.
 !>                                -# @fixed_width{'pp_te_p'} Calculated from the pp_te and the VMEC pressure,                   v3fit_input::model_ne_type}
-!>     @item{model_ze_type,       Character variable to specify how the effective charge will be calculated by the model.
-!>                                -# @fixed_width{'none'}    Not part of the model. Default value of 1.
-!>                                -# @fixed_width{'pp_ze'}   Calculated from the parameterized profile pp_ze.                   v3fit_input::model_ze_type}
 !>     @item{model_sxrem_type,    Character variable to specify how the Soft x-ray emissivity will be calculated by the model.
 !>                                -# @fixed_width{'none'}     Not part of the model.
 !>                                -# @fixed_width{'pp_sxrem'} Calculated from the parameterized profile pp_sxrem.
@@ -117,7 +109,6 @@
 !>     @item{ne_min,              Minimum electron density\, m^-3.,                                                             v3fit_input::ne_min}
 !>     @item{te_min,              Minimum electron temperature\, eV.,                                                           v3fit_input::te_min}
 !>     @item{ti_min,              Minimum ion temperature\, eV.,                                                                v3fit_input::ti_min}
-!>     @item{ze_min,              Minimum effective charge.,                                                                    v3fit_input::ze_min}
 !>     @item{sxrem_min,           Minimum soft x-ray emission.,                                                                 v3fit_input::sxrem_min}
 !>     @item{e_pressure_fraction, Electron pressure fraction of the total pressure. Used when
 !>                                model_te_type = 'pp_ne_vmec_p' or model_ne_type = 'pp_te_vmec_p',                             v3fit_input::e_pressure_fraction}
@@ -764,22 +755,6 @@
 !>  @see pprofile_T
       REAL (rprec), DIMENSION(iub_asf)     :: pp_ti_af = 0.0
 
-!  Effective charge
-!>  Model effective charge profile, parameterized profile type.
-!>  -# @fixed_width{'none'}                    Not part of the model. Default value of 1.0
-!>  -# @fixed_width{'pp_ze'}                   Calculated from the parameterized profile pp_ze.
-!>  @see pprofile_T
-      CHARACTER (len=p_type_len)           :: pp_ze_ptype = 'none'
-!>  Array of b_coefficients for the effective charge profile
-!>  @see pprofile_T
-      REAL (rprec), DIMENSION(ilb_b:iub_b) :: pp_ze_b = 0.0
-!>  Array of as_coefficients effective charge splines
-!>  @see pprofile_T
-      REAL (rprec), DIMENSION(iub_asf)     :: pp_ze_as = 0.0
-!>  Array of af_coefficients effective charge splines
-!>  @see pprofile_T
-      REAL (rprec), DIMENSION(iub_asf)     :: pp_ze_af = 0.0
-
 !  Soft X-ray emission ratio
 !>  Array of temperature points for the sxrem ratio function.
       REAL (rprec), DIMENSION(iub_asf) :: sxrem_te_a = 0.0
@@ -810,9 +785,6 @@
 !>  Specify how electron temperature is computed by the model.
 !>  @see model
       CHARACTER (len=data_name_length) :: model_ti_type = 'none'
-!>  Specify how effective chagre is computed by the model.
-!>  @see model
-      CHARACTER (len=data_name_length) :: model_ze_type = 'none'
 !>  Normalization factor for the electron density.
       REAL (rprec)                     :: ne_pp_unit = 1.0E18
 !>  Minimum electron density.
@@ -821,8 +793,6 @@
       REAL (rprec)                     :: te_min = 0.0
 !>  Minimum ion temperature.
       REAL (rprec)                     :: ti_min = 0.0
-!>  Minimum effective charge.
-      REAL (rprec)                     :: ze_min = 1.0
 !>  Minimum soft x-ray emission.
       REAL (rprec), DIMENSION(max_sxrem_profiles) :: sxrem_min = 0.0
 !>  Specifies the fraction of the pressure constributed by the electrons.
@@ -1187,14 +1157,12 @@
      &   pp_te_ptype, pp_te_b, pp_te_as, pp_te_af,                             &
 !  Ion temperature
      &   pp_ti_ptype, pp_ti_b, pp_ti_as, pp_ti_af,                             &
-!  Effective charge
-     &   pp_ze_ptype, pp_ze_b, pp_ze_as, pp_ze_af,                             &
 !  Soft x-ray ratio
      &   sxrem_te_a, sxrem_ratio_a,                                            &
 !  Model Specification Variables
-     &   model_eq_type, model_ne_type, model_sxrem_type, model_ze_type,        &
+     &   model_eq_type, model_ne_type, model_sxrem_type,                       &
      &   model_sxrem_type_a, model_te_type, model_ti_type, ne_pp_unit,         &
-     &   ne_min, te_min, ti_min, ze_min, sxrem_min, e_pressure_fraction,       &
+     &   ne_min, te_min, ti_min, sxrem_min, e_pressure_fraction,               &
      &   emission_file, ece_resonance_range, coosig_wgts,                      &
 !  Reconstruction constraints
      &   n_rc, rc_type, rc_index, rc_value,                                    &

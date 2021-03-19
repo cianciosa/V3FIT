@@ -217,13 +217,15 @@
 !>                                  model changed.
 !>  @param[in]    vmec_namelist     Filename of the vmec namelist input file.
 !>  @param[in]    wout_file_name    Filename of the vmec wout input file.
+!>  @param[in]    force_solve       If true, forces the equilbirum to resolve
+!>                                  every time.
 !>  @returns A pointer to a constructed @ref siesta_class object.
 !-------------------------------------------------------------------------------
       FUNCTION siesta_construct(file_name, restart_file_name,                  &
      &                          ne, te, ti, sxrem, phi_offset, z_offset,       &
      &                          pol_rad_ratio, iou, eq_comm, recon_comm,       &
      &                          state_flags, vmec_namelist,                    &
-     &                          wout_file_name)
+     &                          wout_file_name, force_solve)
       USE safe_open_mod
       USE model_state
       USE file_opts
@@ -249,6 +251,7 @@
       INTEGER, INTENT(inout)               :: state_flags
       CHARACTER (len=*), INTENT(in)        :: vmec_namelist
       CHARACTER (len=*), INTENT(in)        :: wout_file_name
+      LOGICAL, INTENT(in)                  :: force_solve
 
 !  local variables
       INTEGER                              :: eq_rank
@@ -265,7 +268,8 @@
       CALL vmec_construct_sub(siesta_construct, vmec_namelist,                 &
      &                        wout_file_name, ne, te, ti, sxrem,               &
      &                        phi_offset, z_offset, pol_rad_ratio, iou,        &
-     &                        eq_comm, recon_comm, state_flags)
+     &                        eq_comm, recon_comm, state_flags,                &
+     &                        force_solve)
 
       eq_rank = 0
       recon_rank = 0

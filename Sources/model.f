@@ -332,7 +332,7 @@
       REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_min
       REAL (rprec), INTENT(in)                      :: pressure_fraction
       TYPE (emission_class), POINTER                :: emission
-      TYPE (equilibrium_class), POINTER             :: equilibrium
+      CLASS (equilibrium_class), POINTER            :: equilibrium
       REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_te
       REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_ratio
       REAL (rprec), INTENT(in)                      :: resonace_range

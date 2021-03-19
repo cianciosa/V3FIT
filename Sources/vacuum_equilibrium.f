@@ -81,6 +81,16 @@
          FINAL     :: vacuum_destruct
       END TYPE
 
+!*******************************************************************************
+!  INTERFACE BLOCKS
+!*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  Interface for vacuum constructor.
+!-------------------------------------------------------------------------------
+      INTERFACE vacuum_class
+         MODULE PROCEDURE vacuum_construct
+      END INTERFACE
+
       CONTAINS
 !*******************************************************************************
 !  CONSTRUCTION SUBROUTINES
@@ -89,11 +99,12 @@
 !>  @brief Construct a @ref vacuum_class object.
 !>
 !>  Allocates memory and initializes a @ref vacuum_class object.
-!>  @param[in] file_name Filename of the vacuum namelist input file.
-!>  @param[in] iou       Input/output unit to log messages to.
+!>  @param[in] file_name   Filename of the vacuum namelist input file.
+!>  @param[in] iou         Input/output unit to log messages to.
+!>  @param[in] force_solve If true, forces the equilbirum to resolve every time.
 !>  @returns A pointer to a constructed @ref vacuum_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION vacuum_construct(file_name, iou)
+      FUNCTION vacuum_construct(file_name, iou, force_solve)
       USE vacuum_input
 
       IMPLICIT NONE
@@ -102,6 +113,7 @@
       TYPE (vacuum_class), POINTER  :: vacuum_construct
       CHARACTER (len=*), INTENT(in) :: file_name
       INTEGER, INTENT(in)           :: iou
+      LOGICAL, INTENT(in)           :: force_solve
 
 !  local variables
       TYPE (bsc_rs)                 :: bsc_rs_object
@@ -119,6 +131,8 @@
      &              TRIM(file_name)
 
       ALLOCATE(vacuum_construct)
+
+      CALL equilibrium_construct_sub(vacuum_construct, force_solve)
 
       vacuum_construct%vacuum_file_name = file_name
       CALL vacuum_input_read_namelist(file_name)

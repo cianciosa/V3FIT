@@ -823,6 +823,7 @@
       SUBROUTINE init_vmec_equilibrium(context, force_solve)
       USE v3fit_context
       USE integration_path
+      USE vmec_equilibrium
 
       IMPLICIT NONE
 
@@ -836,7 +837,7 @@
       LOGICAL                                        :: not_converged
       REAL (rprec)                                   :: start_time
       TYPE (emission_class), POINTER :: emission_func => null()
-      TYPE (vmec_class), POINTER                     :: vmec => null()
+      CLASS (equilibrium_class), POINTER             :: vmec => null()
       INTEGER                                        :: state_flags
 
 !  Start of executable code
@@ -856,35 +857,32 @@
       END IF
 
       state_flags = model_state_all_off
-      vmec => vmec_construct(vmec_nli_filename, vmec_wout_input,               &
-     &                       pprofile_construct(TRIM(pp_ne_ptype),             &
-     &                                          pp_ne_b, pp_ne_as,             &
-     &                                          pp_ne_af),                     &
-     &                       pprofile_construct(TRIM(pp_te_ptype),             &
-     &                                          pp_te_b, pp_te_as,             &
-     &                                          pp_te_af),                     &
-     &                       pprofile_construct(TRIM(pp_ti_ptype),             &
-     &                                          pp_ti_b, pp_ti_as,             &
-     &                                          pp_ti_af),                     &
-     &                       pprofile_construct(TRIM(pp_ze_ptype),             &
-     &                                          pp_ze_b, pp_ze_as,             &
-     &                                          pp_ze_af), sxr,                &
-     &                       phi_offset, z_offset, pol_rad_ratio,              &
-     &                       context%runlog_iou,                               &
+      vmec => vmec_class(vmec_nli_filename, vmec_wout_input,                   &
+     &                   pprofile_construct(TRIM(pp_ne_ptype),                 &
+     &                                      pp_ne_b, pp_ne_as,                 &
+     &                                      pp_ne_af),                         &
+     &                   pprofile_construct(TRIM(pp_te_ptype),                 &
+     &                                      pp_te_b, pp_te_as,                 &
+     &                                      pp_te_af),                         &
+     &                   pprofile_construct(TRIM(pp_ti_ptype),                 &
+     &                                      pp_ti_b, pp_ti_as,                 &
+     &                                      pp_ti_af),                         &
+     &                   sxr, phi_offset, z_offset, pol_rad_ratio,             &
+     &                   context%runlog_iou,                                   &
 #if defined(MPI_OPT)
-     &                       context%equilibrium_comm,                         &
-     &                       context%reconstruction_comm, state_flags)
+     &                   context%equilibrium_comm,                             &
+     &                   context%reconstruction_comm,                          &
 #else
-     &                       0, 0, state_flags)
+     &                   0, 0,                                                 &
 #endif
+     &                   state_flags, force_solve)
 
       context%model => model_construct(model_ne_type,                          &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
-     &   model_ti_type, model_ze_type, ne_pp_unit, ne_min, te_min,             &
-     &   ti_min, ze_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,        &
-     &   emission_func, equilibrium_construct(vmec, force_solve),              &
-     &   sxrem_te_a, sxrem_ratio_a, ece_resonance_range, coosig_wgts,          &
-     &   state_flags,                                                          &
+     &   model_ti_type, ne_pp_unit, ne_min, te_min,                            &
+     &   ti_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,                &
+     &   emission_func, vmec, sxrem_te_a, sxrem_ratio_a,                       &
+     &   ece_resonance_range, coosig_wgts, state_flags,                        &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
      &   path_construct(int_method, int_num_points, int_size))
@@ -905,6 +903,7 @@
       SUBROUTINE init_vacuum_equilibrium(context, force_solve)
       USE v3fit_context
       USE integration_path
+      USE vacuum_equilibrium
 
       IMPLICIT NONE
 
@@ -915,6 +914,7 @@
 !  local variables
       REAL (rprec)                              :: start_time
       TYPE (emission_class), POINTER :: emission_func => null()
+      CLASS (equilibrium_class), POINTER        :: vacuum => null()
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -924,16 +924,15 @@
          emission_func => emission_construct(emission_file)
       END IF
 
+      vacuum => vacuum_class(vacuum_nli_filename, context%runlog_iou,          &
+     &                       force_solve)
+
       context%model => model_construct(model_ne_type,                          &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
-     &   model_ti_type, model_ze_type, ne_pp_unit, ne_min, te_min,             &
-     &   ti_min, ze_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,        &
-     &   emission_func,                                                        &
-     &   equilibrium_construct(vacuum_construct(vacuum_nli_filename,           &
-     &                                          context%runlog_iou),           &
-     &                         force_solve),                                   &
-     &   sxrem_te_a, sxrem_ratio_a, ece_resonance_range, coosig_wgts,          &
-     &   model_state_all_off,                                                  &
+     &   model_ti_type, ne_pp_unit, ne_min, te_min,                            &
+     &   ti_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,                &
+     &   emission_func, vacuum, sxrem_te_a, sxrem_ratio_a,                     &
+     &   ece_resonance_range, coosig_wgts, model_state_all_off,                &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
      &   path_construct(int_method, int_num_points, int_size))
@@ -954,6 +953,7 @@
       SUBROUTINE init_siesta_equilibrium(context, force_solve)
       USE v3fit_context
       USE integration_path
+      USE siesta_equilibrium
 
       IMPLICIT NONE
 
@@ -967,8 +967,7 @@
       INTEGER                                        :: i
       LOGICAL                                        :: not_converged
       TYPE (emission_class), POINTER :: emission_func => null()
-      TYPE (vmec_class), POINTER                     :: vmec => null()
-      TYPE (siesta_class), POINTER                   :: siesta => null()
+      CLASS (equilibrium_class), POINTER             :: siesta => null()
       INTEGER                                        :: state_flags
 
 !  Start of executable code
@@ -988,37 +987,28 @@
       END IF
 
       state_flags = model_state_all_off
-      vmec => vmec_construct(vmec_nli_filename, vmec_wout_input,               &
-     &                       context%runlog_iou,                               &
+
+      siesta => siesta_class(siesta_nli_filename,                              &
+     &                       siesta_restart_filename,                          &
+     &                       pprofile_construct(TRIM(pp_ne_ptype),             &
+     &                                          pp_ne_b, pp_ne_as,             &
+     &                                          pp_ne_af),                     &
+     &                       pprofile_construct(TRIM(pp_te_ptype),             &
+     &                                          pp_te_b, pp_te_as,             &
+     &                                          pp_te_af),                     &
+     &                       pprofile_construct(TRIM(pp_ti_ptype),             &
+     &                                          pp_ti_b, pp_ti_as,             &
+     &                                          pp_ti_af),                     &
+     &                       sxr, phi_offset, z_offset,                        &
+     &                       pol_rad_ratio, context%runlog_iou,                &
 #if defined(MPI_OPT)
      &                       context%equilibrium_comm,                         &
      &                       context%reconstruction_comm,                      &
 #else
-     &                       0, 0,
+     &                       0, 0,                                             &
 #endif
-     &                       state_flags)
-
-      siesta => siesta_construct(siesta_nli_filename,                          &
-     &                           siesta_restart_filename,                      &
-     &                           pprofile_construct(TRIM(pp_ne_ptype),         &
-     &                                              pp_ne_b, pp_ne_as,         &
-     &                                              pp_ne_af),                 &
-     &                           pprofile_construct(TRIM(pp_te_ptype),         &
-     &                                              pp_te_b, pp_te_as,         &
-     &                                              pp_te_af),                 &
-     &                           pprofile_construct(TRIM(pp_ti_ptype),         &
-     &                                              pp_ti_b, pp_ti_as,         &
-     &                                              pp_ti_af),                 &
-     &                           sxr, phi_offset, z_offset,                    &
-     &                           pol_rad_ratio, context%runlog_iou,            &
-#if defined(MPI_OPT)
-     &                           context%equilibrium_comm,                     &
-     &                           context%reconstruction_comm,                  &
-#else
-     &                           0, 0,                                         &
-#endif
-     &                           vmec, state_flags,                            &
-     &                           vmec_nli_filename, vmec_wout_input)
+     &                       state_flags, vmec_nli_filename,                   &
+     &                       vmec_wout_input, force_solve)
 
 !  If the woutfile in the v3fit namelist input file is specifed, assume that the
 !  equilibrium is converged.
@@ -1026,12 +1016,10 @@
 
       context%model => model_construct(model_ne_type,                          &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
-     &   model_ti_type, model_ze_type, ne_pp_unit, ne_min, te_min,             &
-     &   ti_min, ze_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,        &
-     &   emission_func, equilibrium_construct_siesta(siesta,                   &
-     &                                               force_solve),             &
-     &   sxrem_te_a, sxrem_ratio_a, ece_resonance_range, coosig_wgts,          &
-     &   state_flags,                                                          &
+     &   model_ti_type, ne_pp_unit, ne_min, te_min, ti_min,                    &
+     &   sxrem_min(1:num_sxrem_p), e_pressure_fraction,                        &
+     &   emission_func, siesta, sxrem_te_a, sxrem_ratio_a,                     &
+     &   ece_resonance_range, coosig_wgts, state_flags,                        &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
      &   path_construct(int_method, int_num_points, int_size))

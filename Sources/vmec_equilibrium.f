@@ -600,11 +600,14 @@
 !>  @param[in]    recon_comm     MPI communicator pool for reconstruction.
 !>  @param[inout] state_flags    Bitwise flags to indicate which parts of the
 !>                               model changed.
+!>  @param[in]    force_solve    If true, forces the equilbirum to resolve every
+!>                               time.
 !-------------------------------------------------------------------------------
       SUBROUTINE vmec_construct_sub(this, file_name, wout_file_name,           &
      &                              ne, te, ti, sxrem, phi_offset,             &
      &                              z_offset, pol_rad_ratio, iou,              &
-     &                              eq_comm, recon_comm, state_flags)
+     &                              eq_comm, recon_comm, state_flags,          &
+     &                              force_solve)
       USE vmec_params, only: restart_flag, readin_flag, timestep_flag,         &
      &                       successful_term_flag, norm_term_flag,             &
      &                       more_iter_flag
@@ -629,6 +632,7 @@
       INTEGER, INTENT(in)                  :: eq_comm
       INTEGER, INTENT(in)                  :: recon_comm
       INTEGER, INTENT(inout)               :: state_flags
+      LOGICAL, INTENT(in)                  :: force_solve
 
 !  local variables
       INTEGER                              :: i
@@ -643,6 +647,8 @@
 
 !  Start of executable code
       start_time = profiler_get_start_time()
+
+      CALL equilibrium_construct_sub(this, force_solve)
 
       this%ne => ne
       this%te => te
@@ -810,12 +816,15 @@
 !>  @param[in]    recon_comm     MPI communicator pool for reconstruction.
 !>  @param[inout] state_flags    Bitwise flags to indicate which parts of the
 !>                               model changed.
+!>  @param[in]    force_solve    If true, forces the equilbirum to resolve every
+!>                               time.
+!>  @param[in] force_solve If true, forces the equilbirum to resolve every time.
 !>  @returns A pointer to a constructed @ref vmec_class object.
 !-------------------------------------------------------------------------------
       FUNCTION vmec_construct(file_name, wout_file_name, ne, te, ti,           &
      &                        sxrem, phi_offset, z_offset,                     &
      &                        pol_rad_ratio, iou, eq_comm,                     &
-     &                        recon_comm, state_flags)
+     &                        recon_comm, state_flags, force_solve)
 
       IMPLICIT NONE
 
@@ -834,6 +843,7 @@
       INTEGER, INTENT(in)                  :: eq_comm
       INTEGER, INTENT(in)                  :: recon_comm
       INTEGER, INTENT(inout)               :: state_flags
+      LOGICAL, INTENT(in)                  :: force_solve
 
 !  local variables
       REAL (rprec)                         :: start_time
@@ -846,7 +856,8 @@
       CALL vmec_construct_sub(vmec_construct, file_name,                       &
      &                        wout_file_name, ne, te, ti, sxrem,               &
      &                        phi_offset, z_offset, pol_rad_ratio, iou,        &
-     &                        eq_comm, recon_comm, state_flags)
+     &                        eq_comm, recon_comm, state_flags,                &
+     &                        force_solve)
 
       CALL profiler_set_stop_time('vmec_construct', start_time)
 
