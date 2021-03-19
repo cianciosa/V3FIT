@@ -251,7 +251,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE(signal_dot_file), INTENT(inout)   :: thscte_dot_file_ref
+      TYPE (signal_dot_file), INTENT(inout)  :: thscte_dot_file_ref
       CHARACTER (len=*)                      :: coordinate_type
       CHARACTER (len=1)                      :: point_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
@@ -299,7 +299,7 @@
 
       END SELECT
 
-      CALL signal_construct( thomson_obj, point_name, point_name,              &
+      CALL signal_construct(thomson_obj, point_name, point_name,               &
      &        units, observed(signals_created + 1),                            &
      &        sigma(signals_created + 1), weight(signals_created + 1),         &
      &        v3fit_input_find_scale_index(signals_created + 1),               &

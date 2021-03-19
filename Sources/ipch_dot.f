@@ -311,7 +311,7 @@
 
 !  local variables
       REAL (rprec), DIMENSION(2,3)           :: xcart
-      CHARACTER (len=data_name_length)       :: chord_name
+      CHARACTER (len=data_short_name_length) :: chord_name
       REAL (rprec)                           :: wavelength = 0.0
       REAL (rprec)                           :: start_time
       CHARACTER (len=6)                      :: units
