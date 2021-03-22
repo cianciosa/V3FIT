@@ -430,8 +430,8 @@
 
       CONTAINS
          PROCEDURE :: set_param => vmec_set_param
-         PROCEDURE :: set_magnetic_cache_responce =>                           &
-     &                   vmec_set_magnetic_cache_responce
+         PROCEDURE :: set_magnetic_cache_response =>                           &
+     &                   vmec_set_magnetic_cache_response
          PROCEDURE :: set_magnetic_cache_point =>                              &
      &                   vmec_set_magnetic_cache_point
          PROCEDURE :: set_magnetic_cache_calc =>                               &
@@ -1289,7 +1289,7 @@
 !>  @param[in]    state_flags     Bitwise flags to indicate which parts of the
 !>                                model changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE vmec_set_magnetic_cache_responce(this,                        &
+      SUBROUTINE vmec_set_magnetic_cache_response(this,                        &
      &                                            response_object,             &
      &                                            state_flags)
       USE vmec_input, only: ns_array, mpol
@@ -1366,7 +1366,7 @@
          CALL this%set_magnetic_cache_calc()
       END IF
 
-      CALL profiler_set_stop_time('vmec_set_magnetic_cache_responce',          &
+      CALL profiler_set_stop_time('vmec_set_magnetic_cache_response',          &
      &                            start_time)
 
       END SUBROUTINE
@@ -1514,7 +1514,7 @@
 !>  component arrays every time. The v components can change if phi_offset is
 !>  being reconstructed. The u components can be cached in the
 !>  @ref vmec_magnetic_cache and calculated once in
-!>  @ref vmec_set_magnetic_cache_responce.
+!>  @ref vmec_set_magnetic_cache_response.
 !$OMP PARALLEL
 !$OMP& DEFAULT(SHARED)
 !$OMP& PRIVATE(s,u,v,cosz,sinz,cosz_nyq,sinz_nyq,ru,zu,rv,zv,ju,jv,
@@ -1728,7 +1728,7 @@
 !>  component arrays every time. The v components can change if phi_offset is
 !>  being reconstructed. The u components can be cached in the
 !>  @ref vmec_magnetic_cache and calculated once in
-!>  @ref vmec_set_magnetic_cache_responce.
+!>  @ref vmec_set_magnetic_cache_response.
 !$OMP PARALLEL
 !$OMP& DEFAULT(SHARED)
 !$OMP& PRIVATE(u,v,cosz,sinz,cosz_nyq,sinz_nyq,ru,zu,rv,zv,bu,bv,r,
@@ -1830,7 +1830,7 @@
 !>  component arrays every time. The v components can change if phi_offset is
 !>  being reconstructed. The u components can be cached in the
 !>  @ref vmec_magnetic_cache and calculated once in
-!>  @ref vmec_set_magnetic_cache_responce.
+!>  @ref vmec_set_magnetic_cache_response.
 !$OMP PARALLEL
 !$OMP& DEFAULT(SHARED)
 !$OMP& PRIVATE(u,v,cosz,sinz,cosz_nyq,sinz_nyq,ru,zu,rv,zv,bu,bv,r, z,

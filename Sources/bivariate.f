@@ -389,7 +389,7 @@
 !  GETTER SUBROUTINES
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  @brief Interpolate points on to responce function grid.
+!>  @brief Interpolate points on to response function grid.
 !>
 !>  Determin response function on the s,u grid by 4 point bivariate
 !>  interpolation of response function on the r,z mesh at a fixed toroidal

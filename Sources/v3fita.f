@@ -1227,8 +1227,6 @@
 
          status = nf90_close(mdsig_iou)
 
-         context%signals(signals_created)%p => magnetic_object
-
          IF (plasma_index .eq. 0 .and.                                         &
      &       magnetic_response_use_plasma(                                     &
      &          magnetic_object%response)) THEN
@@ -1240,9 +1238,11 @@
          IF (.not.use_point .and.                                              &
      &       magnetic_response_is_point(magnetic_object%response)) THEN
             use_point = .true.
-            CALL  context%model%equilibrium%set_magnetic_cache(                               &
+            CALL context%model%equilibrium%set_magnetic_cache(                 &
      &              ANY(mag_3D_a), context%model%state_flags)
          END IF
+
+         context%signals(signals_created)%p => magnetic_object
 
 !  At lease one magnetic signal was made. Mark the index of it in the context.
 !  This should only be run once.

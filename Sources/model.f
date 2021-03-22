@@ -320,32 +320,32 @@
 
 !  Declare Arguments
       TYPE (model_class), POINTER :: model_construct
-      CHARACTER (len=data_name_length), INTENT(in)  :: ne_type
+      CHARACTER (len=data_name_length), INTENT(in) :: ne_type
       CHARACTER (len=data_name_length), DIMENSION(:), INTENT(in) ::            &
      &   sxrem_type
-      CHARACTER (len=data_name_length), INTENT(in)  :: te_type
-      CHARACTER (len=data_name_length), INTENT(in)  :: ti_type
-      REAL (rprec), INTENT(in)                      :: ne_unit
-      REAL (rprec), INTENT(in)                      :: ne_min
-      REAL (rprec), INTENT(in)                      :: te_min
-      REAL (rprec), INTENT(in)                      :: ti_min
-      REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_min
-      REAL (rprec), INTENT(in)                      :: pressure_fraction
-      TYPE (emission_class), POINTER                :: emission
-      CLASS (equilibrium_class), POINTER            :: equilibrium
-      REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_te
-      REAL (rprec), DIMENSION(:), INTENT(in)        :: sxrem_ratio
-      REAL (rprec), INTENT(in)                      :: resonace_range
-      REAL (rprec), DIMENSION(:), INTENT(in)        :: coosig_wgts
-      INTEGER, INTENT(in)                           :: state_flags
-      REAL (rprec), DIMENSION(:)                    :: signal_factor
-      REAL (rprec), DIMENSION(:)                    :: signal_offset
-      TYPE (path_int_class), POINTER                :: int_params
+      CHARACTER (len=data_name_length), INTENT(in) :: te_type
+      CHARACTER (len=data_name_length), INTENT(in) :: ti_type
+      REAL (rprec), INTENT(in)                     :: ne_unit
+      REAL (rprec), INTENT(in)                     :: ne_min
+      REAL (rprec), INTENT(in)                     :: te_min
+      REAL (rprec), INTENT(in)                     :: ti_min
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: sxrem_min
+      REAL (rprec), INTENT(in)                     :: pressure_fraction
+      TYPE (emission_class), POINTER               :: emission
+      CLASS (equilibrium_class), POINTER           :: equilibrium
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: sxrem_te
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: sxrem_ratio
+      REAL (rprec), INTENT(in)                     :: resonace_range
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: coosig_wgts
+      INTEGER, INTENT(in)                          :: state_flags
+      REAL (rprec), DIMENSION(:)                   :: signal_factor
+      REAL (rprec), DIMENSION(:)                   :: signal_offset
+      TYPE (path_int_class), POINTER               :: int_params
 
 !  local variables
-      INTEGER                                       :: i
-      INTEGER                                       :: grid_size
-      REAL (rprec)                                  :: start_time
+      INTEGER                                      :: i
+      INTEGER                                      :: grid_size
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()

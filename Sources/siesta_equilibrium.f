@@ -111,8 +111,8 @@
          TYPE (siesta_context_class), POINTER   :: context => null()
       CONTAINS
          PROCEDURE :: set_param => siesta_set_param
-         PROCEDURE :: set_magnetic_cache_responce =>                           &
-     &                   siesta_set_magnetic_cache_responce
+         PROCEDURE :: set_magnetic_cache_response =>                           &
+     &                   siesta_set_magnetic_cache_response
          PROCEDURE :: set_magnetic_cache_point =>                              &
      &                   siesta_set_magnetic_cache_point
          PROCEDURE :: set_magnetic_cache_calc =>                               &
@@ -428,7 +428,7 @@
       END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!>  @brief Set magnetic cache for plasma responce.
+!>  @brief Set magnetic cache for plasma response.
 !>
 !>  This method overrides @ref equilibrium::equilibrium_set_magnetic_cache. This
 !>  allocates a @ref vmec_magnetic_cache structure. Point measurements require
@@ -440,7 +440,7 @@
 !>  @param[in]    state_flags     Bitwise flags to indicate which parts of the
 !>                                model changed.
 !-------------------------------------------------------------------------------
-      SUBROUTINE siesta_set_magnetic_cache_responce(this,                      &
+      SUBROUTINE siesta_set_magnetic_cache_response(this,                      &
      &                                              response_object,           &
      &                                              state_flags)
       USE stel_constants, only: twopi
@@ -524,7 +524,7 @@
          CALL this%set_magnetic_cache_calc()
       END IF
 
-      CALL profiler_set_stop_time('siesta_set_magnetic_cache_responce',        &
+      CALL profiler_set_stop_time('siesta_set_magnetic_cache_response',        &
      &                            start_time)
 
       END SUBROUTINE

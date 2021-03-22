@@ -133,7 +133,7 @@
       END IF
 
 !  Check if using the coil response for this diagnostic. If not using it clear
-!  the responce flag bit.
+!  the response flag bit.
       IF (.not.use_coil_response) THEN
          CALL magnetic_response_clr_use_coil(                                  &
      &           magnetic_construct_netcdf%response)
@@ -397,7 +397,7 @@
      &   a_model%equilibrium%get_magnetic_volume_jzgrid()
 
 !  The equilibrium may return null pointers indicating the lack of a plasma.
-      IF (ASSOCIATED(rvolgrid) .and. ASSOCIATED(zvolgrid) .and.                &
+      IF (ASSOCIATED(rvolgrid)  .and. ASSOCIATED(zvolgrid)    .and.            &
      &    ASSOCIATED(jrvolgrid) .and. ASSOCIATED(jphivolgrid) .and.            &
      &    ASSOCIATED(jzvolgrid)) THEN
 

@@ -375,7 +375,7 @@
       END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!>  @brief Sets the magnetic cache of the equilibrium for the magnetic responce.
+!>  @brief Sets the magnetic cache of the equilibrium for the magnetic response.
 !>
 !>  This method is virtual. The actual setting of the magnetic cache should be
 !>  handled a subclass method. The magnetic cache is any pre compuation that
