@@ -248,7 +248,7 @@
      &               'Expected resonance for ECE chord')
 
       ece_obj => ece_class(xcart_i, xcart_f, resonance)
-      CALL signal_construct_new(ece_obj, chord_name, chord_name, 'arb',        &
+      CALL signal_construct(ece_obj, chord_name, chord_name, 'arb',            &
      &        observed(signals_created + 1),                                   &
      &        sigma(signals_created + 1), weight(signals_created + 1),         &
      &        v3fit_input_find_scale_index(signals_created + 1),               &

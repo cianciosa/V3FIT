@@ -19,22 +19,6 @@
       IMPLICIT NONE
 
 !*******************************************************************************
-!  limiter_grid module parameters
-!*******************************************************************************
-!>  NETCDF r grid start.
-      CHARACTER (len=*), PARAMETER :: nc_r0         = 'r0'
-!>  NETCDF r grid spacing.
-      CHARACTER (len=*), PARAMETER :: nc_dr         = 'dr'
-!>  NETCDF z grid start.
-      CHARACTER (len=*), PARAMETER :: nc_z0         = 'z0'
-!>  NETCDF z grid spacing.
-      CHARACTER (len=*), PARAMETER :: nc_dz         = 'dz'
-!>  NETCDF grid phi angles.
-      CHARACTER (len=*), PARAMETER :: nc_phi_angles = 'phi_angles'
-!>  NETCDF grid iso surfaces.
-      CHARACTER (len=*), PARAMETER :: nc_iso_grids  = 'iso_grids'
-
-!*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
 !  1) limiter_grid base class
 !
@@ -101,6 +85,7 @@
       REAL (rprec)                        :: z0
       REAL (rprec)                        :: dz
       INTEGER                             :: lgrid_iou
+      INTEGER                             :: varid
       INTEGER                             :: status
       INTEGER, DIMENSION(3)               :: dim_lengths
       INTEGER                             :: i
@@ -113,28 +98,44 @@
 
       limiter_grid_construct%on_edge = on_edge
 
-      CALL cdf_open(lgrid_iou, TRIM(lgrid_file), 'r', status)
+      status = nf90_open(TRIM(lgrid_file), NF90_NOWRITE, lgrid_iou)
       CALL assert_eq(0, status, 'limiter_grid_construct: ' //                  &
      &               'failed to open ', TRIM(lgrid_file))
 
-      CALL cdf_read(lgrid_iou, nc_r0, r0)
-      CALL cdf_read(lgrid_iou, nc_dr, dr)
-      CALL cdf_read(lgrid_iou, nc_z0, z0)
-      CALL cdf_read(lgrid_iou, nc_dz, dz)
+      status = nf90_inq_varid(lgrid_iou, 'r0', varid)
+      status = nf90_get_var(lgrid_iou, varid, r0)
+      status = nf90_inq_varid(lgrid_iou, 'dr', varid)
+      status = nf90_get_var(lgrid_iou, varid, dr)
+      status = nf90_inq_varid(lgrid_iou, 'z0', varid)
+      status = nf90_get_var(lgrid_iou, varid, z0)
+      status = nf90_inq_varid(lgrid_iou, 'dz', varid)
+      status = nf90_get_var(lgrid_iou, varid, dz)
 
-      CALL cdf_inquire(lgrid_iou, nc_phi_angles, dim_lengths)
+      status = nf90_inq_varid(lgrid_iou, 'phi_angles', varid)
+      status = nf90_inquire_variable(lgrid_iou, varid,                         &
+     &                               dimids=dim_lengths(1:1))
+      status = nf90_inquire_dimension(lgrid_iou, dim_lengths(1),               &
+     &                                len=dim_lengths(1))
       ALLOCATE(limiter_grid_construct%phi(dim_lengths(1)))
-      CALL cdf_read(lgrid_iou, nc_phi_angles,                                  &
-     &              limiter_grid_construct%phi)
+      status = nf90_get_var(lgrid_iou, varid,                                  &
+     &                      limiter_grid_construct%phi)
 
-      CALL cdf_inquire(lgrid_iou, nc_iso_grids, dim_lengths)
+      status = nf90_inq_varid(lgrid_iou, 'iso_grids', varid)
+      status = nf90_inquire_variable(lgrid_iou, varid,                         &
+     &                               dimids=dim_lengths)
+      status = nf90_inquire_dimension(lgrid_iou, dim_lengths(1),               &
+     &                                len=dim_lengths(1))
+      status = nf90_inquire_dimension(lgrid_iou, dim_lengths(2),               &
+     &                                len=dim_lengths(2))
+      status = nf90_inquire_dimension(lgrid_iou, dim_lengths(3),               &
+     &                                len=dim_lengths(3))
       ALLOCATE(limiter_grid_construct%grid(dim_lengths(1),                     &
      &                                     dim_lengths(2),                     &
      &                                     dim_lengths(3)))
-      CALL cdf_read(lgrid_iou, nc_iso_grids,                                   &
-     &              limiter_grid_construct%grid)
+      status = nf90_get_var(lgrid_iou, varid,                                  &
+     &                      limiter_grid_construct%grid)
 
-      CALL cdf_close(lgrid_iou)
+      status = nf90_close(lgrid_iou)
 
       ALLOCATE(limiter_grid_construct%rgrid(dim_lengths(1)))
       DO i = 1, dim_lengths(1)

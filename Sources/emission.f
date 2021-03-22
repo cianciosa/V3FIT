@@ -93,6 +93,7 @@
 !  local variables
       REAL (rprec)                   :: start_time
       INTEGER                        :: iou
+      INTEGER                        :: varid
       INTEGER                        :: status
       INTEGER, DIMENSION(2)          :: dim_lengths
 
@@ -101,19 +102,30 @@
 
       ALLOCATE(emission_construct_netcdf)
 
-      CALL cdf_open(iou, TRIM(filename), 'r', status)
+      status = nf90_open(TRIM(filename), NF90_NOWRITE, iou)
       CALL assert_eq(0, status, 'failed to open emission file')
 
-      CALL cdf_read(iou, 'te_start', emission_construct_netcdf%te_start)
-      CALL cdf_read(iou, 'te_step', emission_construct_netcdf%te_step)
+      status = nf90_inq_varid(iou, 'te_start', varid)
+      status = nf90_get_var(iou, varid,                                        &
+     &                      emission_construct_netcdf%te_start)
+      status = nf90_inq_varid(iou, 'te_step', varid)
+      status = nf90_get_var(iou, varid,                                        &
+     &                      emission_construct_netcdf%te_step)
 
-      CALL cdf_inquire(iou, 'emissivity', dim_lengths)
+!  Start the dimids in the dim_lengths then overwrite them. It is hard coded
+!  that emissivity is two dimensional.
+      status = nf90_inq_varid(iou, 'emissivity', varid)
+      status = nf90_inquire_variable(iou, varid, dimids=dim_lengths)
+      status = nf90_inquire_dimension(iou, dim_lengths(1),                     &
+     &                                len=dim_lengths(1))
+      status = nf90_inquire_dimension(iou, dim_lengths(2),                     &
+     &                                len=dim_lengths(2))
       ALLOCATE(emission_construct_netcdf%emissivity(dim_lengths(1),            &
      &                                              dim_lengths(2)))
-      CALL cdf_read(iou, 'emissivity',                                        &
-     &              emission_construct_netcdf%emissivity)
+      status = nf90_get_var(iou, varid,                                        &
+     &                      emission_construct_netcdf%emissivity)
 
-      CALL cdf_close(iou)
+      status = nf90_close(iou)
 
       CALL profiler_set_stop_time('emission_construct_netcdf',                 &
      &                            start_time)

@@ -108,12 +108,7 @@
 !*******************************************************************************
 !-------------------------------------------------------------------------------
 !>  Interface for the construction of @ref signal_class types using
-!>  @ref signal_construct_magnetic, @ref signal_construct_sxrem,
-!>  @ref signal_construct_intpol, @ref signal_construct_thomson,
-!>  @ref signal_construct_extcurz, @ref signal_construct_mse,
-!>  @ref signal_construct_ece, @ref signal_construct_limiter,
-!>  @ref signal_construct_prior_gaussian, @ref signal_construct_feedback,
-!>  @ref signal_construct_combination or @ref signal_construct_diagnostic_netcdf
+!>  @ref signal_construct_new or @ref signal_construct_diagnostic_netcdf
 !-------------------------------------------------------------------------------
       INTERFACE signal_construct
          MODULE PROCEDURE signal_construct_new,                                &
@@ -220,14 +215,22 @@
       CHARACTER (len=data_short_name_length) :: s_name
       CHARACTER (len=data_name_length)       :: l_name
       CHARACTER (len=data_short_name_length) :: units
+      INTEGER                                :: varid
+      INTEGER                                :: status
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL cdf_read(mdsig_iou, 'diagnostic_desc_s_name', s_name)
-      CALL cdf_read(mdsig_iou, 'diagnostic_desc_l_name', l_name)
-      CALL cdf_read(mdsig_iou, 'diagnostic_desc_units', units)
+      status = nf90_inq_varid(mdsig_iou, 'diagnostic_desc_s_name',             &
+     &                        varid)
+      status = nf90_get_var(mdsig_iou, varid, s_name)
+      status = nf90_inq_varid(mdsig_iou, 'diagnostic_desc_l_name',             &
+     &                        varid)
+      status = nf90_get_var(mdsig_iou, varid, l_name)
+      status = nf90_inq_varid(mdsig_iou, 'diagnostic_desc_units',              &
+     &                        varid)
+      status = nf90_get_var(mdsig_iou, varid, units)
 
       CALL signal_construct(this, s_name, l_name, units, observed,             &
      &                      sigma, weight, s_index, o_index)

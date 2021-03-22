@@ -1204,9 +1204,9 @@
          END IF
 
 !  Open the netcdf file for the mdsig.
-         CALL cdf_open(mdsig_iou, TRIM(build_path(mdsig_path,                  &
-     &                                            mdsig_filename)),            &
-     &                 'r', status)
+         status = nf90_open(TRIM(build_path(mdsig_path,                        &
+     &                                      mdsig_filename)),                  &
+     &                      NF90_NOWRITE, mdsig_iou)
          CALL assert_eq(0, status, 'init_magnetic_signals: ' //                &
      &                  'failed to open ', TRIM(mdsig_path) //                 &
      &                  TRIM(mdsig_filename))
@@ -1225,7 +1225,7 @@
      &           v3fit_input_find_scale_index(signals_created),                &
      &           v3fit_input_find_offset_index(signals_created))
 
-         CALL cdf_close(mdsig_iou)
+         status = nf90_close(mdsig_iou)
 
          context%signals(signals_created)%p => magnetic_object
 
@@ -1707,7 +1707,7 @@
          limiter_obj => limiter_grid_class(limiter_grid_file,                  &
      &                                     lif_on_edge(n_lif + 1))
 
-         CALL signal_construct( limiter_obj, s_name, l_name, 'm',              &
+         CALL signal_construct(limiter_obj, s_name, l_name, 'm',               &
      &           sdo_data_a(signals_created + 1),                              &
      &           sdo_sigma_a(signals_created + 1),                             &
      &           sdo_weight_a(signals_created + 1),                            &

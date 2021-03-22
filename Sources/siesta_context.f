@@ -117,6 +117,7 @@
       INTEGER                              :: mpol
       INTEGER                              :: ntor
       INTEGER                              :: status
+      INTEGER                              :: varid
       INTEGER                              :: i
       INTEGER                              :: flags
       REAL (rprec)                         :: start_time
@@ -129,117 +130,146 @@
 
       ALLOCATE(siesta_context_construct)
 
-      CALL cdf_open(ncid, TRIM(restart_file_name), 'r', status)
+      status = nf90_open(TRIM(restart_file_name), NF90_NOWRITE, ncid)
 
-      CALL cdf_read(ncid, vn_nsin, ns)
-      CALL cdf_read(ncid, vn_mpolin, mpol)
-      CALL cdf_read(ncid, vn_ntorin, ntor)
+      status = nf90_inq_varid(ncid, vn_nsin, varid)
+      status = nf90_get_var(ncid, varid, ns)
+      status = nf90_inq_varid(ncid, vn_mpolin, varid)
+      status = nf90_get_var(ncid, varid, mpol)
+      status = nf90_inq_varid(ncid, vn_ntorin, varid)
+      status = nf90_get_var(ncid, varid, ntor)
 
       siesta_context_construct%ns = ns
       siesta_context_construct%mpol = mpol
       siesta_context_construct%ntor = ntor
 
-      CALL cdf_read(ncid, vn_nfpin, siesta_context_construct%nfp)
+      status = nf90_inq_varid(ncid, vn_nfpin, varid)
+      status = nf90_get_var(ncid, varid, siesta_context_construct%nfp)
 
-      CALL cdf_read(ncid, vn_flags, flags)
+      status = nf90_inq_varid(ncid, vn_flags, varid)
+      status = nf90_get_var(ncid, varid, flags)
       siesta_context_construct%l_asym = BTEST(flags, l_asym_flag)
 
 !  Pressure
-      CALL cdf_read(ncid, vn_p_min, siesta_context_construct%p_min)
-      CALL cdf_read(ncid, vn_p_max, siesta_context_construct%p_max)
+      status = nf90_inq_varid(ncid, vn_p_min, varid)
+      status = nf90_get_var(ncid, varid, siesta_context_construct%p_min)
+      status = nf90_inq_varid(ncid, vn_p_max, varid)
+      status = nf90_get_var(ncid, varid, siesta_context_construct%p_max)
 
       ALLOCATE(siesta_context_construct%pmnch(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_pmnc, siesta_context_construct%pmnch)
+      status = nf90_inq_varid(ncid, vn_pmnc, varid)
+      status = nf90_get_var(ncid, varid, siesta_context_construct%pmnch)
 
 !  Magnetic field
-      CALL cdf_read(ncid, vn_b_factor,                                         &
-     &              siesta_context_construct%b_factor)
+      status = nf90_inq_varid(ncid, vn_b_factor, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%b_factor)
 
 !  Bsup*
       ALLOCATE(siesta_context_construct%bsupsmnsh(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsupsmns,                                         &
-     &              siesta_context_construct%bsupsmnsh)
+      status = nf90_inq_varid(ncid, vn_bsupsmns, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsupsmnsh)
       ALLOCATE(siesta_context_construct%bsupumnch(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsupumnc,                                         &
-     &              siesta_context_construct%bsupumnch)
+      status = nf90_inq_varid(ncid, vn_bsupumnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsupumnch)
       ALLOCATE(siesta_context_construct%bsupvmnch(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsupvmnc,                                         &
-     &              siesta_context_construct%bsupvmnch)
+      status = nf90_inq_varid(ncid, vn_bsupvmnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsupvmnch)
 
 !  Bsub*
       ALLOCATE(siesta_context_construct%bsubsmnsh(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsubsmns,                                         &
-     &              siesta_context_construct%bsubsmnsh)
+      status = nf90_inq_varid(ncid, vn_bsubsmns, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsubsmnsh)
       ALLOCATE(siesta_context_construct%bsubumnch(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsubumnc,                                         &
-     &              siesta_context_construct%bsubumnch)
+      status = nf90_inq_varid(ncid, vn_bsubumnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsubumnch)
       ALLOCATE(siesta_context_construct%bsubvmnch(0:mpol,-ntor:ntor,ns))
-      CALL cdf_read(ncid, vn_bsubvmnc,                                         &
-     &              siesta_context_construct%bsubvmnch)
+      status = nf90_inq_varid(ncid, vn_bsubvmnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%bsubvmnch)
 
 !  JKsup*
       ALLOCATE(siesta_context_construct%jksupsmnsf(0:mpol,-ntor:ntor,          &
      &                                             ns))
-      CALL cdf_read(ncid, vn_jksupsmns,                                        &
-     &              siesta_context_construct%jksupsmnsf)
+      status = nf90_inq_varid(ncid, vn_jksupsmns, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%jksupsmnsf)
       ALLOCATE(siesta_context_construct%jksupumncf(0:mpol,-ntor:ntor,          &
      &                                             ns))
-      CALL cdf_read(ncid, vn_jksupumnc,                                        &
-     &              siesta_context_construct%jksupumncf)
+      status = nf90_inq_varid(ncid, vn_jksupumnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%jksupumncf)
       ALLOCATE(siesta_context_construct%jksupvmncf(0:mpol,-ntor:ntor,          &
      &                                             ns))
-      CALL cdf_read(ncid, vn_jksupvmnc,                                        &
-     &              siesta_context_construct%jksupvmncf)
+      status = nf90_inq_varid(ncid, vn_jksupvmnc, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%jksupvmncf)
 
       IF (siesta_context_construct%l_asym) THEN
 !  Pressure
          ALLOCATE(siesta_context_construct%pmnsh(0:mpol,-ntor:ntor,ns))
-         CALL cdf_read(ncid, vn_pmns, siesta_context_construct%pmnsh)
+         status = nf90_inq_varid(ncid, vn_pmns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%pmnsh)
 
 !  Bsup*
          ALLOCATE(siesta_context_construct%bsupsmnch(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsupsmnc,                                      &
-     &                 siesta_context_construct%bsupsmnch)
+         status = nf90_inq_varid(ncid, vn_bsupsmnc, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsupsmnch)
          ALLOCATE(siesta_context_construct%bsupumnsh(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsupumns,                                      &
-     &                 siesta_context_construct%bsupumnsh)
+         status = nf90_inq_varid(ncid, vn_bsupumns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsupumnsh)
          ALLOCATE(siesta_context_construct%bsupvmnsh(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsupvmns,                                      &
-     &                 siesta_context_construct%bsupvmnsh)
+         status = nf90_inq_varid(ncid, vn_bsupvmns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsupvmnsh)
 
 !  Bsub*
          ALLOCATE(siesta_context_construct%bsubsmnch(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsubsmnc,                                      &
-     &                 siesta_context_construct%bsubsmnch)
+         status = nf90_inq_varid(ncid, vn_bsupsmnc, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsupsmnch)
          ALLOCATE(siesta_context_construct%bsubumnsh(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsubumns,                                      &
-     &                 siesta_context_construct%bsubumnsh)
+         status = nf90_inq_varid(ncid, vn_bsubumns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsubumnsh)
          ALLOCATE(siesta_context_construct%bsubvmnsh(0:mpol,-ntor:ntor,        &
      &                                               ns))
-         CALL cdf_read(ncid, vn_bsubvmns,                                      &
-     &                 siesta_context_construct%bsubvmnsh)
+         status = nf90_inq_varid(ncid, vn_bsubvmns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%bsubvmnsh)
 
 !  JKsup*
          ALLOCATE(siesta_context_construct%jksupsmncf(0:mpol,-ntor:ntor,       &
      &                                                ns))
-         CALL cdf_read(ncid, vn_jksupsmnc,                                     &
-     &                 siesta_context_construct%jksupsmncf)
+         status = nf90_inq_varid(ncid, vn_jksupsmnc, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%jksupsmncf)
          ALLOCATE(siesta_context_construct%jksupumnsf(0:mpol,-ntor:ntor,       &
      &                                                ns))
-         CALL cdf_read(ncid, vn_jksupumns,                                     &
-     &                 siesta_context_construct%jksupumnsf)
+         status = nf90_inq_varid(ncid, vn_jksupumns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%jksupumnsf)
          ALLOCATE(siesta_context_construct%jksupvmnsf(0:mpol,-ntor:ntor,       &
      &                                                ns))
-         CALL cdf_read(ncid, vn_jksupvmns,                                     &
-     &                 siesta_context_construct%jksupvmnsf)
+         status = nf90_inq_varid(ncid, vn_jksupvmns, varid)
+         status = nf90_get_var(ncid, varid,                                    &
+     &                         siesta_context_construct%jksupvmnsf)
       END IF
 
-      CALL cdf_close(ncid)
+      status = nf90_close(ncid)
 
       CALL profiler_set_stop_time('siesta_context_construct',                  &
      &                            start_time)
@@ -392,6 +422,7 @@
 !  local variables
       INTEGER                              :: ncid
       INTEGER                              :: status
+      INTEGER                              :: varid
       INTEGER                              :: i
       INTEGER                              :: flags
       CHARACTER (len=path_length)          :: wout_file_name
@@ -403,65 +434,95 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL cdf_open(ncid, TRIM(restart_file_name), 'r', status)
-      IF (status .ne. 0) STOP 'Failed'
+      status = nf90_open(TRIM(restart_file_name), NF90_NOWRITE, ncid)
+      IF (status .ne. 0) THEN
+         STOP 'Failed'
+      END IF
 
-      CALL cdf_read(ncid, vn_nsin, this%ns)
-      CALL cdf_read(ncid, vn_mpolin, this%mpol)
-      CALL cdf_read(ncid, vn_ntorin, this%ntor)
+      status = nf90_inq_varid(ncid, vn_nsin, varid)
+      status = nf90_get_var(ncid, varid, this%ns)
+      status = nf90_inq_varid(ncid, vn_mpolin, varid)
+      status = nf90_get_var(ncid, varid, this%mpol)
+      status = nf90_inq_varid(ncid, vn_ntorin, varid)
+      status = nf90_get_var(ncid, varid, this%ntor)
 
-      CALL cdf_read(ncid, vn_nfpin, this%nfp)
+      status = nf90_inq_varid(ncid, vn_nfpin, varid)
+      status = nf90_get_var(ncid, varid, this%nfp)
 
-      CALL cdf_read(ncid, vn_flags, flags)
+      status = nf90_inq_varid(ncid, vn_flags, varid)
+      status = nf90_get_var(ncid, varid, flags)
       IF (this%l_asym .neqv. BTEST(flags, l_asym_flag)) THEN
          STOP 'Restart file changed parity.'
       END IF
 
 !  Pressure
-      CALL cdf_read(ncid, vn_p_min, this%p_min)
-      CALL cdf_read(ncid, vn_p_max, this%p_max)
+      status = nf90_inq_varid(ncid, vn_p_min, varid)
+      status = nf90_get_var(ncid, varid, this%p_min)
+      status = nf90_inq_varid(ncid, vn_p_max, varid)
+      status = nf90_get_var(ncid, varid, this%p_max)
 
-      CALL cdf_read(ncid, vn_pmnc, this%pmnch)
+      status = nf90_inq_varid(ncid, vn_pmnc, varid)
+      status = nf90_get_var(ncid, varid, this%pmnch)
 
 !  Magnetic field
-      CALL cdf_read(ncid, vn_b_factor, this%b_factor)
+      status = nf90_inq_varid(ncid, vn_b_factor, varid)
+      status = nf90_get_var(ncid, varid, this%b_factor)
 
 !  Bsup*
-      CALL cdf_read(ncid, vn_bsupsmns, this%bsupsmnsh)
-      CALL cdf_read(ncid, vn_bsupumnc, this%bsupumnch)
-      CALL cdf_read(ncid, vn_bsupvmnc, this%bsupvmnch)
+      status = nf90_inq_varid(ncid, vn_bsupsmns, varid)
+      status = nf90_get_var(ncid, varid, this%bsupsmnsh)
+      status = nf90_inq_varid(ncid, vn_bsupumnc, varid)
+      status = nf90_get_var(ncid, varid, this%bsupumnch)
+      status = nf90_inq_varid(ncid, vn_bsupvmnc, varid)
+      status = nf90_get_var(ncid, varid, this%bsupvmnch)
 
 !  Bsub*
-      CALL cdf_read(ncid, vn_bsubsmns, this%bsubsmnsh)
-      CALL cdf_read(ncid, vn_bsubumnc, this%bsubumnch)
-      CALL cdf_read(ncid, vn_bsubvmnc, this%bsubvmnch)
+      status = nf90_inq_varid(ncid, vn_bsubsmns, varid)
+      status = nf90_get_var(ncid, varid, this%bsubsmnsh)
+      status = nf90_inq_varid(ncid, vn_bsubsmns, varid)
+      status = nf90_get_var(ncid, varid, this%bsubumnch)
+      status = nf90_inq_varid(ncid, vn_bsubsmns, varid)
+      status = nf90_get_var(ncid, varid, this%bsubvmnch)
 
 !  JKsup*
-      CALL cdf_read(ncid, vn_jksupsmns, this%jksupsmnsf)
-      CALL cdf_read(ncid, vn_jksupumnc, this%jksupumncf)
-      CALL cdf_read(ncid, vn_jksupvmnc, this%jksupvmncf)
+      status = nf90_inq_varid(ncid, vn_jksupsmns, varid)
+      status = nf90_get_var(ncid, varid, this%jksupsmnsf)
+      status = nf90_inq_varid(ncid, vn_jksupsmns, varid)
+      status = nf90_get_var(ncid, varid, this%jksupumncf)
+      status = nf90_inq_varid(ncid, vn_jksupsmns, varid)
+      status = nf90_get_var(ncid, varid, this%jksupvmncf)
 
       IF (this%l_asym) THEN
 !  Pressure
-         CALL cdf_read(ncid, vn_pmns, this%pmnsh)
+         status = nf90_inq_varid(ncid, vn_pmns, varid)
+         status = nf90_get_var(ncid, varid, this%pmnsh)
 
 !  Bsup*
-         CALL cdf_read(ncid, vn_bsupsmnc, this%bsupsmnch)
-         CALL cdf_read(ncid, vn_bsupumns, this%bsupumnsh)
-         CALL cdf_read(ncid, vn_bsupvmns, this%bsupvmnsh)
+         status = nf90_inq_varid(ncid, vn_bsupsmnc, varid)
+         status = nf90_get_var(ncid, varid, this%bsupsmnch)
+         status = nf90_inq_varid(ncid, vn_bsupumns, varid)
+         status = nf90_get_var(ncid, varid, this%bsupumnsh)
+         status = nf90_inq_varid(ncid, vn_bsupvmns, varid)
+         status = nf90_get_var(ncid, varid, this%bsupvmnsh)
 
 !  Bsub*
-         CALL cdf_read(ncid, vn_bsubsmnc, this%bsubsmnch)
-         CALL cdf_read(ncid, vn_bsubumns, this%bsubumnsh)
-         CALL cdf_read(ncid, vn_bsubvmns, this%bsubvmnsh)
+         status = nf90_inq_varid(ncid, vn_bsupsmnc, varid)
+         status = nf90_get_var(ncid, varid, this%bsubsmnch)
+         status = nf90_inq_varid(ncid, vn_bsubumns, varid)
+         status = nf90_get_var(ncid, varid, this%bsubumnsh)
+         status = nf90_inq_varid(ncid, vn_bsubvmns, varid)
+         status = nf90_get_var(ncid, varid, this%bsubvmnsh)
 
 !  JKsup*
-         CALL cdf_read(ncid, vn_jksupsmnc, this%jksupsmncf)
-         CALL cdf_read(ncid, vn_jksupumns, this%jksupumnsf)
-         CALL cdf_read(ncid, vn_jksupvmns, this%jksupvmnsf)
+         status = nf90_inq_varid(ncid, vn_jksupsmnc, varid)
+         status = nf90_get_var(ncid, varid, this%jksupsmncf)
+         status = nf90_inq_varid(ncid, vn_jksupumns, varid)
+         status = nf90_get_var(ncid, varid, this%jksupumnsf)
+         status = nf90_inq_varid(ncid, vn_jksupvmns, varid)
+         status = nf90_get_var(ncid, varid, this%jksupvmnsf)
       END IF
 
-      CALL cdf_close(ncid)
+      status = nf90_close(ncid)
 
       CALL profiler_set_stop_time('siesta_context_read', start_time)
 
