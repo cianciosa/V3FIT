@@ -250,7 +250,7 @@ add_test (NAME reconstruction_task_seg_step_test_check_reconstruction_correlatio
 #  Subsequent tests will examine the results of the reconstruction for correct
 #  results.
     add_test (NAME    reconstruction_task_seg_step_test_parvmec
-              COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
+              COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1 -serial)
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
 #  Check that the reconstruction parameter reconstructed to the correct values.

@@ -406,14 +406,14 @@
          CALL MPI_RECV(zaxis_cs, SIZE(zaxis_cs), MPI_REAL8, index,             &
      &                 index, recon_comm, MPI_STATUS_IGNORE, error)
 
-         CALL MPI_SSEND(rbc, SIZE(rbc,1)*SIZE(rbc,2), MPI_REAL8, index,        &
-     &                  mpi_rank, recon_comm, error)
-         CALL MPI_SSEND(rbs, SIZE(rbs,1)*SIZE(rbs,2), MPI_REAL8, index,        &
-     &                  mpi_rank, recon_comm, error)
-         CALL MPI_SSEND(zbc, SIZE(zbc,1)*SIZE(zbc,2), MPI_REAL8, index,        &
-     &                  mpi_rank, recon_comm, error)
-         CALL MPI_SSEND(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, index,        &
-     &                  mpi_rank, recon_comm, error)
+         CALL MPI_RECV(rbc, SIZE(rbc,1)*SIZE(rbc,2), MPI_REAL8, index,        &
+     &                 index, recon_comm, MPI_STATUS_IGNORE, error)
+         CALL MPI_RECV(rbs, SIZE(rbs,1)*SIZE(rbs,2), MPI_REAL8, index,        &
+     &                 index, recon_comm, MPI_STATUS_IGNORE, error)
+         CALL MPI_RECV(zbc, SIZE(zbc,1)*SIZE(zbc,2), MPI_REAL8, index,        &
+     &                 index, recon_comm, MPI_STATUS_IGNORE, error)
+         CALL MPI_RECV(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, index,        &
+     &                 index, recon_comm, MPI_STATUS_IGNORE, error)
 
          CALL MPI_RECV(vvc_smaleli, 1, MPI_REAL8, index, index,                &
      &                 recon_comm, MPI_STATUS_IGNORE, error)
