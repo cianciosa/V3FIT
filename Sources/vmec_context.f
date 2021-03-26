@@ -12,7 +12,8 @@
       USE stel_kinds
       USE data_parameters
       USE xstuff
-      USE vmec_input, Only: raxis_cc, raxis_cs, zaxis_cc, zaxis_cs
+      USE vmec_input, Only: raxis_cc, raxis_cs, zaxis_cc, zaxis_cs,            &
+     &                      rbc, rbs, zbc, zbs
       USE v3f_vmec_comm
       USE profiler
       USE mpi_inc
@@ -33,19 +34,28 @@
          REAL (rprec), DIMENSION(:), POINTER :: xc => null()
 
 !>  Cache of the magnetic axis R cosine coefficents.
-         REAL (rprec), DIMENSION(:), POINTER :: raxis_cc => null()
+         REAL (rprec), DIMENSION(:), POINTER   :: raxis_cc => null()
 !>  Cache of the magnetic axis R sine coefficents.
-         REAL (rprec), DIMENSION(:), POINTER :: raxis_cs => null()
+         REAL (rprec), DIMENSION(:), POINTER   :: raxis_cs => null()
 !>  Cache of the magnetic axis Z cosine coefficents.
-         REAL (rprec), DIMENSION(:), POINTER :: zaxis_cc => null()
+         REAL (rprec), DIMENSION(:), POINTER   :: zaxis_cc => null()
 !>  Cache of the magnetic axis Z sine coefficents.
-         REAL (rprec), DIMENSION(:), POINTER :: zaxis_cs => null()
+         REAL (rprec), DIMENSION(:), POINTER   :: zaxis_cs => null()
+
+!>  Cache of the equilibrium boundary R cosine coefficents.
+         REAL (rprec), DIMENSION(:,:), POINTER :: rbc => null()
+!>  Cache of the equilibrium boundary R sine coefficents.
+         REAL (rprec), DIMENSION(:,:), POINTER :: rbs => null()
+!>  Cache of the equilibrium boundary Z cosine coefficents.
+         REAL (rprec), DIMENSION(:,:), POINTER :: zbc => null()
+!>  Cache of the equilibrium boundary Z sine coefficents.
+         REAL (rprec), DIMENSION(:,:), POINTER :: zbs => null()
 
 !  threed1 file variables.
 !>  Internal inductance.
-         REAL (rprec)                        :: vvc_smaleli
+         REAL (rprec)                          :: vvc_smaleli
 !>  Mean elongation.
-         REAL (rprec)                        :: vvc_kappa_p
+         REAL (rprec)                          :: vvc_kappa_p
       END TYPE
 
       CONTAINS
@@ -79,6 +89,11 @@
       ALLOCATE(vmec_context_construct%raxis_cs(SIZE(raxis_cs)))
       ALLOCATE(vmec_context_construct%zaxis_cc(SIZE(zaxis_cc)))
       ALLOCATE(vmec_context_construct%zaxis_cs(SIZE(zaxis_cs)))
+
+      ALLOCATE(vmec_context_construct%rbc(SIZE(rbc,1),SIZE(rbc,2)))
+      ALLOCATE(vmec_context_construct%rbs(SIZE(rbs,1),SIZE(rbs,2)))
+      ALLOCATE(vmec_context_construct%zbc(SIZE(zbc,1),SIZE(zbc,2)))
+      ALLOCATE(vmec_context_construct%zbs(SIZE(zbs,1),SIZE(zbs,2)))
 
       CALL vmec_context_get_context(vmec_context_construct)
 
@@ -129,6 +144,26 @@
          this%zaxis_cs => null()
       END IF
 
+      IF (ASSOCIATED(this%rbc)) THEN
+         DEALLOCATE(this%rbc)
+         this%rbc => null()
+      END IF
+
+      IF (ASSOCIATED(this%rbs)) THEN
+         DEALLOCATE(this%rbs)
+         this%rbs => null()
+      END IF
+
+      IF (ASSOCIATED(this%zbc)) THEN
+         DEALLOCATE(this%zbc)
+         this%zbc => null()
+      END IF
+
+      IF (ASSOCIATED(this%zbs)) THEN
+         DEALLOCATE(this%zbs)
+         this%zbs => null()
+      END IF
+
       DEALLOCATE(this)
 
       END SUBROUTINE
@@ -165,6 +200,11 @@
       raxis_cs = this%raxis_cs
       zaxis_cc = this%zaxis_cc
       zaxis_cs = this%zaxis_cs
+
+      rbc = this%rbc
+      rbs = this%rbs
+      zbc = this%zbc
+      zbs = this%zbs
 
       vvc_smaleli = this%vvc_smaleli
       vvc_kappa_p = this%vvc_kappa_p
@@ -207,6 +247,11 @@
       this%raxis_cs = raxis_cs
       this%zaxis_cc = zaxis_cc
       this%zaxis_cs = zaxis_cs
+
+      this%rbc = rbc
+      this%rbs = rbs
+      this%zbc = zbc
+      this%zbs = zbs
 
       this%vvc_smaleli = vvc_smaleli
       this%vvc_kappa_p = vvc_kappa_p
@@ -266,6 +311,15 @@
       CALL MPI_BCAST(zaxis_cs, SIZE(zaxis_cs), MPI_REAL8, 0, recon_comm,       &
      &               error)
 
+      CALL MPI_BCAST(rbc, SIZE(rbc,1)*SIZE(rbc,2), MPI_REAL8, 0,               &
+     &               recon_comm, error)
+      CALL MPI_BCAST(rbs, SIZE(rbs,1)*SIZE(rbs,2), MPI_REAL8, 0,               &
+     &               recon_comm, error)
+      CALL MPI_BCAST(zbc, SIZE(zbc,1)*SIZE(zbc,2), MPI_REAL8, 0,               &
+     &               recon_comm, error)
+      CALL MPI_BCAST(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, 0,               &
+     &               recon_comm, error)
+
       CALL MPI_BCAST(vvc_smaleli, 1, MPI_REAL8, 0, recon_comm, error)
       CALL MPI_BCAST(vvc_kappa_p, 1, MPI_REAL8, 0, recon_comm, error)
 
@@ -320,6 +374,15 @@
          CALL MPI_SSEND(zaxis_cs, SIZE(zaxis_cs), MPI_REAL8, 0,                &
      &                  mpi_rank, recon_comm, error)
 
+         CALL MPI_SSEND(rbc, SIZE(rbc,1)*SIZE(rbc,2), MPI_REAL8, 0,            &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(rbs, SIZE(rbs,1)*SIZE(rbs,2), MPI_REAL8, 0,            &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(zbc, SIZE(zbc,1)*SIZE(zbc,2), MPI_REAL8, 0,            &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, 0,            &
+     &                  mpi_rank, recon_comm, error)
+
          CALL MPI_SSEND(vvc_smaleli, 1, MPI_REAL8, 0, mpi_rank,                &
      &                  recon_comm, error)
          CALL MPI_SSEND(vvc_kappa_p, 1, MPI_REAL8, 0, mpi_rank,                &
@@ -342,6 +405,15 @@
      &                 index, recon_comm, MPI_STATUS_IGNORE, error)
          CALL MPI_RECV(zaxis_cs, SIZE(zaxis_cs), MPI_REAL8, index,             &
      &                 index, recon_comm, MPI_STATUS_IGNORE, error)
+
+         CALL MPI_SSEND(rbc, SIZE(rbc,1)*SIZE(rbc,2), MPI_REAL8, index,        &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(rbs, SIZE(rbs,1)*SIZE(rbs,2), MPI_REAL8, index,        &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(zbc, SIZE(zbc,1)*SIZE(zbc,2), MPI_REAL8, index,        &
+     &                  mpi_rank, recon_comm, error)
+         CALL MPI_SSEND(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, index,        &
+     &                  mpi_rank, recon_comm, error)
 
          CALL MPI_RECV(vvc_smaleli, 1, MPI_REAL8, index, index,                &
      &                 recon_comm, MPI_STATUS_IGNORE, error)
