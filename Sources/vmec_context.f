@@ -53,23 +53,6 @@
 !>  Cache of the equilibrium boundary Z sine coefficents.
          REAL (rprec), DIMENSION(:,:), POINTER :: zbs => null()
 
-!>  Cache of the equilibirum phi prime profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: phipf => null()
-!>  Cache of the equilibirum phi prime profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: phips => null()
-!>  Cache of the equilibirum chi prime profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: chipf => null()
-!>  Cache of the equilibirum chi prime profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: chips => null()
-!>  Cache of the equilibirum iotaf profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: iotaf => null()
-!>  Cache of the equilibirum iotas profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: iotas => null()
-!>  Cache of the equilibirum iotaf profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: mass => null()
-!>  Cache of the equilibirum iotas profile.
-         REAL (rprec), DIMENSION(:), POINTER   :: icurv => null()
-
 !  threed1 file variables.
 !>  Internal inductance.
          REAL (rprec)                          :: vvc_smaleli
@@ -113,15 +96,6 @@
       ALLOCATE(vmec_context_construct%rbs(SIZE(rbs,1),SIZE(rbs,2)))
       ALLOCATE(vmec_context_construct%zbc(SIZE(zbc,1),SIZE(zbc,2)))
       ALLOCATE(vmec_context_construct%zbs(SIZE(zbs,1),SIZE(zbs,2)))
-
-      ALLOCATE(vmec_context_construct%phipf(SIZE(phipf)))
-      ALLOCATE(vmec_context_construct%phips(SIZE(phips)))
-      ALLOCATE(vmec_context_construct%chipf(SIZE(chipf)))
-      ALLOCATE(vmec_context_construct%chips(SIZE(chips)))
-      ALLOCATE(vmec_context_construct%iotaf(SIZE(iotaf)))
-      ALLOCATE(vmec_context_construct%iotas(SIZE(iotas)))
-      ALLOCATE(vmec_context_construct%mass(SIZE(mass)))
-      ALLOCATE(vmec_context_construct%icurv(SIZE(icurv)))
 
       CALL vmec_context_get_context(vmec_context_construct)
 
@@ -192,46 +166,6 @@
          this%zbs => null()
       END IF
 
-      IF (ASSOCIATED(this%phipf)) THEN
-         DEALLOCATE(this%phipf)
-         this%phipf => null()
-      END IF
-
-      IF (ASSOCIATED(this%phips)) THEN
-         DEALLOCATE(this%phips)
-         this%phips => null()
-      END IF
-
-      IF (ASSOCIATED(this%chipf)) THEN
-         DEALLOCATE(this%chipf)
-         this%chipf => null()
-      END IF
-
-      IF (ASSOCIATED(this%chips)) THEN
-         DEALLOCATE(this%chips)
-         this%chips => null()
-      END IF
-
-      IF (ASSOCIATED(this%iotaf)) THEN
-         DEALLOCATE(this%iotaf)
-         this%iotaf => null()
-      END IF
-
-      IF (ASSOCIATED(this%iotas)) THEN
-         DEALLOCATE(this%iotas)
-         this%iotas => null()
-      END IF
-
-      IF (ASSOCIATED(this%mass)) THEN
-         DEALLOCATE(this%mass)
-         this%mass => null()
-      END IF
-
-      IF (ASSOCIATED(this%icurv)) THEN
-         DEALLOCATE(this%icurv)
-         this%icurv => null()
-      END IF
-
       DEALLOCATE(this)
 
       END SUBROUTINE
@@ -273,15 +207,6 @@
       rbs = this%rbs
       zbc = this%zbc
       zbs = this%zbs
-
-      phipf = this%phipf
-      phips = this%phips
-      chipf = this%chipf
-      chips = this%chips
-      iotaf = this%iotaf
-      iotas = this%iotas
-      mass = this%mass
-      icurv = this%icurv
 
       vvc_smaleli = this%vvc_smaleli
       vvc_kappa_p = this%vvc_kappa_p
@@ -329,15 +254,6 @@
       this%rbs = rbs
       this%zbc = zbc
       this%zbs = zbs
-
-      this%phipf = phipf
-      this%phips = phips
-      this%chipf = chipf
-      this%chips = chips
-      this%iotaf = iotaf
-      this%iotas = iotas
-      this%mass = mass
-      this%icurv = icurv
 
       this%vvc_smaleli = vvc_smaleli
       this%vvc_kappa_p = vvc_kappa_p
@@ -406,23 +322,6 @@
       CALL MPI_BCAST(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, 0,               &
      &               recon_comm, error)
 
-      CALL MPI_BCAST(phipf, SIZE(phipf), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(phips, SIZE(phips), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(chipf, SIZE(chipf), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(chips, SIZE(chips), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(iotaf, SIZE(iotaf), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(iotas, SIZE(iotas), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-      CALL MPI_BCAST(mass, SIZE(mass), MPI_REAL8, 0, recon_comm,               &
-     &               error)
-      CALL MPI_BCAST(icurv, SIZE(icurv), MPI_REAL8, 0, recon_comm,             &
-     &               error)
-
       CALL MPI_BCAST(vvc_smaleli, 1, MPI_REAL8, 0, recon_comm, error)
       CALL MPI_BCAST(vvc_kappa_p, 1, MPI_REAL8, 0, recon_comm, error)
 
@@ -486,23 +385,6 @@
          CALL MPI_SSEND(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, 0,            &
      &                  mpi_rank, recon_comm, error)
 
-         CALL MPI_SSEND(phipf, SIZE(phipf), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(phips, SIZE(phips), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(chipf, SIZE(chipf), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(chips, SIZE(chips), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(iotaf, SIZE(iotaf), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(iotas, SIZE(iotas), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(mass, SIZE(mass), MPI_REAL8, 0, mpi_rank,              &
-     &                  recon_comm, error)
-         CALL MPI_SSEND(icurv, SIZE(icurv), MPI_REAL8, 0, mpi_rank,            &
-     &                  recon_comm, error)
-
          CALL MPI_SSEND(vvc_smaleli, 1, MPI_REAL8, 0, mpi_rank,                &
      &                  recon_comm, error)
          CALL MPI_SSEND(vvc_kappa_p, 1, MPI_REAL8, 0, mpi_rank,                &
@@ -534,23 +416,6 @@
      &                 index, recon_comm, MPI_STATUS_IGNORE, error)
          CALL MPI_RECV(zbs, SIZE(zbs,1)*SIZE(zbs,2), MPI_REAL8, index,         &
      &                 index, recon_comm, MPI_STATUS_IGNORE, error)
-
-         CALL MPI_RECV(phipf, SIZE(phipf), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(phips, SIZE(phips), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(chipf, SIZE(chipf), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(chips, SIZE(chips), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(iotaf, SIZE(iotaf), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(iotas, SIZE(iotas), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(mass, SIZE(mass), MPI_REAL8, index, index,              &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
-         CALL MPI_RECV(icurv, SIZE(icurv), MPI_REAL8, index, index,            &
-     &                 recon_comm, MPI_STATUS_IGNORE, error)
 
          CALL MPI_RECV(vvc_smaleli, 1, MPI_REAL8, index, index,                &
      &                 recon_comm, MPI_STATUS_IGNORE, error)
