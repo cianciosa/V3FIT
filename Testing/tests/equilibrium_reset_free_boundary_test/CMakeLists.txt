@@ -17,7 +17,7 @@ add_test (NAME    equilibrium_reset_free_boundary_mgrid_test
           COMMAND $<TARGET_PROPERTY:mgrid,BINARY_DIR>/mgrid coils.test)
 
 add_test (NAME    equilibrium_reset_free_boundary_test
-          COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
+          COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1 -serial)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
