@@ -1,0 +1,10 @@
+periods  5
+begin filament
+mirror null
+2.6	0	0.6	1.0	1	FC1
+end
+
+JDH 2010-12-07
+Fictional coils dot files for JT-60SA (copied from RFX).
+Main purpose is to specify the number of field periods
+ for use in V3RFUN code.

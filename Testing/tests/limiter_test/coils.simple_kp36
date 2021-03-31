@@ -1,0 +1,23 @@
+&MGRID_NLI
+   MGRID_EXT = 'simple_kp36'
+   MGRID_MODE = 'R'
+   LSTELL_SYM = .FALSE.
+   RMIN = 0.7
+   RMAX = 1.3
+   ZMIN = -0.3
+   ZMAX =  0.3
+   KP = 36
+   IR = 111
+   JZ = 111
+   /
+
+** coils_dot_starts_below **
+periods  1
+begin filament
+mirror null
+0.25  0.0  0.75 1.0 1 coil1
+1.75  0.0  0.75 1.0 2 coil2
+1.75  0.0 -0.75 1.0 3 coil3
+0.25  0.0 -0.75 1.0 4 coil4
+0.00  0.0 -1000.0 2.4387E7
+0.00  0.0  1000.0 0.0 5 tf

@@ -1,0 +1,14 @@
+ &v3r_coils
+  idrfun              = 'cth_18b_ma'
+  name_diagnostic_dot = 'diagnostic_rot.dot'
+  name_coils_dot      = 'coils.null'
+  rmin                = 0.9
+  rmax                = 2.1
+  zmin                =-0.6
+  zmax                = 0.6
+  ir                  = 101
+  jz                  = 101
+  kp                  = 32
+  len_integrate_ddc   = 0.001
+  lstell_sym          = F
+/

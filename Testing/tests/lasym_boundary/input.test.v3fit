@@ -1,0 +1,51 @@
+&v3fit_main_nli
+my_task = 'reconstruct',
+vmec_nli_filename = 'input.test.vmec',
+
+model_eq_type = 'vmec'
+
+nrstep = 20,
+dg2_stop = 0.1,
+cut_svd = 2.0E-5,
+cut_eff = 1.0E-4,
+cut_marg_eff = 0.0,
+cut_delta_a = 0.0,
+cut_dg2 = 0.0,
+astep_max = 100.0,
+step_type = 'seg',
+
+n_rp = 2,
+
+rp_type(1) = 'rbc',
+rp_vrnc(1) = 0.01,
+rp_index(1) = 0,
+rp_index2(1) = 0,
+
+rp_type(2) = 'zbc',
+rp_vrnc(2) = 0.01,
+rp_index(2) = 0,
+rp_index2(2) = 0,
+
+sdo_data_a(1) = 0.80,
+sdo_sigma_a(1) = 0.0001,
+sdo_weight_a(1) = 1.0,
+
+sdo_data_a(2) = 0.10,
+sdo_sigma_a(2) = 0.0001,
+sdo_weight_a(2) = 1.0,
+
+n_prior = 2
+
+prior_name(1) = 'rmnc00',
+prior_param_name(1) = 'rmnc',
+prior_indices(1,1) = 1,
+prior_indices(1,2) = 15,
+prior_units(1) = 'm'
+
+prior_name(2) = 'zmnc00',
+prior_param_name(2) = 'zmnc',
+prior_indices(2,1) = 1,
+prior_indices(2,2) = 15,
+prior_units(2) = 'm'
+
+&END

@@ -1,0 +1,60 @@
+ &INDATA
+! VMEC execution parameters.
+ mgrid_file = 'mgrid_simple_kp36.nc'
+ LFORBAL = .False.
+ LFREEB = .True.
+ DELT = 0.7
+ TCON0 = 2.0
+ NFP = 1
+ NS_ARRAY = 100
+!NS_ARRAY = 15
+ FTOL_ARRAY = 1e-20
+!FTOL_ARRAY = 1.0E-18
+ NITER = 150000
+ NSTEP = 200
+!NSTEP = 1
+ NTOR = 0
+ MPOL = 3
+ NZETA = 36
+ NVACSKIP = 9
+ LASYM = .False.
+ OMP_NUM_THREADS = 1
+! Coil Currents. (HF, TVF, OH, SVF, RF, TF, VV, HCF)
+ EXTCUR = -3263440.0 2*-886302.0 -3263440.0 2*1.0
+! Fitting parameters.
+ GAMMA = 0.0
+ phiedge = 0.577055
+ BLOAT = 1.0
+! Initial Position.
+ RAXIS = 0.0
+ RAXIS(0) = 1.0
+ ZAXIS = 0.0
+! Plasma current parameters.
+ RBC = 0.0
+ RBC(0,0) = 1.0
+ RBC(0,1) = 0.01
+ ZBS = 0.0
+ ZBS(0,1) = 0.01
+ NCURR = 1
+ curtor = 1699994.663611
+ pcurr_type = 'akima_spline_I'
+! Plasma pressure parameters
+ SPRES_PED = 1.0
+ PRES_SCALE = 1.0
+ pmass_type = 'akima_spline'
+ ac_aux_s = 0.0
+ ac_aux_s(2) = 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+ ac_aux_f = 0.0
+ ac_aux_f(2) = 390504.03714959114 718154.9200936704 990035.4501035323 
+ 1210106.3685736654 1382444.579913724 1511609.3435073476 1602633.9167146788 
+ 1660734.1117084883 1691267.0575605326 1699994.663611
+ am_aux_f = 0.0
+ am_aux_f(1) = 624538.650231
+ am_aux_f(2) = 440997.0488205726 303986.86169486813 202168.30574252555 
+ 128346.92204866155 76427.01135000048 41656.53664175657 19786.901974601962 
+ 7268.099431950281 1435.8252164256128
+ am_aux_s = 0.0
+ am_aux_s(2) = 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+ /
+$
+

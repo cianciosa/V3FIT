@@ -1,0 +1,140 @@
+&INDATA
+!  VMEC Namelist Input File for the MST Reversed Field Pinch
+
+OMP_NUM_THREADS = 4,
+
+!  Type of equilibrium
+LRFP = .TRUE.,
+!LMOVE_AXIS = .FALSE.
+LFREEB = .FALSE.,
+MGRID_FILE= 'none',
+LFORBAL = .FALSE.,
+NFP = 5,
+
+! Grid sizes and Convergence tolerance
+MPOL = 9,
+NTOR = 6,
+NS_ARRAY = 51
+FTOL_ARRAY = 1.E-13
+
+! Convergence Parameters
+DELT = 0.5,
+NITER = 20000,
+NSTEP =  200,
+
+!  Current / Iota profile
+NCURR = 0,
+PIOTA_TYPE = 'cubic_spline'
+
+AI_AUX_S = 0., 0.295, 0.6, .95, 1.
+AI_AUX_F = 0.155, 0.159, .12,  0.02,  0.0001
+
+
+!  Pressure profile
+
+PMASS_TYPE='cubic_spline'  !testing MST profile
+AM_AUX_S = 0.0, 0.15, 0.409, 0.7, 0.8, 1.0  ! More realistic
+AM_AUX_F = 1100., 1140., 999.7, 672.5, 180., 2.  ! Fit to MST params
+
+GAMMA = 0.0000000
+
+!  Size of Plasma
+  PHIEDGE = 0.1198
+!  CURTOR = 591000.
+
+!  Magnetic Axis guess, and Outer Flux Surface.
+  RAXIS_CC=  1.55  0.14
+  ZAXIS_CS=  0.0  -0.14
+  RBC(0,0) =   1.51
+  ZBS(0,0) =   0.0
+  RBC(0,1) =   0.5   ! n=0, m=1, due to Shafranov and n=NFP mode
+  ZBS(0,1) =   0.499
+  RBC(1,0) =   -0.0002  ! n=1, m=0, due to m=1, n=NFP
+  ZBS(1,0) =   -0.0004
+
+/
+2013-01-15 JJK input.SHAxTest_28
+   Settled on better base conditions, cleaned up what is crap and what matters. Coupled with better magnetics inputs, this file is working quite well.
+
+2012-09-14 JJK input.SHAx1
+   Settled on base initial conditions, cleaned up file.
+
+2012-06-22 JDH input.MST_e3
+   Moved intial parameters, for ER test with simulated data, from _e2 results.
+
+2012-06-22 JDH input.MST_e2
+   Added lmove_axis=.F.
+   Per email from SPH on 2012-06-12
+   "...setting lmove_axis=F PREVENTS VMEC from shifting the axis to improve
+   the initial forces, so the nonzero n’s are not initially cancelled and the
+   equilibrium can go to the RFP helical state."
+   
+2012-06-21 JDH input.MST_e1
+   Rearranged order, but didn't change any parameters.
+
+2011-11-29 JDH input.MST_d8
+   Changed name from input.RFX_28218_200_5_d8
+
+2011-11-29 JDH input.RFX_28218_200_5_b7
+  _b6 worked. Decrease major radius from 1.99 to 1.9. Change axis guess
+  
+  _b8 - RBC00 from 1.9 to 1.8
+  _b9 - RBC00 from 1.8 to 1.7
+  _c1 - change NFP from 7 to 6, rescale the iota
+  _c2 - RBC00 from 1.7 to 1.6
+  _c3 - RBC00 from 1.6 to 1.5
+  _c4 - change NFP from 6 to 5, rescale the iota
+  _c5 - Decrease RBC and ZBS 1-0, to make boundary more circular.
+  _c6 - Decrease RBC and ZBS 1-0 to 0., to make boundary circular.
+  _c7 - c6 didn't work. Go more slowly, 
+        RBC-ZBS(1,0) from 0.005 to 0.003
+  _c8 - RBC-ZBS(1,0) from 0.003 to 0.002
+  _c9 - Start to add some pressure. Goal is MST value of beta total = 0.025
+        RBC-ZBS(1,0)      pres_scale       beta          Axis r(1)        Time (s)
+  _c9     0.002              100.           0.001879        1.8879E-01
+  _d1     0.002              500.           0.009527        2.0426E-01
+  _d2     0.002             1000.           0.019365        2.2014E-01      108.17
+  _d3     0.002             1300.           0.025406        2.2834E-01      285.34
+  _d4     0.001             1300.           DID NOT CONVERGE                302
+  _d5     0.001             1000.           DID NOT CONVERGE 
+  _d6     0.001              500.           0.009515        2.0258E-01       80.
+  _d7     0.000              500.           CONVERGED AXISYMMETRIC
+  _d8     0.002              500.           0.009527        2.0428E-01       81.89        
+      (_d8 - back to a more robust case - very similar to _d1)
+
+2011-11-29 JDH input.RFX_28218_200_5_b6
+  _b5 worked. Try
+  1) truncate extra digits, move slightly in MST direction, geometry.
+
+2011-11-28 JDH input.RFX_28218_200_5_b5
+  _b4 worked. Try
+  1) Change phiedge to MST value
+  
+2011-11-28 JDH input.RFX_28218_200_5_b4
+   _b3 worked. Try
+   1) Change sign of iota
+   2) Change sign of ZAXIS_CS(2)
+   3) Changes sign of ZBS(1,0)
+
+2011-11-28 JDH input.RFX_28218_200_5_b3
+   _b2 was axisymmetric. Move more slowly.   
+   1) NTOR = 6
+   2) Axis guess - only 2 terms (instead of 3)
+
+2011-11-28 JDH input.RFX_28218_200_5_b2
+   _b1 was axisymmetric. Move more slowly.
+   1) Make boundary circular, RBC and ZBS(10) = 0.
+   2) NTOR = 6
+
+
+2011-11-28 JDH input.RFX_28218_200_5_b1
+   Move toward MST
+   1) Make boundary circular, RBC and ZBS(10) = 0.
+   2) NTOR = 6
+   3) Change sign of iota
+   4) Change sign of ZAXIS_CS(2)
+
+2011-11-28 JDH input.RFX_28218_200_5_a1
+   Started from input.RFX_28218_200_5, from DT
+   Changed NTOR from 6 to 1
+   a2 - 2

@@ -1,0 +1,15 @@
+ &v3r_coils
+  idrfun              = 'unit_tests'
+  name_diagnostic_dot = 'magnetic.dot'
+  l_read_coils_dot    = F
+  rmin                = 0.4
+  rmax                = 1.1
+  zmin                =-0.26
+  zmax                = 0.26
+  ir                  = 101
+  jz                  = 101
+  kp                  = 101
+  len_integrate_ddc   = 0.001
+  lstell_sym          = F
+  n_field_periods_nli = 1
+/

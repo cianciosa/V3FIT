@@ -1,0 +1,38 @@
+ &v3fit_main_nli
+ vmec_nli_filename = 'input.vmec'
+! Reconstruction Controls
+ my_task = 'reconstruct'
+ nrstep = 20
+ dg2_stop = 1.0E-6
+ cut_svd = 2e-05
+ cut_eff = 0.0001
+ cut_marg_eff = 0.0
+ cut_delta_a = 0.0
+ cut_dg2 = 0.0
+ astep_max = 100.0
+ step_type = 'lm'
+ use_central_diff = .False.
+
+! Model Specification
+! Reconstruction Parameters
+ n_rp = 1
+ rp_type(1) = 'phiedge'
+ rp_vrnc(1) = 0.0005
+ rp_index(1) = 0
+ rp_index2(1) = 0
+
+! Reconstruction Signals
+
+! Limiter Grid
+ limiter_grid_file = 'limiter.dat.nc'
+ lif_on_edge(1) = .true.
+ sdo_data_a(1) = 0.0
+ sdo_sigma_a(1) = 0.005
+ sdo_weight_a(1) = 1.0
+
+! Total Signals
+ n_sdata_o = 1
+ model_eq_type = 'vmec'
+ /
+$
+
