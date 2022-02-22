@@ -471,7 +471,7 @@
 !>  @param[in] this A @ref signal_class instance.
 !>  @returns A string describing the signal type.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_type(this)
+      RECURSIVE FUNCTION equilibrium_get_type(this)
 
       IMPLICIT NONE
 
