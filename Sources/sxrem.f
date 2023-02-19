@@ -77,56 +77,87 @@
 !-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the callback function.
 !-------------------------------------------------------------------------------
-      TYPE sxrem_context
+      TYPE, EXTENDS(integration_path_context_class) :: sxrem_context
 !>  The index of the emissivity profile model.
          INTEGER                      :: profile_number
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER :: model => null()
+      CONTAINS
+         PROCEDURE                    :: run => sxr_function
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the callback function.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(sxrem_context) :: sxrem_ti_context
+      CONTAINS
+         PROCEDURE :: run => ti_function
       END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function for point.
 !-------------------------------------------------------------------------------
-      TYPE sxrem_gp_context_i
-!>  The index of the emissivity profile model.
-         INTEGER                      :: profile_number
-!>  Reference to a @ref model::model_class object.
-         CLASS (model_class), POINTER :: model => null()
+      TYPE, EXTENDS(sxrem_context) :: sxrem_gp_context_i
 !>  Position index.
-         INTEGER                      :: i
+         INTEGER   :: i
 !>  Gaussian process kernel flags.
-         INTEGER                      :: flags = model_state_all_off
+         INTEGER   :: flags = model_state_all_off
+      CONTAINS
+         PROCEDURE :: run => gp_emiss_function_i
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function for point.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(sxrem_gp_context_i) :: sxrem_gp_ti_context_i
+      CONTAINS
+         PROCEDURE :: run => gp_ti_function_i
       END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function for signal.
 !-------------------------------------------------------------------------------
-      TYPE sxrem_gp_context_s
-!>  The index of the emissivity profile model.
-         INTEGER                       :: profile_number
-!>  Reference to a @ref model::model_class object.
-         CLASS (model_class), POINTER  :: model => null()
+      TYPE, EXTENDS(sxrem_context) :: sxrem_gp_context_s
 !>  Second signal
          CLASS (signal_class), POINTER :: signal => null()
 !>  Gaussian process kernel flags.
          INTEGER                       :: flags
+      CONTAINS
+         PROCEDURE                     :: run => gp_emiss_function_s
       END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function for signal.
 !-------------------------------------------------------------------------------
-      TYPE sxrem_gp_context_x
-!>  The index of the emissivity profile model.
-         INTEGER                      :: profile_number
-!>  Reference to a @ref model::model_class object.
-         CLASS (model_class), POINTER :: model => null()
+      TYPE, EXTENDS(sxrem_gp_context_s) :: sxrem_gp_ti_context_s
+      CONTAINS
+         PROCEDURE :: run => gp_ti_function_s
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function for signal.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(sxrem_context) :: sxrem_gp_context_x
 !>  First position.
-         REAL (rprec), DIMENSION(3)   :: xcart
+         REAL (rprec), DIMENSION(3) :: xcart
 !>  Gaussian process kernel flags.
-         INTEGER                      :: flags
+         INTEGER                    :: flags
+      CONTAINS
+         PROCEDURE                  :: run => gp_emiss_function_x
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function for signal.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(sxrem_gp_context_x) :: sxrem_gp_ti_context_x
+      CONTAINS
+         PROCEDURE :: run => gp_ti_function_x
       END TYPE
 
 !*******************************************************************************
@@ -310,9 +341,7 @@
       REAL (rprec), DIMENSION(4), INTENT(in)   :: last_value
 
 ! local variables
-      CHARACTER(len=1), ALLOCATABLE            :: context(:)
-      INTEGER                                  :: context_length
-      TYPE (sxrem_context)                     :: sxr_context
+      CLASS (sxrem_context), ALLOCATABLE       :: context
       REAL (rprec)                             :: start_time
 
 !  Start of executable code
@@ -327,20 +356,16 @@
      &                               (this%profile_number - 1)) .or.           &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
-!  The relevant data for the soft x-ray context.
-         sxr_context%profile_number = this%profile_number
-         sxr_context%model => a_model
+         ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-         context_length = SIZE(TRANSFER(sxr_context, context))
-         ALLOCATE(context(context_length))
-         context = TRANSFER(sxr_context, context)
+!  The relevant data for the soft x-ray context.
+         context%profile_number = this%profile_number
+         context%model => a_model
 
          sxrem_emiss_get_modeled_signal = 0.0
          sxrem_emiss_get_modeled_signal(1) =                                   &
-     &      path_integrate(a_model%int_params, this%chord_path,                &
-     &                     sxr_function, context)*this%geo
+     &      a_model%int_params%integrate(this%chord_path, context) *           &
+     &      this%geo
 
          DEALLOCATE(context)
 
@@ -380,9 +405,7 @@
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
 ! local variables
-      CHARACTER(len=1), ALLOCATABLE           :: context(:)
-      INTEGER                                 :: context_length
-      TYPE (sxrem_context)                    :: sxr_context
+      CLASS (sxrem_ti_context), ALLOCATABLE   :: context
       REAL (rprec)                            :: start_time
 
 !  Start of executable code
@@ -398,19 +421,14 @@
      &                               (this%profile_number - 1)) .or.           &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
-!  The relevant data for the soft x-ray context.
-         sxr_context%profile_number = this%profile_number
-         sxr_context%model => a_model
+         ALLOCATE(context)
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-         context_length = SIZE(TRANSFER(sxr_context, context))
-         ALLOCATE(context(context_length))
-         context = TRANSFER(sxr_context, context)
+!  The relevant data for the soft x-ray context.
+         context%profile_number = this%profile_number
+         context%model => a_model
 
          sxrem_ti_get_modeled_signal(1) =                                      &
-     &      path_integrate(a_model%int_params, this%chord_path,                &
-     &                     ti_function, context)
+     &      a_model%int_params%integrate(this%chord_path, context)
 
          DEALLOCATE(context)
 
@@ -505,36 +523,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                          :: sxrem_emiss_get_gp_i
-      CLASS (sxrem_emiss_class), INTENT(in) :: this
-      CLASS (model_class), POINTER          :: a_model
-      INTEGER, INTENT(in)                   :: i
-      INTEGER, INTENT(in)                   :: flags
+      REAL (rprec)                            :: sxrem_emiss_get_gp_i
+      CLASS (sxrem_emiss_class), INTENT(in)   :: this
+      CLASS (model_class), POINTER            :: a_model
+      INTEGER, INTENT(in)                     :: i
+      INTEGER, INTENT(in)                     :: flags
 
 !  local variables
-      REAL (rprec)                          :: start_time
-      CHARACTER(len=1), ALLOCATABLE         :: context(:)
-      INTEGER                               :: context_length
-      TYPE (sxrem_gp_context_i)             :: gp_context
+      REAL (rprec)                            :: start_time
+      CLASS (sxrem_gp_context_i), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%i = i
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%i = i
+      context%flags = flags
 
-      sxrem_emiss_get_gp_i = path_integrate(a_model%int_params,                &
-     &                                      this%chord_path,                   &
-     &                                      gp_emiss_function_i,               &
-     &                                      context)*this%geo
+      sxrem_emiss_get_gp_i =                                                   &
+     &   a_model%int_params%integrate(this%chord_path, context) *              &
+     &   this%geo
 
       DEALLOCATE(context)
 
@@ -562,35 +573,28 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: sxrem_ti_get_gp_i
-      CLASS (sxrem_ti_class), INTENT(in) :: this
-      CLASS (model_class), POINTER       :: a_model
-      INTEGER, INTENT(in)                :: i
-      INTEGER, INTENT(in)                :: flags
+      REAL (rprec)                               :: sxrem_ti_get_gp_i
+      CLASS (sxrem_ti_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER               :: a_model
+      INTEGER, INTENT(in)                        :: i
+      INTEGER, INTENT(in)                        :: flags
 
 !  local variables
-      REAL (rprec)                       :: start_time
-      CHARACTER(len=1), ALLOCATABLE      :: context(:)
-      INTEGER                            :: context_length
-      TYPE (sxrem_gp_context_i)          :: gp_context
+      REAL (rprec)                               :: start_time
+      CLASS (sxrem_gp_ti_context_i), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%i = i
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%i = i
+      context%flags = flags
 
-      sxrem_ti_get_gp_i = path_integrate(a_model%int_params,                   &
-     &                                   this%chord_path,                      &
-     &                                   gp_ti_function_i, context)
+      sxrem_ti_get_gp_i =                                                      &
+     &   a_model%int_params%integrate(this%chord_path, context)
 
       DEALLOCATE(context)
 
@@ -618,36 +622,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                          :: sxrem_emiss_get_gp_s
-      CLASS (sxrem_emiss_class), INTENT(in) :: this
-      CLASS (model_class), POINTER          :: a_model
-      CLASS (signal_class), POINTER         :: signal
-      INTEGER, INTENT(in)                   :: flags
+      REAL (rprec)                            :: sxrem_emiss_get_gp_s
+      CLASS (sxrem_emiss_class), INTENT(in)   :: this
+      CLASS (model_class), POINTER            :: a_model
+      CLASS (signal_class), POINTER           :: signal
+      INTEGER, INTENT(in)                     :: flags
 
 !  local variables
-      REAL (rprec)                          :: start_time
-      CHARACTER(len=1), ALLOCATABLE         :: context(:)
-      INTEGER                               :: context_length
-      TYPE (sxrem_gp_context_s)             :: gp_context
+      REAL (rprec)                            :: start_time
+      CLASS (sxrem_gp_context_s), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%signal => signal
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%signal => signal
+      context%flags = flags
 
-      sxrem_emiss_get_gp_s = path_integrate(a_model%int_params,                &
-     &                                      this%chord_path,                   &
-     &                                      gp_emiss_function_s,               &
-     &                                      context)*this%geo
+      sxrem_emiss_get_gp_s =                                                   &
+     &   a_model%int_params%integrate(this%chord_path, context) *              &
+     &   this%geo
 
       DEALLOCATE(context)
 
@@ -674,35 +671,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: sxrem_ti_get_gp_s
-      CLASS (sxrem_ti_class), INTENT(in) :: this
-      CLASS (model_class), POINTER       :: a_model
-      CLASS (signal_class), POINTER      :: signal
-      INTEGER, INTENT(in)                :: flags
+      REAL (rprec)                               :: sxrem_ti_get_gp_s
+      CLASS (sxrem_ti_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER               :: a_model
+      CLASS (signal_class), POINTER              :: signal
+      INTEGER, INTENT(in)                        :: flags
 
 !  local variables
-      REAL (rprec)                       :: start_time
-      CHARACTER(len=1), ALLOCATABLE      :: context(:)
-      INTEGER                            :: context_length
-      TYPE (sxrem_gp_context_s)          :: gp_context
+      REAL (rprec)                               :: start_time
+      CLASS (sxrem_gp_ti_context_s), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%signal => signal
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%signal => signal
+      context%flags = flags
 
-      sxrem_ti_get_gp_s = path_integrate(a_model%int_params,                   &
-     &                                   this%chord_path,                      &
-     &                                   gp_ti_function_s, context)
+
+      sxrem_ti_get_gp_s =                                                      &
+     &    a_model%int_params%integrate(this%chord_path, context)
 
       DEALLOCATE(context)
 
@@ -730,35 +721,30 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: sxrem_emiss_get_gp_x
-      CLASS (sxrem_emiss_class), INTENT(in)  :: this
-      CLASS (model_class), POINTER           :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-      INTEGER, INTENT(in)                    :: flags
+      REAL (rprec)                            :: sxrem_emiss_get_gp_x
+      CLASS (sxrem_emiss_class), INTENT(in)   :: this
+      CLASS (model_class), POINTER            :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: x_cart
+      INTEGER, INTENT(in)                     :: flags
 
 !  local variables
-      REAL (rprec)                           :: start_time
-      CHARACTER (len=1), ALLOCATABLE         :: context(:)
-      INTEGER                                :: context_length
-      TYPE (sxrem_gp_context_x)              :: gp_context
+      REAL (rprec)                            :: start_time
+      CLASS (sxrem_gp_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%xcart = x_cart
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%xcart = x_cart
 
-      sxrem_emiss_get_gp_x = path_integrate(a_model%int_params,                &
-     &                                      this%chord_path,                   &
-     &                                      gp_emiss_function_x,               &
-     &                                      context)*this%geo
+      sxrem_emiss_get_gp_x =                                                   &
+     &   a_model%int_params%integrate(this%chord_path, context) *              &
+     &   this%geo
+
+      DEALLOCATE(context)
 
       CALL this%scale_and_offset(a_model, sxrem_emiss_get_gp_x)
 
@@ -784,35 +770,30 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: sxrem_ti_get_gp_x
-      CLASS (sxrem_ti_class), INTENT(in)     :: this
-      CLASS (model_class), POINTER           :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-      INTEGER, INTENT(in)                    :: flags
+      REAL (rprec)                               :: sxrem_ti_get_gp_x
+      CLASS (sxrem_ti_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER               :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)     :: x_cart
+      INTEGER, INTENT(in)                        :: flags
 
 !  local variables
-      REAL (rprec)                           :: start_time
-      CHARACTER (len=1), ALLOCATABLE         :: context(:)
-      INTEGER                                :: context_length
-      TYPE (sxrem_gp_context_x)              :: gp_context
+      REAL (rprec)                               :: start_time
+      CLASS (sxrem_gp_ti_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%profile_number = this%profile_number
-      gp_context%model => a_model
-      gp_context%xcart = x_cart
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast data to a context. This is the equivalent to casting to a void pointer
-!  in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%profile_number = this%profile_number
+      context%model => a_model
+      context%xcart = x_cart
+      context%flags = flags
 
-      sxrem_ti_get_gp_x = path_integrate(a_model%int_params,                   &
-     &                                   this%chord_path,                      &
-     &                                   gp_ti_function_x, context)
+      sxrem_ti_get_gp_x =                                                      &
+     &   a_model%int_params%integrate(this%chord_path, context)
+
+      DEALLOCATE(context)
 
       CALL this%scale_and_offset(a_model, sxrem_ti_get_gp_x)
 
@@ -827,8 +808,7 @@
 !>  @brief Soft x-ray callback function.
 !>
 !>  Returns the value of the soft x-ray emissivity times the change in path
-!>  length. This function is passed to @ref integration_path::path_integrate to
-!>  act as a callback. The soft x-ray emissivity is provided by
+!>  length. The soft x-ray emissivity is provided by
 !>  @ref model::model_get_sxrem.
 !>
 !>  @see integration_path
@@ -846,22 +826,20 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: sxr_function
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (sxrem_context), INTENT(in)      :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
       REAL (rprec), INTENT(in)               :: dx
 
 ! local variables
-      TYPE (sxrem_context)                   :: sxr_context
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      sxr_context = TRANSFER(context, sxr_context)
-      sxr_function = sxr_context%model%get_sxrem(                              &
-     &                  xcart, sxr_context%profile_number)*dx
+      sxr_function = context%model%get_sxrem(                                  &
+     &                  xcart, context%profile_number)*dx
 
       CALL profiler_set_stop_time('sxr_function', start_time)
 
@@ -871,10 +849,9 @@
 !>  @brief Ion temperature callback function.
 !>
 !>  Returns the value of the ion temperature times the soft x-ray emissivity
-!>  times the change in path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The soft x-ray
-!>  emissivity is provided by @ref model::model_get_sxrem and the ion
-!>  temperature is provided by @ref model::model_get_ti.
+!>  times the change in path length. The soft x-ray emissivity is provided by
+!>  @ref model::model_get_sxrem and the ion temperature is provided by
+!>  @ref model::model_get_ti.
 !>
 !>  @see integration_path
 !>
@@ -891,23 +868,21 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: ti_function
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (sxrem_ti_context), INTENT(in)   :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
       REAL (rprec), INTENT(in)               :: dx
 
 ! local variables
-      TYPE (sxrem_context)                   :: sxr_context
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      sxr_context = TRANSFER(context, sxr_context)
-      ti_function = sxr_context%model%get_sxrem(                               &
-     &                 xcart, sxr_context%profile_number)                      &
-     &            * sxr_context%model%get_ti(xcart)*dx
+      ti_function = context%model%get_sxrem(                                   &
+     &                 xcart, context%profile_number)                          &
+     &            * context%model%get_ti(xcart)*dx
 
       CALL profiler_set_stop_time('ti_function', start_time)
 
@@ -918,9 +893,8 @@
 !>  point kernel evaluation.
 !>
 !>  Returns the value of the soft x-ray emission guassian process kernel times
-!>  the change in path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The soft x-ray
-!>  kernel is provided by @ref model::model_get_gp_sxrem.
+!>  the change in path length. The soft x-ray kernel is provided by
+!>  @ref model::model_get_gp_sxrem.
 !>
 !>  @see integration_path
 !>
@@ -937,23 +911,21 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: gp_emiss_function_i
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (sxrem_gp_context_i), INTENT(in) :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
       REAL (rprec), INTENT(in)               :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_i)              :: gp_context
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
       gp_emiss_function_i =                                                    &
-     &   gp_context%model%get_gp_sxrem(xcart, gp_context%i,                    &
-     &                                 gp_context%profile_number)*dx
+     &   context%model%get_gp_sxrem(xcart, context%i,                          &
+     &                              context%profile_number)*dx
 
       CALL profiler_set_stop_time('gp_emiss_function_i', start_time)
 
@@ -964,10 +936,9 @@
 !>  evaluation.
 !>
 !>  Returns the value of the soft x-ray guassian process kernel times the change
-!>  in path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The soft x-ray
-!>  kernel is provided by @ref model::model_get_gp_sxrem. The ti kernel is
-!>  provided by @ref model::model_get_gp_ti.
+!>  in path length. The soft x-ray kernel is provided by
+!>  @ref model::model_get_gp_sxrem. The ti kernel is provided by
+!>  @ref model::model_get_gp_ti.
 !>
 !>  @see integration_path
 !>
@@ -984,32 +955,31 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_ti_function_i
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                              :: gp_ti_function_i
+      CLASS (sxrem_gp_ti_context_i), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: dxcart
+      REAL (rprec), INTENT(in)                  :: length
+      REAL (rprec), INTENT(in)                  :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_i)              :: gp_context
-      REAL (rprec)                           :: start_time
+      TYPE (sxrem_gp_context_i)                 :: gp_context
+      REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-      IF (BTEST(gp_context%flags, model_state_sxrem_flag +                     &
-     &                            (gp_context%profile_number - 1))) THEN
+      IF (BTEST(context%flags, model_state_sxrem_flag +                        &
+     &          (context%profile_number - 1))) THEN
          gp_ti_function_i =                                                    &
-     &      gp_context%model%get_gp_sxrem(xcart, gp_context%i,                 &
-     &                                    gp_context%profile_number) *         &
-     &      gp_context%model%get_ti(xcart)
-      ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
-         gp_ti_function_i = gp_context%model%get_gp_ti(                        &
-     &                         xcart, gp_context%i)                            &
-     &                    * gp_context%model%get_sxrem(                        &
-     &                         xcart, gp_context%profile_number)
+     &      context%model%get_gp_sxrem(xcart, context%i,                       &
+     &                                 context%profile_number) *               &
+     &      context%model%get_ti(xcart)
+      ELSE IF (BTEST(context%flags, model_state_ti_flag)) THEN
+         gp_ti_function_i = context%model%get_gp_ti(                           &
+     &                         xcart, context%i)                               &
+     &                    * context%model%get_sxrem(                           &
+     &                         xcart, context%profile_number)
       ELSE
          gp_ti_function_i = 0.0
       END IF
@@ -1043,27 +1013,23 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: gp_emiss_function_s
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (sxrem_gp_context_s), INTENT(in) :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
       REAL (rprec), INTENT(in)               :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_s)              :: gp_context
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-
-      gp_emiss_function_s = gp_context%signal%get_gp(gp_context%model,         &
-     &                                               xcart,                    &
-     &                                               gp_context%flags)         &
+      gp_emiss_function_s = context%signal%get_gp(context%model,               &
+     &                                            xcart, context%flags)        &
      &                    * dx
 
-      CALL profiler_set_stop_time('gp_function_s', start_time)
+      CALL profiler_set_stop_time('gp_emiss_function_s', start_time)
 
       END FUNCTION
 
@@ -1088,34 +1054,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_ti_function_s
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                              :: gp_ti_function_s
+      CLASS (sxrem_gp_ti_context_s), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: dxcart
+      REAL (rprec), INTENT(in)                  :: length
+      REAL (rprec), INTENT(in)                  :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_s)              :: gp_context
-      REAL (rprec)                           :: start_time
+      REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-
-      IF (BTEST(gp_context%flags, model_state_sxrem_flag +                     &
-     &                            (gp_context%profile_number - 1))) THEN
-         gp_ti_function_s = gp_context%signal%get_gp(gp_context%model,         &
-     &                                               xcart,                    &
-     &                                               gp_context%flags)         &
-     &                    * gp_context%model%get_ti(xcart)
-      ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
-         gp_ti_function_s = gp_context%signal%get_gp(gp_context%model,         &
-     &                                               xcart,                    &
-     &                                               gp_context%flags)         &
-     &                    * gp_context%model%get_sxrem(                        &
-     &                         xcart, gp_context%profile_number)
+      IF (BTEST(context%flags, model_state_sxrem_flag +                        &
+     &                         (context%profile_number - 1))) THEN
+         gp_ti_function_s = context%signal%get_gp(context%model,               &
+     &                                            xcart, context%flags)        &
+     &                    * context%model%get_ti(xcart)
+      ELSE IF (BTEST(context%flags, model_state_ti_flag)) THEN
+         gp_ti_function_s = context%signal%get_gp(context%model,               &
+     &                                            xcart, context%flags)        &
+     &                    * context%model%get_sxrem(                           &
+     &                         xcart, context%profile_number)
       ELSE
          gp_ti_function_s = 0.0
       END IF
@@ -1148,24 +1109,22 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: gp_emiss_function_x
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (sxrem_gp_context_x), INTENT(in) :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
       REAL (rprec), INTENT(in)               :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_x)              :: gp_context
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  This is the second signal so put xcart in the second position.
-      gp_context = TRANSFER(context, gp_context)
       gp_emiss_function_x =                                                    &
-     &   gp_context%model%get_gp_sxrem(xcart, gp_context%xcart,                &
-     &                                 gp_context%profile_number)*dx
+     &   context%model%get_gp_sxrem(xcart, context%xcart,                      &
+     &                              context%profile_number)*dx
 
       CALL profiler_set_stop_time('gp_emiss_function_x', start_time)
 
@@ -1193,34 +1152,31 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_ti_function_x
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                              :: gp_ti_function_x
+      CLASS (sxrem_gp_ti_context_x), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)    :: dxcart
+      REAL (rprec), INTENT(in)                  :: length
+      REAL (rprec), INTENT(in)                  :: dx
 
 ! local variables
-      TYPE (sxrem_gp_context_x)              :: gp_context
-      REAL (rprec)                           :: start_time
+      REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  This is the second signal so put xcart in the second position.
-      gp_context = TRANSFER(context, gp_context)
-      IF (BTEST(gp_context%flags, model_state_sxrem_flag +                     &
-     &                            (gp_context%profile_number - 1))) THEN
+      IF (BTEST(context%flags, model_state_sxrem_flag +                        &
+     &                         (context%profile_number - 1))) THEN
          gp_ti_function_x =                                                    &
-     &      gp_context%model%get_gp_sxrem(xcart,                               &
-     &                                    gp_context%xcart,                    &
-     &                                    gp_context%profile_number) *         &
-     &      gp_context%model%get_ti(xcart)
-      ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
-         gp_ti_function_x = gp_context%model%get_gp_ti(                        &
-     &                         xcart, gp_context%xcart)                        &
-     &                    * gp_context%model%get_sxrem(                        &
-     &                         xcart, gp_context%profile_number)
+     &      context%model%get_gp_sxrem(xcart, context%xcart,                   &
+     &                                 context%profile_number) *               &
+     &      context%model%get_ti(xcart)
+      ELSE IF (BTEST(context%flags, model_state_ti_flag)) THEN
+         gp_ti_function_x = context%model%get_gp_ti(                           &
+     &                         xcart, context%xcart)                           &
+     &                    * context%model%get_sxrem(                           &
+     &                         xcart, context%profile_number)
       ELSE
          gp_ti_function_x = 0.0
       END IF
