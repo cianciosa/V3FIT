@@ -199,14 +199,15 @@
      &                             'equilibrium convergence'
 
 #if defined (MPI_OPT)
-      converged = model_converge(context%model, eq_steps,                      &
-     &                           context%runlog_iou,                           &
-     &                           context%equilibrium_comm, 'All')
+      converged = context%model%converge(eq_steps,                             &
+     &                                   context%runlog_iou,                   &
+     &                                   context%equilibrium_comm,             &
+     &                                   'All')
       CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                         &
      &               context%equilibrium_comm, error)
 #else
-      converged = model_converge(context%model, eq_steps,                      &
-     &                           context%runlog_iou, 0, 'All')
+      converged = context%model%converge(eq_steps,                             &
+     &                                   context%runlog_iou, 0, 'All')
 #endif
 
       CALL v3fit_context_init_data(context, eq_steps)
@@ -260,14 +261,14 @@
       WRITE (*,*) ' *** Starting initial equilibrium convergence (v3p)'
       WRITE (context%runlog_iou,*) ' *** Starting initial ' //                 &
      &                             'equilibrium convergence'
-      converged = model_converge(context%model, eq_steps,                      &
-     &                           context%runlog_iou,                           &
+      converged = context%model%converge(eq_steps, context%runlog_iou,         &
 #if defined(MPI_OPT)
-     &                           context%equilibrium_comm, 'All')
+     &                                   context%equilibrium_comm,             &
+     &                                   'All')
       CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                         &
      &               context%equilibrium_comm, error)
 #else
-     &                           0, 'All')
+     &                                   0, 'All')
 #endif
 
 !  Set the guassian processes

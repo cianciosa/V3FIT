@@ -107,7 +107,7 @@
 
 !  Declare Arguments
       TYPE (gaussp_class), POINTER         :: gaussp_construct
-      TYPE (model_class), INTENT(in)       :: a_model
+      CLASS (model_class), INTENT(in)      :: a_model
       INTEGER, INTENT(in)                  :: n_signals
       INTEGER, INTENT(in)                  :: profile_index
       CHARACTER(len=*), INTENT(in)         :: gaussp_type
@@ -139,14 +139,14 @@
       SELECT CASE (TRIM(gaussp_type))
 
          CASE ('sxrem')
-            n_params = model_get_gp_sxrem_num_hyper_param(a_model,             &
-     &                                                    profile_index)
+            n_params =                                                         &
+     &         a_model%get_gp_sxrem_num_hyper_param(profile_index)
             gaussp_construct%flags = IBSET(gaussp_construct%flags,             &
      &                                     model_state_sxrem_flag +            &
      &                                     profile_index - 1)
             gaussp_construct%profile_index = profile_index
             gaussp_construct%fpoints =>                                        &
-     &         model_get_sxrem_af(a_model, profile_index)
+     &         a_model%get_sxrem_af(profile_index)
             param_name = 'pp_sxrem_b_a'
             ALLOCATE(indices(data_max_indices,n_params))
             indices = 0
@@ -158,10 +158,10 @@
             WRITE (log_file,1001) 'sxrem', profile_index
 
          CASE ('te')
-            n_params = model_get_gp_te_num_hyper_param(a_model)
+            n_params = a_model%get_gp_te_num_hyper_param()
             gaussp_construct%flags = IBSET(gaussp_construct%flags,             &
      &                                     model_state_te_flag)
-            gaussp_construct%fpoints => model_get_te_af(a_model)
+            gaussp_construct%fpoints => a_model%get_te_af()
             param_name = 'pp_te_b'
             ALLOCATE(indices(data_max_indices,n_params))
             indices = 0
@@ -172,10 +172,10 @@
             WRITE (log_file,1000) 'te'
 
          CASE ('ti')
-            n_params = model_get_gp_te_num_hyper_param(a_model)
+            n_params = a_model%get_gp_te_num_hyper_param()
             gaussp_construct%flags = IBSET(gaussp_construct%flags,             &
      &                                     model_state_ti_flag)
-            gaussp_construct%fpoints => model_get_te_af(a_model)
+            gaussp_construct%fpoints => a_model%get_te_af()
             param_name = 'pp_te_b'
             ALLOCATE(indices(data_max_indices,n_params))
             indices = 0
@@ -186,10 +186,10 @@
             WRITE (log_file,1000) 'ti'
 
          CASE ('ne')
-            n_params = model_get_gp_ne_num_hyper_param(a_model)
+            n_params = a_model%get_gp_ne_num_hyper_param()
             gaussp_construct%flags = IBSET(gaussp_construct%flags,             &
      &                                     model_state_ne_flag)
-            gaussp_construct%fpoints => model_get_ne_af(a_model)
+            gaussp_construct%fpoints => a_model%get_ne_af()
             param_name = 'pp_ne_b'
             ALLOCATE(indices(data_max_indices,n_params))
             indices = 0
@@ -356,7 +356,7 @@
 
 !  Declare Arguments
       TYPE (gaussp_class), INTENT(inout)        :: this
-      TYPE (model_class), POINTER               :: a_model
+      CLASS (model_class), POINTER              :: a_model
 
 !  Local Variables
       INTEGER                                   :: i
@@ -498,7 +498,7 @@
 !  Declare Arguments
       REAL (rprec)                       :: gaussp_get_evidence
       TYPE (gaussp_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER        :: a_model
+      CLASS (model_class), POINTER       :: a_model
 
 !  Local Variables
       CLASS (signal_class), POINTER      :: signal_obj

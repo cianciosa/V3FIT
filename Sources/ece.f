@@ -52,9 +52,9 @@
 !-------------------------------------------------------------------------------
       TYPE ece_context
 !>  The index of the emissivity profile model.
-         REAL (rprec)                :: resonance
+         REAL (rprec)                 :: resonance
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
       END TYPE
 
 !*******************************************************************************
@@ -157,7 +157,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: ece_get_modeled_signal
       CLASS (ece_class), INTENT(inout)        :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -180,7 +180,7 @@
 
          IF (found) THEN
             ece_get_modeled_signal(1) =                                        &
-     &         model_get_te(a_model, ece_get_modeled_signal(2:4))
+     &         a_model%get_te(ece_get_modeled_signal(2:4))
          ELSE
             ece_get_modeled_signal(1) = 0.0
          END IF
@@ -212,7 +212,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)    :: ece_get_cart
       CLASS (ece_class), INTENT(in) :: this
-      TYPE (model_class), POINTER   :: a_model
+      CLASS (model_class), POINTER  :: a_model
       LOGICAL, INTENT(out)          :: found
 
 ! local variables
@@ -330,7 +330,7 @@
 !  Declare Arguments
       REAL (rprec)                  :: ece_get_gp_i
       CLASS (ece_class), INTENT(in) :: this
-      TYPE (model_class), POINTER   :: a_model
+      CLASS (model_class), POINTER  :: a_model
       INTEGER, INTENT(in)           :: i
       INTEGER, INTENT(in)           :: flags
 
@@ -344,7 +344,7 @@
 
       x_cart = this%get_cart(a_model, found)
       IF (found) THEN
-         ece_get_gp_i = model_get_gp_te(a_model, x_cart, i)
+         ece_get_gp_i = a_model%get_gp_te(x_cart, i)
       ELSE
          ece_get_gp_i = 0.0
       END IF
@@ -374,7 +374,7 @@
 !  Declare Arguments
       REAL (rprec)                  :: ece_get_gp_s
       CLASS (ece_class), INTENT(in) :: this
-      TYPE (model_class), POINTER   :: a_model
+      CLASS (model_class), POINTER  :: a_model
       CLASS (signal_class), POINTER :: signal
       INTEGER, INTENT(in)           :: flags
 
@@ -421,7 +421,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: ece_get_gp_x
       CLASS (ece_class), INTENT(in)          :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -435,7 +435,7 @@
 
       y_cart = this%get_cart(a_model, found)
       IF (found) THEN
-         ece_get_gp_x = model_get_gp_te(a_model, y_cart, x_cart)
+         ece_get_gp_x = a_model%get_gp_te(y_cart, x_cart)
       ELSE
          ece_get_gp_x = 0.0
       END IF
