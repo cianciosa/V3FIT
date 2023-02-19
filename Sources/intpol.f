@@ -75,9 +75,23 @@
 !>  function.
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(integration_path_context_class) ::                         &
-     &   intpol_context
+     &   intpol_int_context
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER :: model => null()
+      CONTAINS
+         PROCEDURE                    :: run => int_function
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Struture to hole all memort needed to be sent to the integration callback
+!>  function.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_pol_context
+!>  Reference to a @ref model::model_class object.
+         CLASS (model_class), POINTER :: model => null()
+      CONTAINS
+         PROCEDURE                    :: run => pol_function
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -85,13 +99,31 @@
 !>  callback function of a point.
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(integration_path_context_class) ::                         &
-     &   intpol_gp_context_i
+     &   intpol_gp_int_context_i
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER :: model => null()
 !>  Position index.
          INTEGER                      :: i
 !>  Gaussian process kernel flags.
          INTEGER                      :: flags = model_state_all_off
+      CONTAINS
+         PROCEDURE                    :: run => gp_function_i
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function of a point.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_pol_context_i
+!>  Reference to a @ref model::model_class object.
+         CLASS (model_class), POINTER :: model => null()
+!>  Position index.
+         INTEGER                      :: i
+!>  Gaussian process kernel flags.
+         INTEGER                      :: flags = model_state_all_off
+      CONTAINS
+         PROCEDURE                    :: run => gp_pol_function_i
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -99,13 +131,31 @@
 !>  callback function for signal.
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(integration_path_context_class) ::                         &
-     &   intpol_gp_context_s
+     &   intpol_gp_int_context_s
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER  :: model => null()
 !>  First position.
          CLASS (signal_class), POINTER :: signal => null()
 !>  Gaussian process kernel flags.
          INTEGER                       :: flags = model_state_all_off
+      CONTAINS
+         PROCEDURE                     :: run => gp_function_s
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function for signal.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_pol_context_s
+!>  Reference to a @ref model::model_class object.
+         CLASS (model_class), POINTER  :: model => null()
+!>  First position.
+         CLASS (signal_class), POINTER :: signal => null()
+!>  Gaussian process kernel flags.
+         INTEGER                       :: flags = model_state_all_off
+      CONTAINS
+         PROCEDURE                     :: run => gp_pol_function_s
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -113,11 +163,27 @@
 !>  callback function for position.
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(integration_path_context_class) ::                         &
-     &   intpol_gp_context_x
+     &   intpol_gp_int_context_x
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER :: model => null()
 !>  First position.
          REAL (rprec), DIMENSION(3)   :: xcart
+      CONTAINS
+         PROCEDURE                    :: run => gp_function_x
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Structure to hold all memory needed to be sent to the guassian process
+!>  callback function for position.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_pol_context_x
+!>  Reference to a @ref model::model_class object.
+         CLASS (model_class), POINTER :: model => null()
+!>  First position.
+         REAL (rprec), DIMENSION(3)   :: xcart
+      CONTAINS
+         PROCEDURE                    :: run => gp_pol_function_x
       END TYPE
 
 !*******************************************************************************
@@ -142,7 +208,8 @@
 !-------------------------------------------------------------------------------
 
       PRIVATE :: int_function, pol_function, gp_function_i,                    &
-     &           gp_function_x
+     &           gp_pol_function_i, gp_function_s, gp_pol_function_s,          &
+     &           gp_function_x, gp_pol_function_x
 
       CONTAINS
 !*******************************************************************************
@@ -300,7 +367,7 @@
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
 !  local variables
-      CLASS (intpol_context), ALLOCATABLE     :: context
+      CLASS (intpol_int_context), ALLOCATABLE :: context
       REAL (rprec)                            :: start_time
 
 !  Start of executable code
@@ -319,8 +386,7 @@
 
          intpol_get_modeled_signal = 0.0
          intpol_get_modeled_signal(1) =                                        &
-     &      a_model%int_params%integrate(this%chord_path,                      &
-     &                                   int_function, context)
+     &      a_model%int_params%integrate(this%chord_path, context)
 
          DEALLOCATE(context)
 
@@ -360,7 +426,7 @@
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
 !  local variables
-      CLASS (intpol_context), ALLOCATABLE     :: context
+      CLASS (intpol_pol_context), ALLOCATABLE :: context
       REAL (rprec)                            :: start_time
 
 !  Start of executable code
@@ -380,8 +446,7 @@
          intpol_pol_get_modeled_signal = 0.0
          intpol_pol_get_modeled_signal(1) =                                    &
      &      intpol_polar_constant*(this%wavelength**2.0_dp) *                  &
-     &      a_model%int_params%integrate(this%chord_path,                      &
-     &                                   pol_function, context)
+     &      a_model%int_params%integrate(this%chord_path, context)
          IF (this%in_degrees) THEN
             intpol_pol_get_modeled_signal(1) =                                 &
      &                intpol_pol_get_modeled_signal(1)/degree
@@ -447,15 +512,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_get_gp_i
-      CLASS (intpol_class), INTENT(in)         :: this
-      CLASS (model_class), POINTER             :: a_model
-      INTEGER, INTENT(in)                      :: i
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 :: intpol_get_gp_i
+      CLASS (intpol_class), INTENT(in)             :: this
+      CLASS (model_class), POINTER                 :: a_model
+      INTEGER, INTENT(in)                          :: i
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      CLASS (intpol_gp_context_i), ALLOCATABLE :: context
-      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_int_context_i), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -468,7 +533,6 @@
       context%flags = flags
 
       intpol_get_gp_i = a_model%int_params%integrate(this%chord_path,          &
-     &                                               gp_function_i,            &
      &                                               context)
 
       DEALLOCATE(context)
@@ -498,15 +562,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_get_gp_s
-      CLASS (intpol_class), INTENT(in)         :: this
-      CLASS (model_class), POINTER             :: a_model
-      CLASS (signal_class), POINTER            :: signal
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 :: intpol_get_gp_s
+      CLASS (intpol_class), INTENT(in)             :: this
+      CLASS (model_class), POINTER                 :: a_model
+      CLASS (signal_class), POINTER                :: signal
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      CLASS (intpol_gp_context_s), ALLOCATABLE :: context
-      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_int_context_s), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -518,7 +582,6 @@
       context%flags = flags
 
       intpol_get_gp_s = a_model%int_params%integrate(this%chord_path,          &
-     &                                               gp_function_s,            &
      &                                               context)
 
       DEALLOCATE(context)
@@ -547,15 +610,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_get_gp_x
-      CLASS (intpol_class), INTENT(in)         :: this
-      CLASS (model_class), POINTER             :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in)   :: x_cart
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 :: intpol_get_gp_x
+      CLASS (intpol_class), INTENT(in)             :: this
+      CLASS (model_class), POINTER                 :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)       :: x_cart
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      REAL (rprec)                             :: start_time
-      CLASS (intpol_gp_context_x), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
+      CLASS (intpol_gp_int_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -566,7 +629,6 @@
       context%xcart = x_cart
 
       intpol_get_gp_x = a_model%int_params%integrate(this%chord_path,          &
-     &                                               gp_function_x,
      &                                               context)
 
       DEALLOCATE(context)
@@ -595,15 +657,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_pol_get_gp_i
-      CLASS (intpol_pol_class), INTENT(in)     :: this
-      CLASS (model_class), POINTER             :: a_model
-      INTEGER, INTENT(in)                      :: i
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 ::                          &
+     &   intpol_pol_get_gp_i
+      CLASS (intpol_pol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER                 :: a_model
+      INTEGER, INTENT(in)                          :: i
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      CLASS (intpol_gp_context_i), ALLOCATABLE :: context
-      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_pol_context_i), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -616,8 +679,7 @@
       intpol_pol_get_gp_i = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
      &                    * a_model%int_params%integrate(                      &
-     &                         this%chord_path, gp_pol_function_i,             &
-     &                         context)
+     &                         this%chord_path, context)
 
       DEALLOCATE(context)
 
@@ -649,15 +711,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_pol_get_gp_s
-      CLASS (intpol_pol_class), INTENT(in)     :: this
-      CLASS (model_class), POINTER             :: a_model
-      CLASS (signal_class), POINTER            :: signal
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 ::                          &
+     &   intpol_pol_get_gp_s
+      CLASS (intpol_pol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER                 :: a_model
+      CLASS (signal_class), POINTER                :: signal
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      CLASS (intpol_gp_context_s), ALLOCATABLE :: context
-      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_pol_context_s), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -672,8 +735,7 @@
       intpol_pol_get_gp_s = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
      &                    * a_model%int_params%integrate(                      &
-     &                         this%chord_path, gp_pol_function_s,             &
-     &                         context)
+     &                         this%chord_path, context)
 
       DEALLOCATE(context)
 
@@ -704,15 +766,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                             :: intpol_pol_get_gp_x
-      CLASS (intpol_pol_class), INTENT(in)     :: this
-      CLASS (model_class), POINTER             :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in)   :: x_cart
-      INTEGER, INTENT(in)                      :: flags
+      REAL (rprec)                                 ::                          &
+     &   intpol_pol_get_gp_x
+      CLASS (intpol_pol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER                 :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)       :: x_cart
+      INTEGER, INTENT(in)                          :: flags
 
 !  local variables
-      REAL (rprec)                             :: start_time
-      CLASS (intpol_gp_context_x), ALLOCATABLE :: context
+      REAL (rprec)                                 :: start_time
+      CLASS (intpol_gp_pol_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -725,8 +788,7 @@
       intpol_pol_get_gp_x = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
      &                    * a_model%int_params%integrate_paths(                &
-     &                         this%chord_path, gp_pol_function_x,             &
-     &                         context)
+     &                         this%chord_path, context)
 
       DEALLOCATE(context)
 
@@ -745,9 +807,8 @@
 !-------------------------------------------------------------------------------
 !>  @brief Interferometer callback function.
 !>
-!>  Returns the value of the denisty times the change in path length. This
-!>  function is passed to @ref integration_path::path_integrate to act as a
-!>  callback. The denisty is provided by @ref model::model_get_ne.
+!>  Returns the value of the denisty times the change in path length. The
+!>  denisty is provided by @ref model::model_get_ne.
 !>
 !>  @see integration_path
 !>
@@ -763,7 +824,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CLASS (intpol_context), INTENT(in)     :: context
+      CLASS (intpol_int_context), INTENT(in) :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
@@ -785,9 +846,8 @@
 !>  @brief Polarmetry callback function.
 !>
 !>  Returns the value of the denisty times the dot product of the magnetic
-!>  field vector and the path direction. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The denisty is
-!>  provided by @ref model::model_get_ne. The magnetic field vector is proved by
+!>  field vector and the path direction. The denisty is provided by
+!>  @ref model::model_get_ne. The magnetic field vector is proved by
 !>  @ref equilibrium::equilibrium_get_B_vec
 !>
 !>  @see integration_path
@@ -804,7 +864,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CLASS (intpol_context), INTENT(in)     :: context
+      CLASS (intpol_pol_context), INTENT(in) :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
@@ -831,10 +891,8 @@
 !>  kernel evaluation.
 !>
 !>  Returns the value of the density guassian process kernel times the change in
-!>  path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The density
-!>  kernel is provided by @ref model::model_get_gp_ne. This is the second
-!>  signal.
+!>  path length. The density kernel is provided by @ref model::model_get_gp_ne.
+!>  This is the second signal.
 !>
 !>  @see integration_path
 !>
@@ -850,15 +908,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_function_i
-      CLASS (intpol_gp_context_i), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_function_i
+      CLASS (intpol_gp_int_context_i), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -874,10 +932,8 @@
 !>  kernel evaluation for a polarimetry signal.
 !>
 !>  Returns the value of the density guassian process kernel times the change in
-!>  path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The density
-!>  kernel is provided by @ref model::model_get_gp_ne. This is the second
-!>  signal.
+!>  path length. The density kernel is provided by @ref model::model_get_gp_ne.
+!>  This is the second signal.
 !>
 !>  @see integration_path
 !>
@@ -893,16 +949,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_pol_function_i
-      CLASS (intpol_gp_context_i), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_pol_function_i
+      CLASS (intpol_gp_pol_context_i), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec), DIMENSION(3)              :: bcart
-      REAL (rprec)                            :: start_time
+      REAL (rprec), DIMENSION(3)                  :: bcart
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -921,9 +977,8 @@
 !>  kernel evaluation.
 !>
 !>  Returns the value of the density guassian process kernel times the change in
-!>  path length. This function is passed to
-!>  @ref integration_path::path_integrate to act as a callback. The density
-!>  kernel is provided by @ref model::model_get_gp_ne. This is the first signal.
+!>  path length. The density kernel is provided by @ref model::model_get_gp_ne.
+!>  This is the first signal.
 !>
 !>  @see integration_path
 !>
@@ -939,15 +994,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_function_s
-      CLASS (intpol_gp_context_s), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_function_s
+      CLASS (intpol_gp_int_context_s), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -964,9 +1019,8 @@
 !>  kernel evaluation.
 !>
 !>  Returns the value of the density guassian process kernel times the change in
-!>  path length dotted with the magnetic field vector. This function is passed
-!>  to @ref integration_path::path_integrate to act as a callback. The density
-!>  kernel is provided by @ref model::model_get_gp_ne. This is the first signal.
+!>  path length dotted with the magnetic field vector. The density kernel is
+!>  provided by @ref model::model_get_gp_ne. This is the first signal.
 !>
 !>  @see integration_path
 !>
@@ -982,16 +1036,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_pol_function_s
-      CLASS (intpol_gp_context_s), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_pol_function_s
+      CLASS (intpol_gp_pol_context_s), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec), DIMENSION(3)              :: bcart
-      REAL (rprec)                            :: start_time
+      REAL (rprec), DIMENSION(3)                  :: bcart
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1025,15 +1079,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_function_x
-      CLASS (intpol_gp_context_x), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_function_x
+      CLASS (intpol_gp_int_context_x), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1065,16 +1119,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                            :: gp_pol_function_x
-      CLASS (intpol_gp_context_x), INTENT(in) :: context
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
-      REAL (rprec), INTENT(in)                :: length
-      REAL (rprec), INTENT(in)                :: dx
+      REAL (rprec)                                :: gp_pol_function_x
+      CLASS (intpol_gp_pol_context_x), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)      :: dxcart
+      REAL (rprec), INTENT(in)                    :: length
+      REAL (rprec), INTENT(in)                    :: dx
 
 ! local variables
-      REAL (rprec), DIMENSION(3)              :: bcart
-      REAL (rprec)                            :: start_time
+      REAL (rprec), DIMENSION(3)                  :: bcart
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
