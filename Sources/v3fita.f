@@ -883,7 +883,7 @@
      &   ece_resonance_range, coosig_wgts, state_flags,                        &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
-     &   path_construct(int_method, int_num_points, int_size))
+     &   make_integrator(int_method, int_num_points, int_size))
 
       CALL profiler_set_stop_time('init_vmec_equilibrium', start_time)
 
@@ -933,7 +933,7 @@
      &   ece_resonance_range, coosig_wgts, model_state_all_off,                &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
-     &   path_construct(int_method, int_num_points, int_size))
+     &   make_integrator(int_method, int_num_points, int_size))
 
       CALL profiler_set_stop_time('init_vacuum_equilibrium', start_time)
 
@@ -1020,7 +1020,7 @@
      &   ece_resonance_range, coosig_wgts, state_flags,                        &
      &   sfactor_spec_fac(:MINLOC(sfactor_spec_imin, 1) - 1),                  &
      &   soffset_spec_fac(:MINLOC(soffset_spec_imin, 1) - 1),                  &
-     &   path_construct(int_method, int_num_points, int_size))
+     &   make_integrator(int_method, int_num_points, int_size))
 
       CALL profiler_set_stop_time('init_siesta_equilibrium', start_time)
 

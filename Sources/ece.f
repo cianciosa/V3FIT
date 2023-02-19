@@ -50,11 +50,13 @@
 !-------------------------------------------------------------------------------
 !> Structure to hold all memory needed to be sent to the callback function.
 !-------------------------------------------------------------------------------
-      TYPE ece_context
+      TYPE, EXTENDS(search_path_context_class) :: ece_context
 !>  The index of the emissivity profile model.
          REAL (rprec)                 :: resonance
 !>  Reference to a @ref model::model_class object.
          CLASS (model_class), POINTER :: model => null()
+      CONTAINS
+         PROCEDURE                    :: run => ece_function
       END TYPE
 
 !*******************************************************************************
@@ -210,32 +212,25 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(3)    :: ece_get_cart
-      CLASS (ece_class), INTENT(in) :: this
-      CLASS (model_class), POINTER  :: a_model
-      LOGICAL, INTENT(out)          :: found
+      REAL (rprec), DIMENSION(3)       :: ece_get_cart
+      CLASS (ece_class), INTENT(in)    :: this
+      CLASS (model_class), POINTER     :: a_model
+      LOGICAL, INTENT(out)             :: found
 
 ! local variables
-      CHARACTER(len=1), ALLOCATABLE :: context(:)
-      INTEGER                       :: context_length
-      TYPE (ece_context)            :: temp_context
-      REAL (rprec)                  :: start_time
+      CLASS (ece_context), ALLOCATABLE :: context
+      REAL (rprec)                     :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
+      ALLOCATE(context)
+
 !  The relevant data for the ece context.
-      temp_context%resonance = this%resonance
-      temp_context%model => a_model
+      context%resonance = this%resonance
+      context%model => a_model
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-      context_length = SIZE(TRANSFER(temp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(temp_context, context)
-
-      ece_get_cart = path_search(this%chord_path, ece_function, context,       &
-     &                           found)
+      ece_get_cart = search_paths(this%chord_path, context, found)
 
       DEALLOCATE(context)
 
@@ -468,13 +463,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (ece_context), INTENT(in)        :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart1
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart2
       LOGICAL                                :: ece_function
 
 ! local variables
-      TYPE (ece_context)                     :: temp_context
       REAL (rprec), DIMENSION(3)             :: bcart1
       REAL (rprec), DIMENSION(3)             :: bcart2
       REAL (rprec)                           :: bmod1
@@ -486,17 +480,15 @@
 
       ece_function = .false.
 
-      temp_context = TRANSFER(context, temp_context)
-
-      bcart1 = temp_context%model%equilibrium%get_B_vec(xcart1, .false.)
-      bcart2 = temp_context%model%equilibrium%get_B_vec(xcart2, .false.)
+      bcart1 = context%model%equilibrium%get_B_vec(xcart1, .false.)
+      bcart2 = context%model%equilibrium%get_B_vec(xcart2, .false.)
 
       bmod1 = SQRT(DOT_PRODUCT(bcart1, bcart1))
       bmod2 = SQRT(DOT_PRODUCT(bcart2, bcart2))
 
       IF (ABS(bmod1 - bmod2) .lt.                                              &
-     &    temp_context%model%resonace_range) THEN
-         ece_function = is_in_range(temp_context%resonance,                    &
+     &    context%model%resonace_range) THEN
+         ece_function = is_in_range(context%resonance,                    &
      &                              bmod1, bmod2)
       END IF
 

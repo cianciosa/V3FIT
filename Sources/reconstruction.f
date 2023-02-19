@@ -884,7 +884,8 @@
 !  normal otherwise set the jth index of the jacobian to zero to avoid a step
 !  in that parameter direction.
          IF (a_model%converge(eq_steps, iou, eq_comm,                          &
-     &                        param_get_name(params(j)%p, a_model))) THEN
+     &                        param_get_name(params(j)%p,                      &
+     &                                       a_model))) THEN
             DO i = 1, SIZE(gaussp)
                CALL gaussp_set_profile(gaussp(i)%p, a_model)
             END DO
