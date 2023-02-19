@@ -242,7 +242,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: thomson_te_get_modeled_signal
       CLASS (thomson_te_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -261,8 +261,7 @@
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
          thomson_te_get_modeled_signal = 0.0
-         thomson_te_get_modeled_signal(1) = model_get_te(a_model,              &
-     &                                                   this%xcart)
+         thomson_te_get_modeled_signal(1) = a_model%get_te(this%xcart)
 
          CALL this%scale_and_offset(a_model,                                   &
      &                              thomson_te_get_modeled_signal(1))
@@ -296,7 +295,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: thomson_ne_get_modeled_signal
       CLASS (thomson_ne_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -315,8 +314,7 @@
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
          thomson_ne_get_modeled_signal = 0.0
-         thomson_ne_get_modeled_signal(1) = model_get_ne(a_model,              &
-     &                                                   this%xcart)
+         thomson_ne_get_modeled_signal(1) = a_model%get_ne(this%xcart)
 
          CALL this%scale_and_offset(a_model,                                   &
      &                              thomson_ne_get_modeled_signal(1))
@@ -350,7 +348,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: thomson_p_get_modeled_signal
       CLASS (thomson_p_class), INTENT(inout)  :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -431,7 +429,7 @@
 !  Declare Arguments
       REAL (rprec)                      :: thomson_get_gp_s
       CLASS (thomson_class), INTENT(in) :: this
-      TYPE (model_class), POINTER       :: a_model
+      CLASS (model_class), POINTER      :: a_model
       CLASS (signal_class), INTENT(in)  :: signal
       INTEGER, INTENT(in)               :: flags
 
@@ -468,7 +466,7 @@
 !  Declare Arguments
       REAL (rprec)                         :: thomson_te_get_gp_i
       CLASS (thomson_te_class), INTENT(in) :: this
-      TYPE (model_class), POINTER          :: a_model
+      CLASS (model_class), POINTER         :: a_model
       INTEGER, INTENT(in)                  :: i
       INTEGER, INTENT(in)                  :: flags
 
@@ -478,7 +476,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      thomson_te_get_gp_i = model_get_gp_te(a_model, this%xcart, i)
+      thomson_te_get_gp_i = a_model%get_gp_te(this%xcart, i)
 
       CALL this%scale_and_offset(a_model, thomson_te_get_gp_i)
 
@@ -508,7 +506,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: thomson_te_get_gp_x
       CLASS (thomson_te_class), INTENT(in)   :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -518,7 +516,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      thomson_te_get_gp_x = model_get_gp_te(a_model, this%xcart, x_cart)
+      thomson_te_get_gp_x = a_model%get_gp_te(this%xcart, x_cart)
       CALL this%scale_and_offset(a_model, thomson_te_get_gp_x)
 
       CALL profiler_set_stop_time('thomson_te_get_gp_x', start_time)
@@ -546,7 +544,7 @@
 !  Declare Arguments
       REAL (rprec)                         :: thomson_ne_get_gp_i
       CLASS (thomson_ne_class), INTENT(in) :: this
-      TYPE (model_class), POINTER          :: a_model
+      CLASS (model_class), POINTER         :: a_model
       INTEGER, INTENT(in)                  :: i
       INTEGER, INTENT(in)                  :: flags
 
@@ -556,7 +554,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      thomson_ne_get_gp_i = model_get_gp_ne(a_model, this%xcart, i)
+      thomson_ne_get_gp_i = a_model%get_gp_ne(this%xcart, i)
       CALL this%scale_and_offset(a_model, thomson_ne_get_gp_i)
 
       CALL profiler_set_stop_time('thomson_ne_get_gp_i', start_time)
@@ -585,7 +583,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: thomson_ne_get_gp_x
       CLASS (thomson_ne_class), INTENT(in)   :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -595,7 +593,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      thomson_ne_get_gp_x = model_get_gp_ne(a_model, this%xcart, x_cart)
+      thomson_ne_get_gp_x = a_model%get_gp_ne(this%xcart, x_cart)
       CALL this%scale_and_offset(a_model, thomson_ne_get_gp_x)
 
       CALL profiler_set_stop_time('thomson_ne_get_gp_x', start_time)

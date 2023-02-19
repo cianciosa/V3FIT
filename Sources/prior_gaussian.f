@@ -84,7 +84,7 @@
 !  Declare Arguments
       CLASS (prior_gaussian_class), POINTER ::                                 &
      &   prior_gaussian_construct
-      TYPE (model_class), INTENT(in)        :: a_model
+      CLASS (model_class), INTENT(in)       :: a_model
       CHARACTER (len=*), INTENT(in)         :: param_name
       INTEGER, DIMENSION(2), INTENT(in)     :: indices
 
@@ -97,7 +97,7 @@
       ALLOCATE(prior_gaussian_construct)
 
       prior_gaussian_construct%param_id =                                      &
-     &   model_get_param_id(a_model, TRIM(param_name))
+     &   a_model%get_param_id(TRIM(param_name))
       prior_gaussian_construct%indices = indices
 
       CALL profiler_set_stop_time('prior_gaussian_construct',                  &
@@ -150,20 +150,20 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: prior_gaussian_get_modeled_signal
       CLASS (prior_gaussian_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER                 :: a_model
+      CLASS (model_class), POINTER                :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out)     :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)      :: last_value
 
 !  local variables
-      REAL (rprec)                             :: start_time
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       prior_gaussian_get_modeled_signal = 0.0
       prior_gaussian_get_modeled_signal(1) =                                   &
-     &   model_get_param_value(a_model, this%param_id,                         &
-     &                         this%indices(1), this%indices(2))               &
+     &   a_model%get_param_value(this%param_id, this%indices(1),               &
+     &                           this%indices(2))                              &
       sigma = 0.0
 
       CALL this%scale_and_offset(a_model,                                      &
@@ -222,7 +222,7 @@
 !  Declare Arguments
       REAL (rprec) :: prior_gaussian_get_gp_i
       CLASS (prior_gaussian_class), INTENT(in) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       INTEGER, INTENT(in)                      :: i
       INTEGER, INTENT(in)                      :: flags
 
@@ -234,18 +234,17 @@
 
       IF (BTEST(flags, model_state_ne_flag)) THEN
          prior_gaussian_get_gp_i =                                             &
-     &      model_get_gp_ne(a_model, this%indices(1), i)
+     &      a_model%get_gp_ne(this%indices(1), i)
       ELSE IF (BTEST(flags, model_state_te_flag)) THEN
          prior_gaussian_get_gp_i =                                             &
-     &      model_get_gp_te(a_model, this%indices(1), i)
+     &      a_model%get_gp_te(this%indices(1), i)
       ELSE IF (BTEST(flags, model_state_ti_flag)) THEN
          prior_gaussian_get_gp_i =                                             &
-     &      model_get_gp_ti(a_model, this%indices(1), i)
+     &      a_model%get_gp_ti(this%indices(1), i)
       ELSE IF (BTEST(flags, model_state_sxrem_flag +                           &
      &                      (this%indices(1) - 1))) THEN
          prior_gaussian_get_gp_i =                                             &
-     &      model_get_gp_sxrem(a_model, this%indices(2), i,                    &
-     &                         this%indices(1))
+     &      a_model%get_gp_sxrem(this%indices(2), i, this%indices(1))
       ELSE
          prior_gaussian_get_gp_i = 0.0
       END IF
@@ -276,7 +275,7 @@
 !  Declare Arguments
       REAL (rprec) :: prior_gaussian_get_gp_s
       CLASS (prior_gaussian_class), INTENT(in) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       CLASS (signal_class), POINTER            :: signal
       INTEGER, INTENT(in)                      :: flags
 
@@ -328,7 +327,7 @@
 !  Declare Arguments
       REAL (rprec) :: prior_gaussian_get_gp_x
       CLASS (prior_gaussian_class), INTENT(in) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in)   :: x_cart
       INTEGER, INTENT(in)                      :: flags
 
@@ -339,19 +338,19 @@
       start_time = profiler_get_start_time()
 
       IF (BTEST(flags, model_state_ne_flag)) THEN
-         prior_gaussian_get_gp_x = model_get_gp_ne(a_model, x_cart,            &
-     &                                             this%indices(1))
+         prior_gaussian_get_gp_x = a_model%get_gp_ne(x_cart,                   &
+     &                                               this%indices(1))
       ELSE IF (BTEST(flags, model_state_te_flag)) THEN
-         prior_gaussian_get_gp_x = model_get_gp_te(a_model, x_cart,            &
-     &                                             this%indices(1))
+         prior_gaussian_get_gp_x = a_model%get_gp_te(x_cart,                   &
+     &                                               this%indices(1))
       ELSE IF (BTEST(flags, model_state_ti_flag)) THEN
-         prior_gaussian_get_gp_x = model_get_gp_ti(a_model, x_cart,            &
-     &                                             this%indices(1))
+         prior_gaussian_get_gp_x = a_model%get_gp_ti(x_cart,                   &
+     &                                               this%indices(1))
       ELSE IF (BTEST(flags, model_state_sxrem_flag +                           &
      &                      (this%indices(1) - 1))) THEN
-         prior_gaussian_get_gp_x = model_get_gp_sxrem(a_model, x_cart,         &
-     &                                                this%indices(2),         &
-     &                                                this%indices(1))
+         prior_gaussian_get_gp_x = a_model%get_gp_sxrem(x_cart,                &
+     &                                                  this%indices(2),       &
+     &                                                  this%indices(1))
       ELSE
          prior_gaussian_get_gp_x = 0.0
       END IF
@@ -384,7 +383,7 @@
       CLASS (prior_gaussian_class), INTENT(in) :: this
       INTEGER, INTENT(in)                      :: iou
       INTEGER, INTENT(in)                      :: index
-      TYPE (model_class), INTENT(in)           :: a_model
+      CLASS (model_class), INTENT(in)          :: a_model
 
 !  local variables
       REAL (rprec)                             :: start_time
@@ -395,7 +394,7 @@
       WRITE (iou,*)
       WRITE (iou,1000) index, this%get_type()
       WRITE (iou,1001)
-      WRITE (iou,1002) model_get_param_name(a_model, this%param_id),           &
+      WRITE (iou,1002) a_model%get_param_name(this%param_id),                  &
      &                 this%indices
 
       CALL profiler_set_stop_time('prior_gaussian_write_auxiliary',            &

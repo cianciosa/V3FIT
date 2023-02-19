@@ -110,7 +110,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: limiter_get_modeled_signal
       CLASS (limiter_class), INTENT(inout)    :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 

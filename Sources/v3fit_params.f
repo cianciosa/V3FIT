@@ -173,7 +173,7 @@
 
 !  Declare Arguments
       TYPE (param_class), POINTER       :: param_construct_basic
-      TYPE (model_class), INTENT(in)    :: a_model
+      CLASS (model_class), INTENT(in)   :: a_model
       CHARACTER (len=*), INTENT(in)     :: param_name
       INTEGER, DIMENSION(2), INTENT(in) :: indices
       INTEGER, INTENT(in)               :: num_params
@@ -187,7 +187,7 @@
       ALLOCATE(param_construct_basic)
 
       param_construct_basic%param_id =                                         &
-     &   model_get_param_id(a_model, TRIM(param_name))
+     &   a_model%get_param_id(TRIM(param_name))
 
       ALLOCATE(param_construct_basic%correlation(num_params))
       param_construct_basic%correlation = 0.0
@@ -236,7 +236,7 @@
 
 !  Declare Arguments
       TYPE (param_class), POINTER :: param_construct_recon
-      TYPE (model_class), INTENT(in)              :: a_model
+      CLASS (model_class), INTENT(in)             :: a_model
       CHARACTER (len=*), INTENT(in)               :: param_name
       INTEGER, DIMENSION(2), INTENT(in)           :: indices
       REAL (rprec), INTENT(in)                    :: vrnc
@@ -256,7 +256,7 @@
       param_construct_recon => param_construct(a_model, param_name,            &
      &                                         indices, num_params)
 
-      IF (.not.model_is_recon_param(a_model,                                   &
+      IF (.not.a_model%is_recon_param(                                         &
      &            param_construct_recon%param_id)) THEN
          CALL err_fatal('param_construct: ' // TRIM(param_name) //             &
      &                  ' is an invalid reconstruction ' //                    &
@@ -282,7 +282,7 @@
             param_construct_recon%recon%range_type(1) =                        &
      &         param_range_parameter_type
             param_construct_recon%recon%range_id(1) =                          &
-     &         model_get_param_id(a_model, TRIM(range_type(1)))
+     &         a_model%get_param_id(TRIM(range_type(1)))
             param_construct_recon%recon%range_indices(1,:) =                   &
      &         range_indices(1,:)
 
@@ -304,7 +304,7 @@
             param_construct_recon%recon%range_type(2) =                        &
      &         param_range_parameter_type
             param_construct_recon%recon%range_id(2) =                          &
-     &         model_get_param_id(a_model, TRIM(range_type(2)))
+     &         a_model%get_param_id(TRIM(range_type(2)))
             param_construct_recon%recon%range_indices(2,:) =                   &
      &         range_indices(2,:)
 
@@ -358,7 +358,7 @@
 
 !  Declare Arguments
       TYPE (param_class), POINTER            :: param_construct_locking
-      TYPE (model_class), INTENT(inout)      :: a_model
+      CLASS (model_class), INTENT(inout)     :: a_model
       CHARACTER (len=*), INTENT(in)          :: param_name
       INTEGER, DIMENSION(2), INTENT(in)      :: indices
       CHARACTER (len=*), DIMENSION(:), INTENT(in) :: set
@@ -376,7 +376,7 @@
       param_construct_locking => param_construct(a_model, param_name,          &
      &                                           indices, SIZE(set))
 
-      IF (.not.model_is_recon_param(a_model,                                   &
+      IF (.not.a_model%is_recon_param(                                         &
      &            param_construct_locking%param_id)) THEN
          CALL err_fatal('param_construct: ' // TRIM(param_name) //             &
      &                  ' is an invalid locking parameter')
@@ -387,7 +387,7 @@
       ALLOCATE(param_construct_locking%locks%ids(SIZE(set)))
       DO i = 1, SIZE(set)
          param_construct_locking%locks%ids(i) =                                &
-     &      model_get_param_id(a_model, TRIM(set(i)))
+     &      a_model%get_param_id(TRIM(set(i)))
       END DO
 
       ALLOCATE(param_construct_locking%locks%indices(SIZE(set),                &
@@ -494,18 +494,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)    :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      REAL (rprec), INTENT(in)          :: value
-      INTEGER, INTENT(in)               :: eq_comm
-      LOGICAL, INTENT(in)               :: is_central
+      TYPE (param_class), INTENT(in)     :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      REAL (rprec), INTENT(in)           :: value
+      INTEGER, INTENT(in)                :: eq_comm
+      LOGICAL, INTENT(in)                :: is_central
 
 !  Local variables
-      REAL (rprec)                      :: set_value
-      REAL (rprec)                      :: off_set_value
-      REAL (rprec)                      :: upper_value
-      REAL (rprec)                      :: lower_value
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: set_value
+      REAL (rprec)                       :: off_set_value
+      REAL (rprec)                       :: upper_value
+      REAL (rprec)                       :: lower_value
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -541,9 +541,9 @@
                END IF
             END IF
 
-            CALL model_set_param(a_model, this%param_id,                       &
-     &                           this%indices(1), this%indices(2),             &
-     &                           set_value, eq_comm)
+            CALL a_model%set_param(this%param_id, this%indices(1),             &
+     &                             this%indices(2), set_value,                 &
+     &                             eq_comm)
 
             CALL profiler_set_stop_time('profiler_get_start_time',             &
      &                                  start_time)
@@ -564,9 +564,9 @@
 !  range is negative infinity.
             set_value = upper_value - off_set_value
 
-            CALL model_set_param(a_model, this%param_id,                       &
-     &                           this%indices(1), this%indices(2),             &
-     &                           set_value, eq_comm)
+            CALL a_model%set_param(this%param_id, this%indices(1),             &
+     &                             this%indices(2), set_value,                 &
+     &                             eq_comm)
 
             CALL profiler_set_stop_time('profiler_get_start_time',             &
      &                                  start_time)
@@ -575,9 +575,8 @@
       END IF
 
 !  The value is in range. Set the value to this.
-      CALL model_set_param(a_model, this%param_id,                             &
-     &                     this%indices(1), this%indices(2),                   &
-     &                     set_value, eq_comm)
+      CALL a_model%set_param(this%param_id, this%indices(1),                   &
+     &                       this%indices(2), set_value, eq_comm)
 
       CALL profiler_set_stop_time('profiler_get_start_time', start_time)
 
@@ -598,37 +597,35 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)    :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: eq_comm
+      TYPE (param_class), INTENT(in)     :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: eq_comm
 
 !  Local variables
-      INTEGER                           :: i
-      REAL (rprec)                      :: temp
-      REAL (rprec)                      :: inital_value
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: i
+      REAL (rprec)                       :: temp
+      REAL (rprec)                       :: inital_value
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      inital_value = model_get_param_value(a_model, this%param_id,             &
-     &                                     this%indices(1),                    &
-     &                                     this%indices(2))
+      inital_value = a_model%get_param_value(this%param_id,                    &
+     &                                       this%indices(1),                  &
+     &                                       this%indices(2))
 
       temp = 0.0
       DO i = 0, SIZE(this%locks%ids)
          temp = temp + this%correlation(i)                                     &
-     &               * model_get_param_value(a_model,                          &
-     &                                       this%locks%ids(i),                &
-     &                                       this%locks%indices(i,1),          &
-     &                                       this%locks%indices(i,2))
+     &               * a_model%get_param_value(this%locks%ids(i),              &
+     &                                         this%locks%indices(i,1),        &
+     &                                         this%locks%indices(i,2))
       END DO
 
 !  Only update the lock value if that value changed.
       IF (inital_value .ne. temp) THEN
-         CALL model_set_param(a_model, this%param_id,                          &
-     &                        this%indices(1), this%indices(2),                &
-     &                        temp, eq_comm)
+         CALL a_model%set_param(this%param_id,  this%indices(1),               &
+     &                          this%indices(2), temp, eq_comm)
       END iF
 
       CALL profiler_set_stop_time('param_set_lock_value', start_time)
@@ -653,20 +650,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: param_get_value
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
+      REAL (rprec)                    :: param_get_value
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      param_get_value = model_get_param_value(a_model,                         &
-     &                                        this%param_id,                   &
-     &                                        this%indices(1),                 &
-     &                                        this%indices(2))
+      param_get_value = a_model%get_param_value(this%param_id,                 &
+     &                                          this%indices(1),               &
+     &                                          this%indices(2))
 
       CALL profiler_set_stop_time('param_get_value', start_time)
 
@@ -689,7 +685,7 @@
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_name
       TYPE (param_class), INTENT(in)   :: this
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -697,7 +693,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      param_get_name = model_get_param_name(a_model, this%param_id)
+      param_get_name = a_model%get_param_name(this%param_id)
 
       CALL profiler_set_stop_time('param_get_name', start_time)
 
@@ -718,12 +714,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: param_get_lower_range_value
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
+      REAL (rprec)                    :: param_get_lower_range_value
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -735,9 +731,9 @@
 
          CASE (param_range_parameter_type)
             param_get_lower_range_value =                                      &
-     &         model_get_param_value(a_model, this%recon%range_id(1),          &
-     &                               this%recon%range_indices(1,1),            &
-     &                               this%recon%range_indices(1,2))
+     &         a_model%get_param_value(this%recon%range_id(1),                 &
+     &                                 this%recon%range_indices(1,1),          &
+     &                                 this%recon%range_indices(1,2))
 
       END SELECT
 
@@ -761,12 +757,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: param_get_upper_range_value
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
+      REAL (rprec)                    :: param_get_upper_range_value
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -778,9 +774,9 @@
 
          CASE (param_range_parameter_type)
             param_get_upper_range_value =                                      &
-     &         model_get_param_value(a_model, this%recon%range_id(2),          &
-     &                               this%recon%range_indices(2,1),            &
-     &                               this%recon%range_indices(2,2))
+     &         a_model%get_param_value(this%recon%range_id(2),                 &
+     &                                 this%recon%range_indices(2,1),          &
+     &                                 this%recon%range_indices(2,2))
 
       END SELECT
 
@@ -805,7 +801,7 @@
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_lower_range_type
       TYPE (param_class), INTENT(in)   :: this
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -826,7 +822,7 @@
 
          CASE (param_range_parameter_type)
             param_get_lower_range_type =                                       &
-     &         model_get_param_name(a_model, this%recon%range_id(1))
+     &         a_model%get_param_name(this%recon%range_id(1))
 
       END SELECT
 
@@ -851,7 +847,7 @@
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_upper_range_type
       TYPE (param_class), INTENT(in)   :: this
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -872,7 +868,7 @@
 
          CASE (param_range_parameter_type)
             param_get_upper_range_type =                                       &
-     &         model_get_param_name(a_model, this%recon%range_id(2))
+     &         a_model%get_param_name(this%recon%range_id(2))
 
       END SELECT
 
@@ -900,13 +896,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                        :: param_is_in_lower_range
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
-      REAL (rprec), INTENT(in)       :: value
+      LOGICAL                         :: param_is_in_lower_range
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
+      REAL (rprec), INTENT(in)        :: value
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -937,10 +933,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                        :: param_is_in_upper_range
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
-      REAL (rprec), INTENT(in)       :: value
+      LOGICAL                         :: param_is_in_upper_range
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
+      REAL (rprec), INTENT(in)        :: value
 
 !  local variables
       REAL (rprec)                   :: start_time
@@ -988,17 +984,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: eq_comm
-      LOGICAL, INTENT(in)               :: is_central
+      TYPE (param_class), INTENT(inout)  :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: eq_comm
+      LOGICAL, INTENT(in)                :: is_central
 
 !  local variables
-      REAL (rprec)                      :: new_value
-      REAL (rprec)                      :: value
-      REAL (rprec)                      :: step
-      INTEGER                           :: itry
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: new_value
+      REAL (rprec)                       :: value
+      REAL (rprec)                       :: step
+      INTEGER                            :: itry
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1057,8 +1053,8 @@
          step = step/param_div_factor
       END DO
 
-      CALL model_set_param(a_model, this%param_id, this%indices(1),            &
-     &                     this%indices(2), new_value, eq_comm)
+      CALL a_model%set_param(this%param_id, this%indices(1),                   &
+     &                       this%indices(2), new_value, eq_comm)
 
       IF (itry .gt. param_max_increment_steps) THEN
          CALL err_fatal('param_increment: failed to change ' //                &
@@ -1085,13 +1081,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: eq_comm
+      TYPE (param_class), INTENT(inout)  :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: eq_comm
 
 !  local variables
-      REAL (rprec)                      :: value
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: value
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1099,8 +1095,8 @@
       value = param_get_value(this, a_model)
       value = value - this%recon%delta
 
-      CALL model_set_param(a_model, this%param_id, this%indices(1),            &
-     &                     this%indices(2), value, eq_comm)
+      CALL a_model%set_param(this%param_id, this%indices(1),                   &
+     &                       this%indices(2), value, eq_comm)
 
       CALL profiler_set_stop_time('param_decrement', start_time)
 
@@ -1123,13 +1119,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: iou
-      INTEGER, INTENT(in)            :: index
-      TYPE (model_class), INTENT(in) :: a_model
+      TYPE (param_class), INTENT(in)  :: this
+      INTEGER, INTENT(in)             :: iou
+      INTEGER, INTENT(in)             :: index
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1168,13 +1164,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: iou
-      INTEGER, INTENT(in)            :: index
-      TYPE (model_class), INTENT(in) :: a_model
+      TYPE (param_class), INTENT(in)  :: this
+      INTEGER, INTENT(in)             :: iou
+      INTEGER, INTENT(in)             :: index
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1276,13 +1272,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: iou
-      TYPE (model_class), INTENT(in) :: a_model
+      TYPE (param_class), INTENT(in)  :: this
+      INTEGER, INTENT(in)             :: iou
+      CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
-      CHARACTER (len=20)             :: row_format
-      REAL (rprec)                   :: start_time
+      CHARACTER (len=20)              :: row_format
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1332,19 +1328,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
-      INTEGER, INTENT(in)            :: result_ncid
-      INTEGER, INTENT(in)            :: current_step
-      INTEGER, INTENT(in)            :: index
-      INTEGER, INTENT(in)            :: param_value_id
-      INTEGER, INTENT(in)            :: param_sigma_id
-      INTEGER, INTENT(in)            :: param_corr_id
-      INTEGER, INTENT(in)            :: param_sem_id
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
+      INTEGER, INTENT(in)             :: result_ncid
+      INTEGER, INTENT(in)             :: current_step
+      INTEGER, INTENT(in)             :: index
+      INTEGER, INTENT(in)             :: param_value_id
+      INTEGER, INTENT(in)             :: param_sigma_id
+      INTEGER, INTENT(in)             :: param_corr_id
+      INTEGER, INTENT(in)             :: param_sem_id
 
 !  local variables
-      INTEGER                        :: status
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: status
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1392,18 +1388,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in) :: a_model
-      INTEGER, INTENT(in)            :: result_ncid
-      INTEGER, INTENT(in)            :: current_step
-      INTEGER, INTENT(in)            :: index
-      INTEGER, INTENT(in)            :: param_value_id
-      INTEGER, INTENT(in)            :: param_sigma_id
-      INTEGER, INTENT(in)            :: param_corr_id
+      TYPE (param_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: a_model
+      INTEGER, INTENT(in)             :: result_ncid
+      INTEGER, INTENT(in)             :: current_step
+      INTEGER, INTENT(in)             :: index
+      INTEGER, INTENT(in)             :: param_value_id
+      INTEGER, INTENT(in)             :: param_sigma_id
+      INTEGER, INTENT(in)             :: param_corr_id
 
 !  local variables
-      INTEGER                        :: status
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: status
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1458,20 +1454,20 @@
 
 !  Declare Arguments
       TYPE (param_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: result_ncid
-      INTEGER, INTENT(in)               :: current_step
-      INTEGER, INTENT(in)               :: index
-      INTEGER, INTENT(in)               :: param_value_id
-      INTEGER, INTENT(in)               :: param_sigma_id
-      INTEGER, INTENT(in)               :: param_corr_id
-      INTEGER, INTENT(in)               :: eq_comm
-      LOGICAL, INTENT(in)               :: is_central
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: result_ncid
+      INTEGER, INTENT(in)                :: current_step
+      INTEGER, INTENT(in)                :: index
+      INTEGER, INTENT(in)                :: param_value_id
+      INTEGER, INTENT(in)                :: param_sigma_id
+      INTEGER, INTENT(in)                :: param_corr_id
+      INTEGER, INTENT(in)                :: eq_comm
+      LOGICAL, INTENT(in)                :: is_central
 
 !  local variables
-      INTEGER                           :: status
-      REAL (rprec)                      :: temp_value
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: status
+      REAL (rprec)                       :: temp_value
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1518,18 +1514,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: recon_comm
-      INTEGER, INTENT(in)               :: eq_comm
-      LOGICAL, INTENT(in)               :: is_central
+      TYPE (param_class), INTENT(inout)  :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: recon_comm
+      INTEGER, INTENT(in)                :: eq_comm
+      LOGICAL, INTENT(in)                :: is_central
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      REAL (rprec)                      :: value
-      INTEGER                           :: mpi_rank
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: error
+      REAL (rprec)                       :: value
+      INTEGER                            :: mpi_rank
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1684,19 +1680,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)               :: index
-      INTEGER, INTENT(in)               :: recon_comm
-      INTEGER, INTENT(in)               :: eq_comm
-      LOGICAL, INTENT(in)               :: is_central
+      TYPE (param_class), INTENT(inout)  :: this
+      CLASS (model_class), INTENT(inout) :: a_model
+      INTEGER, INTENT(in)                :: index
+      INTEGER, INTENT(in)                :: recon_comm
+      INTEGER, INTENT(in)                :: eq_comm
+      LOGICAL, INTENT(in)                :: is_central
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      REAL (rprec)                      :: value
-      INTEGER                           :: mpi_rank
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: error
+      REAL (rprec)                       :: value
+      INTEGER                            :: mpi_rank
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()

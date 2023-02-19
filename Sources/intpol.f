@@ -71,25 +71,37 @@
       END TYPE
 
 !-------------------------------------------------------------------------------
+!>  Struture to hole all memort needed to be sent to the integration callback
+!>  function.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_context
+!>  Reference to a @ref model::model_class object.
+         CLASS (model_class), POINTER :: model => null()
+      END TYPE
+
+!-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function of a point.
 !-------------------------------------------------------------------------------
-      TYPE intpol_gp_context_i
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_context_i
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
 !>  Position index.
-         INTEGER                     :: i
+         INTEGER                      :: i
 !>  Gaussian process kernel flags.
-         INTEGER                     :: flags = model_state_all_off
+         INTEGER                      :: flags = model_state_all_off
       END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function for signal.
 !-------------------------------------------------------------------------------
-      TYPE intpol_gp_context_s
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_context_s
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER   :: model => null()
+         CLASS (model_class), POINTER  :: model => null()
 !>  First position.
          CLASS (signal_class), POINTER :: signal => null()
 !>  Gaussian process kernel flags.
@@ -100,11 +112,12 @@
 !>  Structure to hold all memory needed to be sent to the guassian process
 !>  callback function for position.
 !-------------------------------------------------------------------------------
-      TYPE intpol_gp_context_x
+      TYPE, EXTENDS(integration_path_context_class) ::                         &
+     &   intpol_gp_context_x
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
 !>  First position.
-         REAL (rprec), DIMENSION(3)  :: xcart
+         REAL (rprec), DIMENSION(3)   :: xcart
       END TYPE
 
 !*******************************************************************************
@@ -282,13 +295,12 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: intpol_get_modeled_signal
       CLASS (intpol_class), INTENT(inout)     :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE           :: context(:)
-      INTEGER                                 :: context_length
+      CLASS (intpol_context), ALLOCATABLE     :: context
       REAL (rprec)                            :: start_time
 
 !  Start of executable code
@@ -302,16 +314,13 @@
      &    BTEST(a_model%state_flags, model_state_shift_flag)  .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-         context_length = SIZE(TRANSFER(a_model, context))
-         ALLOCATE(context(context_length))
-         context = TRANSFER(a_model, context)
+         ALLOCATE(context)
+         context%model => a_model
 
          intpol_get_modeled_signal = 0.0
          intpol_get_modeled_signal(1) =                                        &
-     &      path_integrate(a_model%int_params, this%chord_path,                &
-     &                     int_function, context)
+     &      a_model%int_params%integrate(this%chord_path,                      &
+     &                                   int_function, context)
 
          DEALLOCATE(context)
 
@@ -346,13 +355,12 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: intpol_pol_get_modeled_signal
       CLASS (intpol_pol_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE           :: context(:)
-      INTEGER                                 :: context_length
+      CLASS (intpol_context), ALLOCATABLE     :: context
       REAL (rprec)                            :: start_time
 
 !  Start of executable code
@@ -366,17 +374,14 @@
      &    BTEST(a_model%state_flags, model_state_shift_flag)  .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-         context_length = SIZE(TRANSFER(a_model, context))
-         ALLOCATE(context(context_length))
-         context = TRANSFER(a_model, context)
+         ALLOCATE(context)
+         context%model => a_model
 
          intpol_pol_get_modeled_signal = 0.0
          intpol_pol_get_modeled_signal(1) =                                    &
      &      intpol_polar_constant*(this%wavelength**2.0_dp) *                  &
-     &      path_integrate(a_model%int_params, this%chord_path,                &
-     &                     pol_function, context)
+     &      a_model%int_params%integrate(this%chord_path,                      &
+     &                                   pol_function, context)
          IF (this%in_degrees) THEN
             intpol_pol_get_modeled_signal(1) =                                 &
      &                intpol_pol_get_modeled_signal(1)/degree
@@ -442,35 +447,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                     :: intpol_get_gp_i
-      CLASS (intpol_class), INTENT(in) :: this
-      TYPE (model_class), POINTER      :: a_model
-      INTEGER, INTENT(in)              :: i
-      INTEGER, INTENT(in)              :: flags
+      REAL (rprec)                             :: intpol_get_gp_i
+      CLASS (intpol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER             :: a_model
+      INTEGER, INTENT(in)                      :: i
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE    :: context(:)
-      INTEGER                          :: context_length
-      TYPE (intpol_gp_context_i)       :: gp_context
-      REAL (rprec)                     :: start_time
+      CLASS (intpol_gp_context_i), ALLOCATABLE :: context
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
+      ALLOCATE(context)
+
 !  The relevant data for the guassian process context.
-      gp_context%model => a_model
-      gp_context%i = i
-      gp_context%flags = flags
+      context%model => a_model
+      context%i = i
+      context%flags = flags
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
-
-      intpol_get_gp_i = path_integrate(a_model%int_params,                     &
-     &                                 this%chord_path, gp_function_i,         &
-     &                                 context)
+      intpol_get_gp_i = a_model%int_params%integrate(this%chord_path,          &
+     &                                               gp_function_i,            &
+     &                                               context)
 
       DEALLOCATE(context)
 
@@ -499,34 +498,28 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                     :: intpol_get_gp_s
-      CLASS (intpol_class), INTENT(in) :: this
-      TYPE (model_class), POINTER      :: a_model
-      CLASS (signal_class), POINTER    :: signal
-      INTEGER, INTENT(in)              :: flags
+      REAL (rprec)                             :: intpol_get_gp_s
+      CLASS (intpol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER             :: a_model
+      CLASS (signal_class), POINTER            :: signal
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE    :: context(:)
-      INTEGER                          :: context_length
-      TYPE (intpol_gp_context_s)       :: gp_context
-      REAL (rprec)                     :: start_time
+      CLASS (intpol_gp_context_s), ALLOCATABLE :: context
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%model => a_model
-      gp_context%signal => signal
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%model => a_model
+      context%signal => signal
+      context%flags = flags
 
-      intpol_get_gp_s = path_integrate(a_model%int_params,                     &
-     &                                 this%chord_path, gp_function_s,         &
-     &                                 context)
+      intpol_get_gp_s = a_model%int_params%integrate(this%chord_path,          &
+     &                                               gp_function_s,            &
+     &                                               context)
 
       DEALLOCATE(context)
 
@@ -554,33 +547,27 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: intpol_get_gp_x
-      CLASS (intpol_class), INTENT(in)       :: this
-      TYPE (model_class), POINTER            :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-      INTEGER, INTENT(in)                    :: flags
+      REAL (rprec)                             :: intpol_get_gp_x
+      CLASS (intpol_class), INTENT(in)         :: this
+      CLASS (model_class), POINTER             :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)   :: x_cart
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      REAL (rprec)                           :: start_time
-      CHARACTER(len=1), ALLOCATABLE          :: context(:)
-      INTEGER                                :: context_length
-      TYPE (intpol_gp_context_x)             :: gp_context
+      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%model => a_model
-      gp_context%xcart = x_cart
+      ALLOCATE(context)
 
-!  Cast model into a data context. This is the equivalent to casting to a void
-!  pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%model => a_model
+      context%xcart = x_cart
 
-      intpol_get_gp_x = path_integrate(a_model%int_params,                     &
-     &                                 this%chord_path, gp_function_x,
-     &                                 context)
+      intpol_get_gp_x = a_model%int_params%integrate(this%chord_path,          &
+     &                                               gp_function_x,
+     &                                               context)
 
       DEALLOCATE(context)
 
@@ -608,38 +595,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                         :: intpol_pol_get_gp_i
-      CLASS (intpol_pol_class), INTENT(in) :: this
-      TYPE (model_class), POINTER          :: a_model
-      INTEGER, INTENT(in)                  :: i
-      INTEGER, INTENT(in)                  :: flags
+      REAL (rprec)                             :: intpol_pol_get_gp_i
+      CLASS (intpol_pol_class), INTENT(in)     :: this
+      CLASS (model_class), POINTER             :: a_model
+      INTEGER, INTENT(in)                      :: i
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE        :: context(:)
-      INTEGER                              :: context_length
-      TYPE (intpol_gp_context_i)           :: gp_context
-      REAL (rprec)                         :: start_time
+      CLASS (intpol_gp_context_i), ALLOCATABLE :: context
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  The relevant data for the guassian process context.
-      gp_context%model => a_model
-      gp_context%i = i
-      gp_context%flags = flags
-
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%model => a_model
+      context%i = i
+      context%flags = flags
 
       intpol_pol_get_gp_i = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
-     &                    * path_integrate(a_model%int_params,                 &
-     &                                     this%chord_path,                    &
-     &                                     gp_pol_function_i,                  &
-     &                                     context)
+     &                    * a_model%int_params%integrate(                      &
+     &                         this%chord_path, gp_pol_function_i,             &
+     &                         context)
 
       DEALLOCATE(context)
 
@@ -671,38 +649,31 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                         :: intpol_pol_get_gp_s
-      CLASS (intpol_pol_class), INTENT(in) :: this
-      TYPE (model_class), POINTER          :: a_model
-      CLASS (signal_class), POINTER        :: signal
-      INTEGER, INTENT(in)                  :: flags
+      REAL (rprec)                             :: intpol_pol_get_gp_s
+      CLASS (intpol_pol_class), INTENT(in)     :: this
+      CLASS (model_class), POINTER             :: a_model
+      CLASS (signal_class), POINTER            :: signal
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      CHARACTER(len=1), ALLOCATABLE        :: context(:)
-      INTEGER                              :: context_length
-      TYPE (intpol_gp_context_s)           :: gp_context
-      REAL (rprec)                         :: start_time
+      CLASS (intpol_gp_context_s), ALLOCATABLE :: context
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-!  The relevant data for the guassian process context.
-      gp_context%model => a_model
-      gp_context%signal => signal
-      gp_context%flags = flags
+      ALLOCATE(context)
 
-!  Cast model into a data to a context. This is the equivalent to casting to a
-!  void pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+!  The relevant data for the guassian process context.
+      context%model => a_model
+      context%signal => signal
+      context%flags = flags
 
       intpol_pol_get_gp_s = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
-     &                    * path_integrate(a_model%int_params,                 &
-     &                                     this%chord_path,                    &
-     &                                     gp_pol_function_s,                  &
-     &                                     context)
+     &                    * a_model%int_params%integrate(                      &
+     &                         this%chord_path, gp_pol_function_s,             &
+     &                         context)
 
       DEALLOCATE(context)
 
@@ -733,36 +704,29 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: intpol_pol_get_gp_x
-      CLASS (intpol_pol_class), INTENT(in)   :: this
-      TYPE (model_class), POINTER            :: a_model
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
-      INTEGER, INTENT(in)                    :: flags
+      REAL (rprec)                             :: intpol_pol_get_gp_x
+      CLASS (intpol_pol_class), INTENT(in)     :: this
+      CLASS (model_class), POINTER             :: a_model
+      REAL (rprec), DIMENSION(3), INTENT(in)   :: x_cart
+      INTEGER, INTENT(in)                      :: flags
 
 !  local variables
-      REAL (rprec)                           :: start_time
-      CHARACTER(len=1), ALLOCATABLE          :: context(:)
-      INTEGER                                :: context_length
-      TYPE (intpol_gp_context_x)             :: gp_context
+      REAL (rprec)                             :: start_time
+      CLASS (intpol_gp_context_x), ALLOCATABLE :: context
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context%model => a_model
-      gp_context%xcart = x_cart
+      ALLOCATE(context)
 
-!  Cast model into a data context. This is the equivalent to casting to a void
-!  pointer in C.
-      context_length = SIZE(TRANSFER(gp_context, context))
-      ALLOCATE(context(context_length))
-      context = TRANSFER(gp_context, context)
+      context%model => a_model
+      context%xcart = x_cart
 
       intpol_pol_get_gp_x = intpol_polar_constant                              &
      &                    * (this%wavelength**2.0_dp)                          &
-     &                    * path_integrate(a_model%int_params,                 &
-     &                                     this%chord_path,                    &
-     &                                     gp_pol_function_x,                  &
-     &                                     context)
+     &                    * a_model%int_params%integrate_paths(                &
+     &                         this%chord_path, gp_pol_function_x,             &
+     &                         context)
 
       DEALLOCATE(context)
 
@@ -799,7 +763,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (intpol_context), INTENT(in)     :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
@@ -807,14 +771,11 @@
       REAL (rprec)                           :: int_function
 
 !  local variables
-      TYPE (model_class)                     :: a_model
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
-
-      a_model = TRANSFER(context, a_model)
-      int_function = model_get_ne(a_model, xcart)*dx
+      int_function = context%model%get_ne(xcart)*dx
 
       CALL profiler_set_stop_time('int_function', start_time)
 
@@ -843,7 +804,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER (len=1), INTENT(in)          :: context(:)
+      CLASS (intpol_context), INTENT(in)     :: context
       REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
       REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
       REAL (rprec), INTENT(in)               :: length
@@ -851,18 +812,15 @@
       REAL (rprec)                           :: pol_function
 
 !  local variables
-      TYPE (model_class)                     :: a_model
       REAL (rprec), DIMENSION(3)             :: bcart
       REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      a_model = TRANSFER(context, a_model)
-
-      bcart = a_model%equilibrium%get_B_vec(xcart, .false.)
-      pol_function =                                                           &
-     &   model_get_ne(a_model, xcart)*DOT_PRODUCT(bcart, dxcart)
+      bcart = context%model%equilibrium%get_B_vec(xcart, .false.)
+      pol_function = context%model%get_ne(xcart)                               &
+     &             * DOT_PRODUCT(bcart, dxcart)
 
       CALL profiler_set_stop_time('pol_function', start_time)
 
@@ -892,23 +850,20 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_function_i
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_function_i
+      CLASS (intpol_gp_context_i), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_i)             :: gp_context
-      REAL (rprec)                           :: start_time
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-      gp_function_i = model_get_gp_ne(gp_context%model, xcart,                 &
-     &                                gp_context%i)*dx
+      gp_function_i = context%model%get_gp_ne(xcart, context%i)*dx
 
       CALL profiler_set_stop_time('gp_function_i', start_time)
 
@@ -938,25 +893,23 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_pol_function_i
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_pol_function_i
+      CLASS (intpol_gp_context_i), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_i)             :: gp_context
-      REAL (rprec), DIMENSION(3)             :: bcart
-      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)              :: bcart
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
-      gp_pol_function_i = model_get_gp_ne(gp_context%model, xcart,             &
-     &                                    gp_context%i)                        *
+      bcart = context%model%equilibrium%get_B_vec(xcart, .false.)
+      gp_pol_function_i = context%model%get_gp_ne(xcart,                       &
+     &                                            context%i)                   &
      &                  * DOT_PRODUCT(bcart, dxcart)
 
       CALL profiler_set_stop_time('gp_pol_function_i', start_time)
@@ -986,23 +939,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_function_s
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_function_s
+      CLASS (intpol_gp_context_s), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_s)             :: gp_context
-      REAL (rprec)                           :: start_time
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-      gp_function_s = gp_context%signal%get_gp(gp_context%model, xcart,        &
-     &                                         gp_context%flags)*dx
+      gp_function_s = context%signal%get_gp(context%model, xcart,              &
+     &                                      context%flags)*dx
 
       CALL profiler_set_stop_time('gp_function_s', start_time)
 
@@ -1031,26 +982,23 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_pol_function_s
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_pol_function_s
+      CLASS (intpol_gp_context_s), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_s)             :: gp_context
-      REAL (rprec), DIMENSION(3)             :: bcart
-      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)              :: bcart
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      gp_context = TRANSFER(context, gp_context)
-      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
-      gp_pol_function_s = gp_context%signal%get_gp(gp_context%model,           &
-     &                                             xcart,                      &
-     &                                             gp_context%flags)           &
+      bcart = context%model%equilibrium%get_B_vec(xcart, .false.)
+      gp_pol_function_s = context%signal%get_gp(context%model, xcart,          &
+     &                                          context%flags)                 &
      &                  * DOT_PRODUCT(bcart, dxcart)
 
       CALL profiler_set_stop_time('gp_pol_function_s', start_time)
@@ -1077,24 +1025,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_function_x
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_function_x
+      CLASS (intpol_gp_context_x), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_x)             :: gp_context
-      REAL (rprec)                           :: start_time
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  This is the second signal so put xcart in the second position.
-      gp_context = TRANSFER(context, gp_context)
-      gp_function_x = model_get_gp_ne(gp_context%model,                        &
-     &                                xcart, gp_context%xcart)*dx
+      gp_function_x = context%model%get_gp_ne(xcart, context%xcart)*dx
 
       CALL profiler_set_stop_time('gp_function_x', start_time)
 
@@ -1120,26 +1065,23 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                           :: gp_pol_function_x
-      CHARACTER (len=1), INTENT(in)          :: context(:)
-      REAL (rprec), DIMENSION(3), INTENT(in) :: xcart
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dxcart
-      REAL (rprec), INTENT(in)               :: length
-      REAL (rprec), INTENT(in)               :: dx
+      REAL (rprec)                            :: gp_pol_function_x
+      CLASS (intpol_gp_context_x), INTENT(in) :: context
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: xcart
+      REAL (rprec), DIMENSION(3), INTENT(in)  :: dxcart
+      REAL (rprec), INTENT(in)                :: length
+      REAL (rprec), INTENT(in)                :: dx
 
 ! local variables
-      TYPE (intpol_gp_context_x)             :: gp_context
-      REAL (rprec), DIMENSION(3)             :: bcart
-      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)              :: bcart
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  This is the second signal so put xcart in the second position.
-      gp_context = TRANSFER(context, gp_context)
-      bcart = gp_context%model%equilibrium%get_B_vec(xcart, .false.)
-      gp_pol_function_x = model_get_gp_ne(gp_context%model,                    &
-     &                                    xcart, gp_context%xcart)             &
+      bcart = context%model%equilibrium%get_B_vec(xcart, .false.)
+      gp_pol_function_x = context%model%get_gp_ne(xcart, context%xcart)        &
      &                  * DOT_PRODUCT(bcart, dxcart)
 
       CALL profiler_set_stop_time('gp_pol_function_x', start_time)

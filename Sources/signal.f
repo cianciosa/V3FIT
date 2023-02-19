@@ -295,7 +295,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: signal_get_modeled_signal_cache
       CLASS (signal_class), INTENT(inout)     :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(:), INTENT(out) :: sigma
       LOGICAL, INTENT(in)                     :: use_cache
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
@@ -358,7 +358,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: signal_get_modeled_signal_last
       CLASS (signal_class), INTENT(inout)     :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -392,7 +392,7 @@
 !  Declare Arguments
       REAL (rprec) :: signal_get_observed_signal
       CLASS (signal_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -427,7 +427,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: signal_get_g2
       CLASS (signal_class), INTENT(inout)    :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       LOGICAL, INTENT(in)                    :: use_cache
       REAL (rprec), DIMENSION(4), INTENT(in) :: last_value
 
@@ -464,7 +464,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: signal_get_e
       CLASS (signal_class), INTENT(inout)    :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       LOGICAL, INTENT(in)                    :: use_cache
       REAL (rprec), DIMENSION(4), INTENT(in) :: last_value
 
@@ -640,7 +640,7 @@
 !  Declare Arguments
       REAL (rprec)                     :: signal_get_gp_i
       CLASS (signal_class), INTENT(in) :: this
-      TYPE (model_class), POINTER      :: a_model
+      CLASS (model_class), POINTER     :: a_model
       INTEGER, INTENT(in)              :: i
       INTEGER, INTENT(in)              :: flags
 
@@ -682,7 +682,7 @@
 !  Declare Arguments
       REAL (rprec)                     :: signal_get_gp_s
       CLASS (signal_class), INTENT(in) :: this
-      TYPE (model_class), POINTER      :: a_model
+      CLASS (model_class), POINTER     :: a_model
       CLASS (signal_class), POINTER    :: signal
       INTEGER, INTENT(in)              :: flags
 
@@ -719,7 +719,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: signal_get_gp_x
       CLASS (signal_class), INTENT(in)       :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -743,7 +743,7 @@
 !-------------------------------------------------------------------------------
       SUBROUTINE signal_scale_and_offset(this, a_model, value)
       CLASS (signal_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
       REAL (rprec), INTENT(inout)      :: value
 
 !  local variables
@@ -754,9 +754,8 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      scale_factor = model_get_signal_factor(a_model, this%scale_index)
-      offset_factor = model_get_signal_offset(a_model,                         &
-     &                                        this%offset_index)
+      scale_factor = a_model%get_signal_factor(this%scale_index)
+      offset_factor = a_model%get_signal_offset(this%offset_index)
 
       value = value*scale_factor + offset_factor
 
@@ -825,7 +824,7 @@
       CLASS (signal_class), INTENT(inout)   :: this
       INTEGER, INTENT(in)                   :: iou
       INTEGER, INTENT(in)                   :: index
-      TYPE (model_class), POINTER           :: a_model
+      CLASS (model_class), POINTER          :: a_model
 
 !  local variables
       REAL (rprec), DIMENSION(4)            :: modeled_signal
@@ -916,7 +915,7 @@
       CLASS (signal_class), INTENT(in) :: this
       INTEGER, INTENT(in)              :: iou
       INTEGER, INTENT(in)              :: index
-      TYPE (model_class), INTENT(in)   :: a_model
+      CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -957,7 +956,7 @@
 
 !  Declare Arguments
       CLASS (signal_class), INTENT(inout)   :: this
-      TYPE (model_class), POINTER           :: a_model
+      CLASS (model_class), POINTER          :: a_model
       INTEGER, INTENT(in)                   :: result_ncid
       INTEGER, INTENT(in)                   :: current_step
       INTEGER, INTENT(in)                   :: index
