@@ -241,7 +241,7 @@
 
 !  Declare Arguments
       CLASS (combination_class), INTENT(inout) :: this
-      TYPE (model_class), INTENT(in)           :: a_model
+      CLASS (model_class), INTENT(in)          :: a_model
 
 !  local Variables
       REAL (rprec)                             :: start_time
@@ -277,7 +277,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: combination_get_modeled_signal
       CLASS (combination_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out)  :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)   :: last_value
 
@@ -462,7 +462,7 @@
       CLASS (combination_class), INTENT(in) :: this
       INTEGER, INTENT(in)                   :: iou
       INTEGER, INTENT(in)                   :: index
-      TYPE (model_class), INTENT(in)        :: a_model
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
       INTEGER                               :: i

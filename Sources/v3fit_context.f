@@ -41,7 +41,7 @@
 !>  The parsed command line options.
          TYPE (commandline_parser_class), POINTER :: cl_parser => null()
 !>  The equilibrium model.
-         TYPE (model_class), POINTER                  :: model => null()
+         CLASS (model_class), POINTER                 :: model => null()
 !>  Guassian process models.
          TYPE (gaussp_class_pointer), DIMENSION(:), POINTER ::                 &
      &      gp => null()
@@ -176,7 +176,7 @@
       END IF
 
       IF (ASSOCIATED(this%model)) THEN
-         CALL model_destruct(this%model)
+         DEALLOCATE(this%model)
          this%model => null()
       END IF
 
@@ -618,7 +618,7 @@
 
 !  Write out the model.
       IF (ASSOCIATED(this%model)) THEN
-         CALL model_write(this%model, this%recout_iou)
+         CALL this%model%write(this%recout_iou)
       END IF
 
 !  Write out the signals
@@ -1113,7 +1113,7 @@
       END IF
 
       IF (ASSOCIATED(this%model)) THEN
-         CALL model_write_init_data(this%model, this%result_ncid)
+         CALL this%model%write_init_data(this%result_ncid)
       END IF
 
       CALL v3fit_context_write_step_data(this, .true., eq_steps)
@@ -1194,8 +1194,7 @@
       status = nf90_put_var(this%result_ncid, eq_steps_id, eq_steps)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-      CALL model_write_step_data(this%model, this%result_ncid,                 &
-     &                           current_step)
+      CALL this%model%write_step_data(this%result_ncid, current_step)
 
       IF (ASSOCIATED(this%recon)) THEN
          status = nf90_inq_varid(this%result_ncid, 'g2', g2_id)
@@ -1351,8 +1350,7 @@
      &                         this%recon%use_central)
          END DO
 
-         CALL model_restart(this%model, this%result_ncid,                      &
-     &                      current_step)
+         CALL this%model%restart(this%result_ncid, current_step)
 
          CALL reconstruction_restart(this%recon, this%result_ncid,             &
      &                               current_step,                             &

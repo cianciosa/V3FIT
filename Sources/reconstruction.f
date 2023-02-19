@@ -674,7 +674,7 @@
       LOGICAL :: reconstruction_eval_e
       TYPE (reconstruction_class), INTENT(inout)         :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
-      TYPE (model_class), POINTER                        :: a_model
+      CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
       INTEGER, INTENT(inout)                             :: eq_steps
@@ -689,7 +689,7 @@
       start_time = profiler_get_start_time()
 
 !  Converge the equilibrium. this%e is initialized to zero in the constructor.
-      IF (model_converge(a_model, eq_steps, iou, eq_comm, 'All')) THEN
+      IF (a_model%converge(eq_steps, iou, eq_comm, 'All')) THEN
          DO i = 1, SIZE(gaussp)
             CALL gaussp_set_profile(gaussp(i)%p, a_model)
          END DO
@@ -741,7 +741,7 @@
 !  Declare Arguments
       TYPE (reconstruction_class), INTENT(inout)     :: this
       TYPE (param_pointer), DIMENSION(:), INTENT(in) :: derived_params
-      TYPE (model_class), INTENT(inout)              :: a_model
+      CLASS (model_class), INTENT(inout)             :: a_model
 
 !  local variables
       INTEGER                                        :: i
@@ -792,7 +792,7 @@
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
-      TYPE (model_class), POINTER                        :: a_model
+      CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
@@ -826,7 +826,7 @@
          CALL param_sync_value(params(i)%p, a_model, recon_comm,               &
      &                         eq_comm, this%use_central)
       END DO
-      CALL model_sync_state(a_model, recon_comm)
+      CALL a_model%sync_state(recon_comm)
       CALL reconstruction_sync_state(this, recon_comm)
 
 !  Set the locked values.
@@ -859,7 +859,7 @@
          offset(i) = offset(i - 1) + stride(i - 1)
       END DO
 
-      CALL model_save_state(a_model)
+      CALL a_model%save_state
 
 !  Loop over the parameters, but only do iterations for the rank as determined
 !  by the stride and the offset. Strides and offsets are determined using C
@@ -883,8 +883,8 @@
 !  Check that model was able to converge. If the model converged proceed as
 !  normal otherwise set the jth index of the jacobian to zero to avoid a step
 !  in that parameter direction.
-         IF (model_converge(a_model, eq_steps, iou, eq_comm,                   &
-     &                      param_get_name(params(j)%p, a_model))) THEN
+         IF (a_model%converge(eq_steps, iou, eq_comm,                          &
+     &                        param_get_name(params(j)%p, a_model))) THEN
             DO i = 1, SIZE(gaussp)
                CALL gaussp_set_profile(gaussp(i)%p, a_model)
             END DO
@@ -948,7 +948,7 @@
 !  Reset the parameters and equilibrium to prepare for the backward step.
                CALL param_set_value(params(j)%p, a_model, param_value,         &
      &                              eq_comm, this%use_central)
-               CALL model_reset_state(a_model)
+               CALL a_model%reset_state
 !  Set the locked values.
                DO i = 1, SIZE(locks)
                   CALL param_set_lock_value(locks(i)%p, a_model,               &
@@ -958,9 +958,9 @@
 !  Decrement the parameter.
                CALL param_decrement(params(j)%p, a_model, eq_comm)
 
-               IF (model_converge(a_model, eq_steps, iou, eq_comm,             &
-     &                            param_get_name(params(j)%p,                  &
-     &                            a_model))) THEN
+               IF (a_model%converge(eq_steps, iou, eq_comm,                    &
+     &                              param_get_name(params(j)%p,                &
+     &                                             a_model))) THEN
                   DO i = 1, SIZE(gaussp)
                      CALL gaussp_set_profile(gaussp(i)%p, a_model)
                   END DO
@@ -1048,7 +1048,7 @@
 !  the value of param delta back to the parent process.
          CALL param_set_value(params(j)%p, a_model, param_value,               &
      &                        eq_comm, this%use_central)
-         CALL model_reset_state(a_model)
+         CALL a_model%reset_state
 !  Set the locked values.
          DO i = 1, SIZE(locks)
             CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
@@ -1105,7 +1105,7 @@
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
-      TYPE (model_class), POINTER                        :: a_model
+      CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
@@ -1654,7 +1654,7 @@
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
-      TYPE (model_class), POINTER                        :: a_model
+      CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
@@ -1817,7 +1817,7 @@
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
-      TYPE (model_class), POINTER                        :: a_model
+      CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
@@ -2032,7 +2032,7 @@
             END DO
 
 !  Sync the model from the best index.
-            CALL model_sync_child(a_model, best_index, recon_comm)
+            CALL a_model%sync_child(best_index, recon_comm)
             a_model%state_flags = model_state_all_off
          END IF
 
@@ -2059,7 +2059,7 @@
 !  parameters are reset so that the model is flagged to the converged state.
 !  Otherwise the model will try to converge again producing an incorrect wout
 !  file.
-             CALL model_reset_state(a_model)
+             CALL a_model%reset_state
          END IF
       ELSE
 
@@ -2083,7 +2083,7 @@
 
 !  Sync the model from the best index. The barrier ensures that child's wout
 !  file was copied before the child resets it. See model sync above.
-            CALL model_sync_child(a_model, mpi_rank, recon_comm)
+            CALL a_model%sync_child(mpi_rank, recon_comm)
          END IF
 
 !  Reset everything in case this step failed. When the next jacobian is
@@ -2099,7 +2099,7 @@
 !  Ensure that parent had a chance to sync the child equilibrium before it gets
 !  reset. See above.
          CALL MPI_BARRIER(recon_comm, error)
-         CALL model_reset_state(a_model)
+         CALL a_model%reset_state
          this%current_step = this%current_step - 1
 
       END IF
@@ -2562,7 +2562,7 @@
       INTEGER, INTENT(in)                             :: current_step
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)  :: derived_params
-      TYPE (model_class), POINTER                     :: a_model
+      CLASS (model_class), POINTER                    :: a_model
 
 !  Local variables
       REAL (rprec), DIMENSION(:), ALLOCATABLE         :: temp_model

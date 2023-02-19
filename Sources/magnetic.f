@@ -193,7 +193,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: magnetic_get_modeled_signal
       CLASS (magnetic_class), INTENT(inout)   :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -257,7 +257,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: magnetic_get_modeled_signal_point
       TYPE (magnetic_class), INTENT(in)       :: this
-      TYPE (model_class), INTENT(in)          :: a_model
+      CLASS (model_class), INTENT(in)         :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
 
 !  local variables
@@ -352,7 +352,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: magnetic_get_modeled_signal_coil
       TYPE (magnetic_class), INTENT(in)         :: this
-      TYPE (model_class), INTENT(in)            :: a_model
+      CLASS (model_class), INTENT(in)           :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out)   :: sigma
 
 !  local variables
@@ -592,7 +592,7 @@
 !  Declare Arguments
       Real (rprec) :: magnetic_get_modeled_signal_coil_pickup
       TYPE (magnetic_class), INTENT(in)   :: this
-      TYPE (model_class), INTENT(in)      :: a_model
+      CLASS (model_class), INTENT(in)     :: a_model
 
 !  local variables
       LOGICAL                             :: scale_current

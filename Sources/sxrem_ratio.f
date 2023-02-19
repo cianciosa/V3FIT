@@ -136,7 +136,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: sxrem_ratio_get_modeled_signal
       CLASS (sxrem_ratio_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out)  :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)   :: last_value
 
@@ -158,15 +158,15 @@
      &                               (this%indices(2) - 1))   .or.             &
      &    BTEST(a_model%state_flags, model_state_signal_flag)) THEN
 
-         emissivity = model_get_sxrem_cart(a_model, this%x_cart,               &
-     &                                     this%indices(2))
+         emissivity = a_model%get_sxrem_cart(this%x_cart,                      &
+     &                                       this%indices(2))
 
          IF (emissivity .eq. 0.0) THEN
             sxrem_ratio_get_modeled_signal(1) = 1.0
          ELSE
             sxrem_ratio_get_modeled_signal(1) =                                &
-     &         model_get_sxrem_cart(a_model, this%x_cart,                      &
-     &                              this%indices(1))/emissivity
+     &         a_model%get_sxrem_cart(this%x_cart,                             &
+     &                                this%indices(1))/emissivity
          END IF
 
          CALL this%scale_and_offset(a_model,                                   &
@@ -197,7 +197,7 @@
 !  Declare Arguments
       REAL (rprec) :: sxrem_ratio_get_observed_signal
       CLASS (sxrem_ratio_class), INTENT(in) :: this
-      TYPE (model_class), INTENT(in)        :: a_model
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
       REAL (rprec)                          :: start_time
@@ -206,8 +206,7 @@
       start_time = profiler_get_start_time()
 
       sxrem_ratio_get_observed_signal =                                        &
-     &   model_get_sxrem_ratio(a_model, model_get_te_cart(a_model,             &
-     &                                                    this%x_cart))
+     &   a_model%get_sxrem_ratio(a_model%get_te_cart(this%x_cart))
 
       CALL profiler_set_stop_time('sxrem_ratio_get_observed_signal',           &
      &                            start_time)
@@ -264,7 +263,7 @@
       CLASS (sxrem_ratio_class), INTENT(in) :: this
       INTEGER, INTENT(in)                   :: iou
       INTEGER, INTENT(in)                   :: index
-      TYPE (model_class), INTENT(in)        :: a_model
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
       REAL (rprec)                          :: start_time

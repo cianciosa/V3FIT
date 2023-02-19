@@ -79,9 +79,9 @@
 !-------------------------------------------------------------------------------
       TYPE sxrem_context
 !>  The index of the emissivity profile model.
-         INTEGER                     :: profile_number
+         INTEGER                      :: profile_number
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -90,13 +90,13 @@
 !-------------------------------------------------------------------------------
       TYPE sxrem_gp_context_i
 !>  The index of the emissivity profile model.
-         INTEGER                     :: profile_number
+         INTEGER                      :: profile_number
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
 !>  Position index.
-         INTEGER                     :: i
+         INTEGER                      :: i
 !>  Gaussian process kernel flags.
-         INTEGER                     :: flags = model_state_all_off
+         INTEGER                      :: flags = model_state_all_off
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -107,7 +107,7 @@
 !>  The index of the emissivity profile model.
          INTEGER                       :: profile_number
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER   :: model => null()
+         CLASS (model_class), POINTER  :: model => null()
 !>  Second signal
          CLASS (signal_class), POINTER :: signal => null()
 !>  Gaussian process kernel flags.
@@ -120,13 +120,13 @@
 !-------------------------------------------------------------------------------
       TYPE sxrem_gp_context_x
 !>  The index of the emissivity profile model.
-         INTEGER                     :: profile_number
+         INTEGER                      :: profile_number
 !>  Reference to a @ref model::model_class object.
-         TYPE (model_class), POINTER :: model => null()
+         CLASS (model_class), POINTER :: model => null()
 !>  First position.
-         REAL (rprec), DIMENSION(3)  :: xcart
+         REAL (rprec), DIMENSION(3)   :: xcart
 !>  Gaussian process kernel flags.
-         INTEGER                     :: flags
+         INTEGER                      :: flags
       END TYPE
 
 !*******************************************************************************
@@ -305,7 +305,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: sxrem_emiss_get_modeled_signal
       CLASS (sxrem_emiss_class), INTENT(inout) :: this
-      TYPE (model_class), POINTER              :: a_model
+      CLASS (model_class), POINTER             :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out)  :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)   :: last_value
 
@@ -375,7 +375,7 @@
 !  Declare Arguments
       REAL (rprec), DIMENSION(4) :: sxrem_ti_get_modeled_signal
       CLASS (sxrem_ti_class), INTENT(inout)   :: this
-      TYPE (model_class), POINTER             :: a_model
+      CLASS (model_class), POINTER            :: a_model
       REAL (rprec), DIMENSION(4), INTENT(out) :: sigma
       REAL (rprec), DIMENSION(4), INTENT(in)  :: last_value
 
@@ -507,7 +507,7 @@
 !  Declare Arguments
       REAL (rprec)                          :: sxrem_emiss_get_gp_i
       CLASS (sxrem_emiss_class), INTENT(in) :: this
-      TYPE (model_class), POINTER           :: a_model
+      CLASS (model_class), POINTER          :: a_model
       INTEGER, INTENT(in)                   :: i
       INTEGER, INTENT(in)                   :: flags
 
@@ -564,7 +564,7 @@
 !  Declare Arguments
       REAL (rprec)                       :: sxrem_ti_get_gp_i
       CLASS (sxrem_ti_class), INTENT(in) :: this
-      TYPE (model_class), POINTER        :: a_model
+      CLASS (model_class), POINTER       :: a_model
       INTEGER, INTENT(in)                :: i
       INTEGER, INTENT(in)                :: flags
 
@@ -620,7 +620,7 @@
 !  Declare Arguments
       REAL (rprec)                          :: sxrem_emiss_get_gp_s
       CLASS (sxrem_emiss_class), INTENT(in) :: this
-      TYPE (model_class), POINTER           :: a_model
+      CLASS (model_class), POINTER          :: a_model
       CLASS (signal_class), POINTER         :: signal
       INTEGER, INTENT(in)                   :: flags
 
@@ -676,7 +676,7 @@
 !  Declare Arguments
       REAL (rprec)                       :: sxrem_ti_get_gp_s
       CLASS (sxrem_ti_class), INTENT(in) :: this
-      TYPE (model_class), POINTER        :: a_model
+      CLASS (model_class), POINTER       :: a_model
       CLASS (signal_class), POINTER      :: signal
       INTEGER, INTENT(in)                :: flags
 
@@ -732,7 +732,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: sxrem_emiss_get_gp_x
       CLASS (sxrem_emiss_class), INTENT(in)  :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -786,7 +786,7 @@
 !  Declare Arguments
       REAL (rprec)                           :: sxrem_ti_get_gp_x
       CLASS (sxrem_ti_class), INTENT(in)     :: this
-      TYPE (model_class), POINTER            :: a_model
+      CLASS (model_class), POINTER           :: a_model
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: flags
 
@@ -860,8 +860,8 @@
       start_time = profiler_get_start_time()
 
       sxr_context = TRANSFER(context, sxr_context)
-      sxr_function = model_get_sxrem(sxr_context%model, xcart,                 &
-     &                               sxr_context%profile_number)*dx
+      sxr_function = sxr_context%model%get_sxrem(                              &
+     &                  xcart, sxr_context%profile_number)*dx
 
       CALL profiler_set_stop_time('sxr_function', start_time)
 
@@ -905,9 +905,9 @@
       start_time = profiler_get_start_time()
 
       sxr_context = TRANSFER(context, sxr_context)
-      ti_function = model_get_sxrem(sxr_context%model, xcart,                  &
-     &                              sxr_context%profile_number)                &
-     &            * model_get_ti(sxr_context%model, xcart)*dx
+      ti_function = sxr_context%model%get_sxrem(                               &
+     &                 xcart, sxr_context%profile_number)                      &
+     &            * sxr_context%model%get_ti(xcart)*dx
 
       CALL profiler_set_stop_time('ti_function', start_time)
 
@@ -952,8 +952,8 @@
 
       gp_context = TRANSFER(context, gp_context)
       gp_emiss_function_i =                                                    &
-     &   model_get_gp_sxrem(gp_context%model, xcart, gp_context%i,                   &
-     &                      gp_context%profile_number)*dx
+     &   gp_context%model%get_gp_sxrem(xcart, gp_context%i,                    &
+     &                                 gp_context%profile_number)*dx
 
       CALL profiler_set_stop_time('gp_emiss_function_i', start_time)
 
@@ -1002,14 +1002,14 @@
       IF (BTEST(gp_context%flags, model_state_sxrem_flag +                     &
      &                            (gp_context%profile_number - 1))) THEN
          gp_ti_function_i =                                                    &
-     &      model_get_gp_sxrem(gp_context%model, xcart, gp_context%i,          &
-     &                         gp_context%profile_number) *                    &
-     &      model_get_ti(gp_context%model, xcart)
+     &      gp_context%model%get_gp_sxrem(xcart, gp_context%i,                 &
+     &                                    gp_context%profile_number) *         &
+     &      gp_context%model%get_ti(xcart)
       ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
-         gp_ti_function_i = model_get_gp_ti(gp_context%model, xcart,           &
-     &                                      gp_context%i)                      &
-     &                    * model_get_sxrem(gp_context%model, xcart,           &
-     &                                      gp_context%profile_number)
+         gp_ti_function_i = gp_context%model%get_gp_ti(                        &
+     &                         xcart, gp_context%i)                            &
+     &                    * gp_context%model%get_sxrem(                        &
+     &                         xcart, gp_context%profile_number)
       ELSE
          gp_ti_function_i = 0.0
       END IF
@@ -1109,13 +1109,13 @@
          gp_ti_function_s = gp_context%signal%get_gp(gp_context%model,         &
      &                                               xcart,                    &
      &                                               gp_context%flags)         &
-     &                    * model_get_ti(gp_context%model, xcart)
+     &                    * gp_context%model%get_ti(xcart)
       ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
          gp_ti_function_s = gp_context%signal%get_gp(gp_context%model,         &
      &                                               xcart,                    &
      &                                               gp_context%flags)         &
-     &                    * model_get_sxrem(gp_context%model, xcart,           &
-     &                                      gp_context%profile_number)
+     &                    * gp_context%model%get_sxrem(                        &
+     &                         xcart, gp_context%profile_number)
       ELSE
          gp_ti_function_s = 0.0
       END IF
@@ -1164,8 +1164,8 @@
 !  This is the second signal so put xcart in the second position.
       gp_context = TRANSFER(context, gp_context)
       gp_emiss_function_x =                                                    &
-     &   model_get_gp_sxrem(gp_context%model, xcart, gp_context%xcart,         &
-     &                      gp_context%profile_number)*dx
+     &   gp_context%model%get_gp_sxrem(xcart, gp_context%xcart,                &
+     &                                 gp_context%profile_number)*dx
 
       CALL profiler_set_stop_time('gp_emiss_function_x', start_time)
 
@@ -1212,15 +1212,15 @@
       IF (BTEST(gp_context%flags, model_state_sxrem_flag +                     &
      &                            (gp_context%profile_number - 1))) THEN
          gp_ti_function_x =                                                    &
-     &      model_get_gp_sxrem(gp_context%model, xcart,                        &
-     &                         gp_context%xcart,                               &
-     &                         gp_context%profile_number) *                    &
-     &      model_get_ti(gp_context%model, xcart)
+     &      gp_context%model%get_gp_sxrem(xcart,                               &
+     &                                    gp_context%xcart,                    &
+     &                                    gp_context%profile_number) *         &
+     &      gp_context%model%get_ti(xcart)
       ELSE IF (BTEST(gp_context%flags, model_state_ti_flag)) THEN
-         gp_ti_function_x = model_get_gp_ti(gp_context%model, xcart,           &
-     &                                      gp_context%xcart)                  &
-     &                    * model_get_sxrem(gp_context%model, xcart,          &
-     &                                      gp_context%profile_number)
+         gp_ti_function_x = gp_context%model%get_gp_ti(                        &
+     &                         xcart, gp_context%xcart)                        &
+     &                    * gp_context%model%get_sxrem(                        &
+     &                         xcart, gp_context%profile_number)
       ELSE
          gp_ti_function_x = 0.0
       END IF

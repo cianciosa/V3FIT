@@ -58,7 +58,7 @@
       USE equilibrium
       USE emission
       USE model_state
-      USE integration_path, ONLY: path_int_class
+      USE integration_path, ONLY: integration_path_class
       USE stel_constants
       USE data_parameters
 
@@ -131,7 +131,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class representing a model.
 !-------------------------------------------------------------------------------
-      TYPE model_class
+      TYPE :: model_class
 !>  State flags indicating with parts of the model have changes.
          INTEGER      :: state_flags = model_state_all_off
 
@@ -197,80 +197,88 @@
          REAL (rprec), DIMENSION(:), POINTER :: signal_offset => null()
 
 !>  Integration parameters.
-         TYPE (path_int_class), POINTER      :: int_params => null()
+         TYPE (integration_path_class), POINTER :: int_params => null()
+      CONTAINS
+         PROCEDURE :: set_param => model_set_param
+         PROCEDURE :: set_grid_params => model_set_grid_params
+         PROCEDURE :: set_grid_profiles => model_set_grid_profiles
+         PROCEDURE :: get_param_id => model_get_param_id
+         PROCEDURE :: get_param_value => model_get_param_value
+         PROCEDURE :: get_param_name => model_get_param_name
+         PROCEDURE :: get_ne_type => model_get_ne_type
+         PROCEDURE :: get_gp_ne_num_hyper_param =>                             &
+     &                   model_get_gp_ne_num_hyper_param
+         PROCEDURE :: get_ne_af => model_get_ne_af
+         PROCEDURE :: get_ne_cart => model_get_ne_cart
+         PROCEDURE :: get_ne_radial => model_get_ne_radial
+         GENERIC   :: get_ne => get_ne_cart, get_ne_radial
+         PROCEDURE :: get_gp_ne_ij => model_get_gp_ne_ij
+         PROCEDURE :: get_gp_ne_pi => model_get_gp_ne_pi
+         PROCEDURE :: get_gp_ne_pp => model_get_gp_ne_pp
+         GENERIC   :: get_gp_ne => get_gp_ne_ij, get_gp_ne_pi,                 &
+     &                             get_gp_ne_pp
+         PROCEDURE :: get_te_type => model_get_te_type
+         PROCEDURE :: get_gp_te_num_hyper_param =>                             &
+     &                   model_get_gp_te_num_hyper_param
+         PROCEDURE :: get_te_af => model_get_te_af
+         PROCEDURE :: get_te_cart => model_get_te_cart
+         PROCEDURE :: get_te_radial => model_get_te_radial
+         GENERIC   :: get_te => get_te_cart, get_te_radial
+         PROCEDURE :: get_gp_te_ij => model_get_gp_te_ij
+         PROCEDURE :: get_gp_te_pi => model_get_gp_te_pi
+         PROCEDURE :: get_gp_te_pp => model_get_gp_te_pp
+         GENERIC   :: get_gp_te => get_gp_te_ij, get_gp_te_pi,                 &
+     &                             get_gp_te_pp
+         PROCEDURE :: get_ti_type => model_get_ti_type
+         PROCEDURE :: get_gp_ti_num_hyper_param =>                             &
+     &                model_get_gp_ti_num_hyper_param
+         PROCEDURE :: get_ti_af => model_get_ti_af
+         PROCEDURE :: get_ti_cart => model_get_te_cart
+         PROCEDURE :: get_ti_radial => model_get_ti_radial
+         GENERIC   :: get_ti => get_ti_cart, get_ti_radial
+         PROCEDURE :: get_gp_ti_ij => model_get_gp_ti_ij
+         PROCEDURE :: get_gp_ti_pi => model_get_gp_ti_pi
+         PROCEDURE :: get_gp_ti_pp => model_get_gp_ti_pp
+         GENERIC   :: get_gp_ti => get_gp_ti_ij, get_gp_ti_pi,                 &
+     &                             get_gp_ti_pp
+         PROCEDURE :: get_sxrem_type => model_get_sxrem_type
+         PROCEDURE :: get_gp_sxrem_num_hyper_param =>                          &
+     &                model_get_gp_sxrem_num_hyper_param
+         PROCEDURE :: get_sxrem_af => model_get_sxrem_af
+         PROCEDURE :: get_sxrem_cart => model_get_sxrem_cart
+         PROCEDURE :: get_sxrem_radial => model_get_sxrem_radial
+         GENERIC   :: get_sxrem => get_sxrem_cart, get_sxrem_radial
+         PROCEDURE :: get_gp_sxrem_ij => model_get_gp_sxrem_ij
+         PROCEDURE :: get_gp_sxrem_pi => model_get_gp_sxrem_pi
+         PROCEDURE :: get_gp_sxrem_pp => model_get_gp_sxrem_pp
+         GENERIC   :: get_gp_sxrem => get_gp_sxrem_ij, get_gp_sxrem_pi,        &
+     &                                get_gp_sxrem_pp
+         PROCEDURE :: get_sxrem_ratio => model_get_sxrem_ratio
+         PROCEDURE :: get_signal_factor => model_get_signal_factor
+         PROCEDURE :: get_signal_offset => model_get_signal_offset
+         PROCEDURE :: is_recon_param => model_is_recon_param
+         PROCEDURE :: reset_state => model_reset_state
+         PROCEDURE :: save_state => model_save_state
+         PROCEDURE :: converge => model_converge
+         PROCEDURE :: write => model_write
+         PROCEDURE :: def_result => model_def_result
+         PROCEDURE :: write_init_data => model_write_init_data
+         PROCEDURE :: write_step_data => model_write_step_data
+         PROCEDURE :: restart => model_restart
+         PROCEDURE :: sync_state => model_sync_state
+         PROCEDURE :: sync_child => model_sync_child
+         FINAL :: model_destruct
       END TYPE
 
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
 !-------------------------------------------------------------------------------
-!>  Interface for the model density profile values.
+!>  Interface for the construction of @ref mse_class types using
+!>  @ref mse_construct_vec or @ref mse_construct_rad.
 !-------------------------------------------------------------------------------
-      INTERFACE model_get_ne
-         MODULE PROCEDURE model_get_ne_cart,                                   &
-     &                    model_get_ne_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model guassian process density profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_gp_ne
-         MODULE PROCEDURE model_get_gp_ne_ij,                                  &
-     &                    model_get_gp_ne_pi,                                  &
-     &                    model_get_gp_ne_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model electron temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_te
-         MODULE PROCEDURE model_get_te_cart,                                   &
-     &                    model_get_te_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model guassian process electron temperature profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_gp_te
-         MODULE PROCEDURE model_get_gp_te_ij,                                  &
-     &                    model_get_gp_te_pi,                                  &
-     &                    model_get_gp_te_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_ti
-         MODULE PROCEDURE model_get_ti_cart,                                   &
-     &                    model_get_ti_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model guassian process ion temperature profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_gp_ti
-         MODULE PROCEDURE model_get_gp_ti_ij,                                  &
-     &                    model_get_gp_ti_pi,                                  &
-     &                    model_get_gp_ti_pp
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the model soft x-ray emissivity profile values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_sxrem
-         MODULE PROCEDURE model_get_sxrem_cart,                                &
-     &                    model_get_sxrem_radial
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the mdoel guassian process soft x-ray emissivity profile
-!>  values.
-!-------------------------------------------------------------------------------
-      INTERFACE model_get_gp_sxrem
-         MODULE PROCEDURE model_get_gp_sxrem_ij,                               &
-     &                    model_get_gp_sxrem_pi,                               &
-     &                    model_get_gp_sxrem_pp
+      INTERFACE model_class
+         MODULE PROCEDURE model_construct
       END INTERFACE
 
       CONTAINS
@@ -319,7 +327,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), POINTER :: model_construct
+      CLASS (model_class), POINTER :: model_construct
       CHARACTER (len=data_name_length), INTENT(in) :: ne_type
       CHARACTER (len=data_name_length), DIMENSION(:), INTENT(in) ::            &
      &   sxrem_type
@@ -340,7 +348,7 @@
       INTEGER, INTENT(in)                          :: state_flags
       REAL (rprec), DIMENSION(:)                   :: signal_factor
       REAL (rprec), DIMENSION(:)                   :: signal_offset
-      TYPE (path_int_class), POINTER               :: int_params
+      TYPE (integration_path_class), POINTER       :: int_params
 
 !  local variables
       INTEGER                                      :: i
@@ -463,7 +471,7 @@
       grid_size = equilibrium%get_grid_size()
 
       IF (grid_size .gt. 0) THEN
-         CALL model_set_grid_params(model_construct, grid_size)
+         CALL model_construct%set_grid_params(grid_size)
 
          ALLOCATE(model_construct%ne_grid(grid_size))
          ALLOCATE(model_construct%sxrem_grid(grid_size,                        &
@@ -511,7 +519,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), POINTER :: this
+      TYPE (model_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%sxrem_type)) THEN
@@ -584,8 +592,6 @@
          this%int_params => null()
       END IF
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -611,16 +617,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: id
-      INTEGER, INTENT(in)               :: i_index
-      INTEGER, INTENT(in)               :: j_index
-      REAL (rprec), INTENT(in)          :: value
-      INTEGER, INTENT(in)               :: eq_comm
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                :: id
+      INTEGER, INTENT(in)                :: i_index
+      INTEGER, INTENT(in)                :: j_index
+      REAL (rprec), INTENT(in)           :: value
+      INTEGER, INTENT(in)                :: eq_comm
 
 !  local variables
-      INTEGER                           :: i
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: i
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -725,12 +731,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: size
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                :: size
 
 !  local variables
-      REAL (rprec)                      :: grid_stop
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: grid_stop
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -756,13 +762,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                           :: i
-      INTEGER                           :: j
-      REAL (rprec)                      :: r
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: i
+      INTEGER                            :: j
+      REAL (rprec)                       :: r
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -771,7 +777,7 @@
      &    BTEST(this%state_flags, model_state_ne_flag)) THEN
          DO i = 1, SIZE(this%ne_grid)
             r = (i - 1)*this%grid_step + this%grid_start
-            this%ne_grid(i) = model_get_ne(this, r)
+            this%ne_grid(i) = this%get_ne(r)
          END DO
       END IF
 
@@ -781,7 +787,7 @@
      &                model_state_sxrem_flag + (j - 1))) THEN
                DO i = 1, SIZE(this%sxrem_grid, 1)
                   r = (i - 1)*this%grid_step + this%grid_start
-                  this%sxrem_grid(i,j) = model_get_sxrem(this, r, j)
+                  this%sxrem_grid(i,j) = this%get_sxrem(r, j)
                END DO
             END IF
          END DO
@@ -791,7 +797,7 @@
      &    BTEST(this%state_flags, model_state_te_flag)) THEN
          DO i = 1, SIZE(this%te_grid)
             r = (i - 1)*this%grid_step + this%grid_start
-            this%te_grid(i) = model_get_te(this, r)
+            this%te_grid(i) = this%get_te(r)
          END DO
       END IF
 
@@ -799,11 +805,12 @@
      &    BTEST(this%state_flags, model_state_ti_flag)) THEN
          DO i = 1, SIZE(this%ti_grid)
             r = (i - 1)*this%grid_step + this%grid_start
-            this%ti_grid(i) = model_get_ti(this, r)
+            this%ti_grid(i) = this%get_ti(r)
          END DO
       END IF
 
-      CALL profiler_set_stop_time('model_set_grid_params', start_time)
+      CALL profiler_set_stop_time('model_set_grid_profiles',                   &
+     &                            start_time)
 
       END SUBROUTINE
 
@@ -825,12 +832,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                        :: model_get_param_id
-      TYPE (model_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)  :: param_name
+      INTEGER                         :: model_get_param_id
+      CLASS (model_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)   :: param_name
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -904,14 +911,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_param_value
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: id
-      INTEGER, INTENT(in)            :: i_index
-      INTEGER, INTENT(in)            :: j_index
+      REAL (rprec)                    :: model_get_param_value
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: id
+      INTEGER, INTENT(in)             :: i_index
+      INTEGER, INTENT(in)             :: j_index
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1005,7 +1012,7 @@
 
 !  Declare Arguments
       CHARACTER(len=data_name_length) :: model_get_param_name
-      TYPE (model_class), INTENT(in)  :: this
+      CLASS (model_class), INTENT(in) :: this
       INTEGER, INTENT(in)             :: id
 
 !  local variables
@@ -1079,11 +1086,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                        :: model_get_gp_ne_num_hyper_param
-      TYPE (model_class), INTENT(in) :: this
+      INTEGER                         :: model_get_gp_ne_num_hyper_param
+      CLASS (model_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1110,7 +1117,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: model_get_ne_af
-      TYPE (model_class), INTENT(in)      :: this
+      CLASS (model_class), INTENT(in)     :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -1140,13 +1147,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_gp_ne_ij
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: i
-      INTEGER, INTENT(in)            :: j
+      REAL (rprec)                    :: model_get_gp_ne_ij
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: i
+      INTEGER, INTENT(in)             :: j
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1176,7 +1183,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_ne_pi
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -1212,7 +1219,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_ne_pp
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -1246,7 +1253,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_ne_cart
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -1265,7 +1272,7 @@
          CASE (model_ne_te_p_type)
 !  Electron temperature of zero can cause divide by zero errors. Check the value
 !  of the temperature first. If it is zero return zero density.
-            model_get_ne_cart = model_get_te(this, x_cart)
+            model_get_ne_cart = this%get_te(x_cart)
             IF (model_get_ne_cart .gt. 0.0) THEN
                model_get_ne_cart = eV_per_Joule*this%pressure_fraction         &
      &                           * this%equilibrium%get_p(x_cart,              &
@@ -1297,12 +1304,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_ne_radial
-      TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: s
+      REAL (rprec)                    :: model_get_ne_radial
+      CLASS (model_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)        :: s
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1317,7 +1324,7 @@
          CASE (model_ne_te_p_type)
 !  Electron temperature of zero can cause divide by zero errors. Check the value
 !  of the temperature first. If it is zero return zero density.
-            model_get_ne_radial = model_get_te(this, s)
+            model_get_ne_radial = this%get_te(s)
             IF (model_get_ne_radial .gt. 0.0) THEN
                model_get_ne_radial = eV_per_Joule*this%pressure_fraction       &
      &                             * this%equilibrium%get_p(s, .false.)        &
@@ -1347,11 +1354,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                        :: model_get_gp_te_num_hyper_param
-      TYPE (model_class), INTENT(in) :: this
+      INTEGER                         :: model_get_gp_te_num_hyper_param
+      CLASS (model_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1378,7 +1385,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: model_get_te_af
-      TYPE (model_class), INTENT(in)      :: this
+      CLASS (model_class), INTENT(in)     :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -1408,13 +1415,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_gp_te_ij
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: i
-      INTEGER, INTENT(in)            :: j
+      REAL (rprec)                    :: model_get_gp_te_ij
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: i
+      INTEGER, INTENT(in)             :: j
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1444,7 +1451,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_te_pi
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -1478,7 +1485,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_te_pp
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -1511,7 +1518,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_te_cart
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -1529,7 +1536,7 @@
          CASE (model_te_ne_p_type)
 !  Electron densities of zero can cause divide by zero errors. Check the value
 !  of the density first. If it is zero return zero temperature.
-            model_get_te_cart = model_get_ne(this, x_cart)
+            model_get_te_cart = this%get_ne(x_cart)
             IF (model_get_te_cart .gt. 0.0) THEN
                model_get_te_cart = eV_per_Joule*this%pressure_fraction         &
      &                           * this%equilibrium%get_p(x_cart,              &
@@ -1561,12 +1568,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_te_radial
-      TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: s
+      REAL (rprec)                    :: model_get_te_radial
+      CLASS (model_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)        :: s
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1580,7 +1587,7 @@
          CASE (model_te_ne_p_type)
 !  Electron densities of zero can cause divide by zero errors. Check the value
 !  of the density first. If it is zero return zero temperature.
-            model_get_te_radial = model_get_ne(this, s)
+            model_get_te_radial = this%get_ne(s)
             IF (model_get_te_radial .gt. 0.0) THEN
                model_get_te_radial = eV_per_Joule*this%pressure_fraction       &
      &                             * this%equilibrium%get_p(s, .false.)        &
@@ -1610,11 +1617,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                        :: model_get_gp_ti_num_hyper_param
-      TYPE (model_class), INTENT(in) :: this
+      INTEGER                         :: model_get_gp_ti_num_hyper_param
+      CLASS (model_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1641,7 +1648,7 @@
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(:), POINTER :: model_get_ti_af
-      TYPE (model_class), INTENT(in)      :: this
+      CLASS (model_class), INTENT(in)     :: this
 
 !  local variables
       REAL (rprec)                        :: start_time
@@ -1671,13 +1678,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_gp_ti_ij
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: i
-      INTEGER, INTENT(in)            :: j
+      REAL (rprec)                    :: model_get_gp_ti_ij
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: i
+      INTEGER, INTENT(in)             :: j
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1706,7 +1713,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_ti_pi
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
 
@@ -1740,7 +1747,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_ti_pp
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
 
@@ -1773,7 +1780,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_ti_cart
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
 
 !  local variables
@@ -1812,12 +1819,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_ti_radial
-      TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: s
+      REAL (rprec)                    :: model_get_ti_radial
+      CLASS (model_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)        :: s
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1853,11 +1860,11 @@
 
 !  Declare Arguments
       INTEGER :: model_get_gp_sxrem_num_hyper_param
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: index
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: index
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1884,12 +1891,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(:), POINTER :: model_get_sxrem_af
-      TYPE (model_class), INTENT(in)      :: this
-      INTEGER, INTENT(in)                 :: index
+      REAL (rprec), DIMENSION(:), POINTER  :: model_get_sxrem_af
+      CLASS (model_class), INTENT(in)      :: this
+      INTEGER, INTENT(in)                  :: index
 
 !  local variables
-      REAL (rprec)                        :: start_time
+      REAL (rprec)                         :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1917,14 +1924,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_gp_sxrem_ij
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: i
-      INTEGER, INTENT(in)            :: j
-      INTEGER, INTENT(in)            :: index
+      REAL (rprec)                    :: model_get_gp_sxrem_ij
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: i
+      INTEGER, INTENT(in)             :: j
+      INTEGER, INTENT(in)             :: index
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1957,7 +1964,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_sxrem_pi
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: i
       INTEGER, INTENT(in)                    :: index
@@ -1996,7 +2003,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_gp_sxrem_pp
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       REAL (rprec), DIMENSION(3), INTENT(in) :: y_cart
       INTEGER, INTENT(in)                    :: index
@@ -2033,7 +2040,7 @@
 
 !  Declare Arguments
       REAL (rprec)                           :: model_get_sxrem_cart
-      TYPE (model_class), INTENT(in)         :: this
+      CLASS (model_class), INTENT(in)        :: this
       REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
       INTEGER, INTENT(in)                    :: index
 
@@ -2054,8 +2061,8 @@
          CASE (model_sxrem_te_ne_type)
             model_get_sxrem_cart =                                             &
      &         emission_get_emission(this%emission,                            &
-     &                               model_get_te(this, x_cart),               &
-     &                               model_get_ne(this, x_cart), index)
+     &                               this%get_te(x_cart),                      &
+     &                               this%get_ne(x_cart), index)
 
          CASE DEFAULT
             model_get_sxrem_cart = 0.0_rprec
@@ -2082,13 +2089,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_sxrem_radial
-      TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: s
-      INTEGER, INTENT(in)            :: index
+      REAL (rprec)                    :: model_get_sxrem_radial
+      CLASS (model_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)        :: s
+      INTEGER, INTENT(in)             :: index
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2104,8 +2111,8 @@
          CASE (model_sxrem_te_ne_type)
             model_get_sxrem_radial =                                           &
      &         emission_get_emission(this%emission,                            &
-     &                               model_get_te(this, s),                    &
-     &                               model_get_ne(this, s), index)
+     &                               this%get_te(s),                           &
+     &                               this%get_ne(s), index)
 
          CASE DEFAULT
             model_get_sxrem_radial = 0.0_rprec
@@ -2134,12 +2141,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_sxrem_ratio
-      TYPE (model_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)       :: te
+      REAL (rprec)                    :: model_get_sxrem_ratio
+      CLASS (model_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)        :: te
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2163,7 +2170,7 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: model_get_ne_type
-      TYPE (model_class), INTENT(in)   :: this
+      CLASS (model_class), INTENT(in)  :: this
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -2200,7 +2207,7 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: model_get_te_type
-      TYPE (model_class), INTENT(in)   :: this
+      CLASS (model_class), INTENT(in)  :: this
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -2237,7 +2244,7 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: model_get_ti_type
-      TYPE (model_class), INTENT(in)   :: this
+      CLASS (model_class), INTENT(in)  :: this
 
 !  local variables
       REAL (rprec)                     :: start_time
@@ -2272,7 +2279,7 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: model_get_sxrem_type
-      TYPE (model_class), INTENT(in)   :: this
+      CLASS (model_class), INTENT(in)  :: this
       INTEGER, INTENT(in)              :: index
 
 !  local variables
@@ -2312,9 +2319,9 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_signal_factor
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: index
+      REAL (rprec)                    :: model_get_signal_factor
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: index
 
 !  local variables
       REAL (rprec)                   :: start_time
@@ -2346,12 +2353,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                   :: model_get_signal_offset
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: index
+      REAL (rprec)                    :: model_get_signal_offset
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: index
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2384,12 +2391,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                        :: model_is_recon_param
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: id
+      LOGICAL                         :: model_is_recon_param
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: id
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2428,16 +2435,16 @@
        IMPLICIT NONE
 
 !  Declare Arguments
-       TYPE (model_class), INTENT(inout) :: this
+       CLASS (model_class), INTENT(inout) :: this
 
 !  local variables
-       REAL (rprec)                            :: start_time
+       REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       CALL this%equilibrium%reset_state()
-      CALL model_set_grid_profiles(this)
+      CALL this%set_grid_profiles()
       this%state_flags = model_state_all_off
 
       CALL profiler_set_stop_time('model_reset_state', start_time)
@@ -2456,10 +2463,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2488,18 +2495,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                           :: model_converge
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(inout)            :: num_iter
-      INTEGER, INTENT(in)               :: iou
-      INTEGER, INTENT(in)               :: eq_comm
-      CHARACTER (len=*), INTENT(in)     :: param_name
+      LOGICAL                            :: model_converge
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(inout)             :: num_iter
+      INTEGER, INTENT(in)                :: iou
+      INTEGER, INTENT(in)                :: eq_comm
+      CHARACTER (len=*), INTENT(in)      :: param_name
 
 !  local variables
-      INTEGER                           :: init_num_iter
-      REAL (rprec)                      :: r
-      INTEGER                           :: error
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: init_num_iter
+      REAL (rprec)                       :: r
+      INTEGER                            :: error
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2538,7 +2545,7 @@
          WRITE (iou,1000) model_converge, num_iter,                            &
      &                    num_iter - init_num_iter, TRIM(param_name)
 
-         CALL model_set_grid_profiles(this)
+         CALL this%set_grid_profiles()
 
       END IF
 
@@ -2563,12 +2570,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: iou
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: iou
 
 !  local variables
-      INTEGER                        :: i
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: i
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2576,17 +2583,17 @@
       WRITE (iou,*)
       WRITE (iou,*) ' *** Model Parameters'
       WRITE (iou,*) 'model_ne_type is ',                                       &
-     &              TRIM(model_get_ne_type(this))
+     &              TRIM(this%get_ne_type())
 
       DO i = 1, SIZE(this%sxrem_type)
          WRITE (iou,*) 'model_sxrem_type is ',                                 &
-     &                 TRIM(model_get_sxrem_type(this, i))
+     &                 TRIM(this%get_sxrem_type(i))
       END DO
 
       WRITE (iou,*) 'model_te_type is ',                                       &
-     &              TRIM(model_get_te_type(this))
+     &              TRIM(this%get_te_type())
       WRITE (iou,*) 'model_ti_type is ',                                       &
-     &              TRIM(model_get_ti_type(this))
+     &              TRIM(this%get_ti_type())
       WRITE (iou, 1000) 'ne_pp_unit is ', this%ne_unit
       WRITE (iou, 1000) 'ne_min is ', this%ne_min
       WRITE (iou, 1000) 'te_min is ', this%te_min
@@ -2674,31 +2681,31 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: result_ncid
-      INTEGER, INTENT(in)            :: maxnsteps_dim_id
-      INTEGER, INTENT(in)            :: string_len_dim_id
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: result_ncid
+      INTEGER, INTENT(in)             :: maxnsteps_dim_id
+      INTEGER, INTENT(in)             :: string_len_dim_id
 
 !  local variables
-      INTEGER                        :: status
-      INTEGER                        :: model_grid_size_dim_id
-      INTEGER                        :: model_num_sxrem_dim_id
-      INTEGER                        :: model_num_coosig_w_dim_id
-      INTEGER                        :: ne_type_var_id
-      INTEGER                        :: te_type_var_id
-      INTEGER                        :: ti_type_var_id
-      INTEGER                        :: sxrem_type_var_id
-      INTEGER                        :: ne_unit_var_id
-      INTEGER                        :: ne_min_var_id
-      INTEGER                        :: te_min_var_id
-      INTEGER                        :: ti_min_var_id
-      INTEGER                        :: pressure_fraction_var_id
-      INTEGER                        :: ne_grid_var_id
-      INTEGER                        :: te_grid_var_id
-      INTEGER                        :: ti_grid_var_id
-      INTEGER                        :: sxrem_grid_var_id
-      INTEGER                        :: coosig_w_var_id
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: status
+      INTEGER                         :: model_grid_size_dim_id
+      INTEGER                         :: model_num_sxrem_dim_id
+      INTEGER                         :: model_num_coosig_w_dim_id
+      INTEGER                         :: ne_type_var_id
+      INTEGER                         :: te_type_var_id
+      INTEGER                         :: ti_type_var_id
+      INTEGER                         :: sxrem_type_var_id
+      INTEGER                         :: ne_unit_var_id
+      INTEGER                         :: ne_min_var_id
+      INTEGER                         :: te_min_var_id
+      INTEGER                         :: ti_min_var_id
+      INTEGER                         :: pressure_fraction_var_id
+      INTEGER                         :: ne_grid_var_id
+      INTEGER                         :: te_grid_var_id
+      INTEGER                         :: ti_grid_var_id
+      INTEGER                         :: sxrem_grid_var_id
+      INTEGER                         :: coosig_w_var_id
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2836,16 +2843,17 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: result_ncid
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: result_ncid
 
 !  Local variables
-      INTEGER                        :: i, status
-      INTEGER                        :: ne_type_var_id
-      INTEGER                        :: te_type_var_id
-      INTEGER                        :: ti_type_var_id
-      INTEGER                        :: sxrem_type_var_id
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: i
+      INTEGER                         :: status
+      INTEGER                         :: ne_type_var_id
+      INTEGER                         :: te_type_var_id
+      INTEGER                         :: ti_type_var_id
+      INTEGER                         :: sxrem_type_var_id
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2854,7 +2862,7 @@
      &                        ne_type_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ne_type_var_id,                       &
-     &                      model_get_ne_type(this))
+     &                      this%get_ne_type())
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       status = nf90_inq_varid(result_ncid, 'model_te_type',                    &
@@ -2868,7 +2876,7 @@
      &                        ti_type_var_id)
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       status = nf90_put_var(result_ncid, ti_type_var_id,                       &
-     &                      model_get_ti_type(this))
+     &                      this%get_ti_type())
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       IF (ASSOCIATED(this%sxrem_type)) THEN
@@ -2876,7 +2884,7 @@
      &                           sxrem_type_var_id)
          DO i = 1, SIZE(this%sxrem_type)
             status = nf90_put_var(result_ncid, sxrem_type_var_id,              &
-     &                            model_get_sxrem_type(this, i),               &
+     &                            this%get_sxrem_type(i),                      &
      &                            start=(/ 1, i /),                            &
      &                            count=(/ data_name_length, 1 /))
             CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
@@ -2902,23 +2910,24 @@
       USE ezcdf
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(in) :: this
-      INTEGER, INTENT(in)            :: result_ncid
-      INTEGER, INTENT(in)            :: current_step
+      CLASS (model_class), INTENT(in) :: this
+      INTEGER, INTENT(in)             :: result_ncid
+      INTEGER, INTENT(in)             :: current_step
 
 !  Local variables
-      INTEGER                        :: i, status
-      INTEGER                        :: ne_unit_var_id
-      INTEGER                        :: ne_min_var_id
-      INTEGER                        :: te_min_var_id
-      INTEGER                        :: ti_min_var_id
-      INTEGER                        :: pressure_fraction_var_id
-      INTEGER                        :: ne_grid_var_id
-      INTEGER                        :: te_grid_var_id
-      INTEGER                        :: ti_grid_var_id
-      INTEGER                        :: sxrem_grid_var_id
-      INTEGER                        :: coosig_w_var_id
-      REAL (rprec)                   :: start_time
+      INTEGER                         :: i
+      INTEGER                         :: status
+      INTEGER                         :: ne_unit_var_id
+      INTEGER                         :: ne_min_var_id
+      INTEGER                         :: te_min_var_id
+      INTEGER                         :: ti_min_var_id
+      INTEGER                         :: pressure_fraction_var_id
+      INTEGER                         :: ne_grid_var_id
+      INTEGER                         :: te_grid_var_id
+      INTEGER                         :: ti_grid_var_id
+      INTEGER                         :: sxrem_grid_var_id
+      INTEGER                         :: coosig_w_var_id
+      REAL (rprec)                    :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3029,23 +3038,24 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: result_ncid
-      INTEGER, INTENT(in)               :: current_step
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                :: result_ncid
+      INTEGER, INTENT(in)                :: current_step
 
 !  Local variables
-      INTEGER                           :: i, status
-      INTEGER                           :: ne_unit_var_id
-      INTEGER                           :: ne_min_var_id
-      INTEGER                           :: te_min_var_id
-      INTEGER                           :: ti_min_var_id
-      INTEGER                           :: pressure_fraction_var_id
-      INTEGER                           :: ne_grid_var_id
-      INTEGER                           :: te_grid_var_id
-      INTEGER                           :: ti_grid_var_id
-      INTEGER                           :: sxrem_grid_var_id
-      INTEGER                           :: coosig_w_var_id
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: i
+      INTEGER                            :: status
+      INTEGER                            :: ne_unit_var_id
+      INTEGER                            :: ne_min_var_id
+      INTEGER                            :: te_min_var_id
+      INTEGER                            :: ti_min_var_id
+      INTEGER                            :: pressure_fraction_var_id
+      INTEGER                            :: ne_grid_var_id
+      INTEGER                            :: te_grid_var_id
+      INTEGER                            :: ti_grid_var_id
+      INTEGER                            :: sxrem_grid_var_id
+      INTEGER                            :: coosig_w_var_id
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3160,14 +3170,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: recon_comm
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      INTEGER                           :: grid_size
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: error
+      INTEGER                            :: grid_size
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -3210,16 +3220,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (model_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: index
-      INTEGER, INTENT(in)               :: recon_comm
+      CLASS (model_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                :: index
+      INTEGER, INTENT(in)                :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      INTEGER                           :: grid_size
-      INTEGER                           :: mpi_rank
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: error
+      INTEGER                            :: grid_size
+      INTEGER                            :: mpi_rank
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
