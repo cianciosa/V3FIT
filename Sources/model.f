@@ -197,7 +197,7 @@
          REAL (rprec), DIMENSION(:), POINTER :: signal_offset => null()
 
 !>  Integration parameters.
-         TYPE (integration_path_class), POINTER :: int_params => null()
+         CLASS (integration_path_class), POINTER :: int_params => null()
       CONTAINS
          PROCEDURE :: set_param => model_set_param
          PROCEDURE :: set_grid_params => model_set_grid_params
@@ -346,9 +346,9 @@
       REAL (rprec), INTENT(in)                     :: resonace_range
       REAL (rprec), DIMENSION(:), INTENT(in)       :: coosig_wgts
       INTEGER, INTENT(in)                          :: state_flags
-      REAL (rprec), DIMENSION(:)                   :: signal_factor
-      REAL (rprec), DIMENSION(:)                   :: signal_offset
-      TYPE (integration_path_class), POINTER       :: int_params
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: signal_factor
+      REAL (rprec), DIMENSION(:), INTENT(in)       :: signal_offset
+      CLASS (integration_path_class), POINTER      :: int_params
 
 !  local variables
       INTEGER                                      :: i
@@ -589,7 +589,7 @@
 
       IF (ASSOCIATED(this%int_params)) THEN
          DEALLOCATE(this%int_params)
-         this%int_params => null()
+         this%signal_offset => null()
       END IF
 
       END SUBROUTINE
