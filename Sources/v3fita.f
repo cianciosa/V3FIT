@@ -875,7 +875,7 @@
 #endif
      &                   state_flags, force_solve)
 
-      context%model => model_construct(model_ne_type,                          &
+      context%model => model_class(model_ne_type,                              &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
      &   model_ti_type, ne_pp_unit, ne_min, te_min,                            &
      &   ti_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,                &
@@ -925,7 +925,7 @@
       vacuum => vacuum_class(vacuum_nli_filename, context%runlog_iou,          &
      &                       force_solve)
 
-      context%model => model_construct(model_ne_type,                          &
+      context%model => model_class(model_ne_type,                              &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
      &   model_ti_type, ne_pp_unit, ne_min, te_min,                            &
      &   ti_min, sxrem_min(1:num_sxrem_p), e_pressure_fraction,                &
@@ -1012,7 +1012,7 @@
 !  equilibrium is converged.
       not_converged = TRIM(siesta_restart_filename) .eq. ''
 
-      context%model => model_construct(model_ne_type,                          &
+      context%model => model_class(model_ne_type,                              &
      &   model_sxrem_type_a(1:num_sxrem_p), model_te_type,                     &
      &   model_ti_type, ne_pp_unit, ne_min, te_min, ti_min,                    &
      &   sxrem_min(1:num_sxrem_p), e_pressure_fraction,                        &
