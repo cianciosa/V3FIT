@@ -7,6 +7,8 @@ target_link_libraries (xv3fit PUBLIC siesta vmec)
 
 add_subdirectory (Sources)
 
+install (TARGETS xv3fit)
+
 ################################################################################
 #  Testing                                                                     #
 ################################################################################
