@@ -12,6 +12,9 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
 
 add_test (NAME    lasym_boundary_test
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -serial)
+set_tests_properties (lasym_boundary_test
+                      PROPERTIES
+                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
@@ -20,25 +23,52 @@ add_test (NAME    lasym_boundary_test
 #  Check the jacobians for the the correct values.
 add_test (NAME    lasym_boundary_test_jac_1-1:1-1
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jac_value.py --file=runlog.input.test.v3fit --ilow=0 --ihigh=0 --jlow=0 --jhigh=0 --value=100.0)
+set_tests_properties (lasym_boundary_test_jac_1-1:1-1
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 add_test (NAME    lasym_boundary_test_jac_1-1:2-2
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jac_value.py --file=runlog.input.test.v3fit --ilow=0 --ihigh=0 --jlow=1 --jhigh=1 --value=0.0)
+set_tests_properties (lasym_boundary_test_jac_1-1:2-2
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 add_test (NAME    lasym_boundary_test_jac_2-2:1-1
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jac_value.py --file=runlog.input.test.v3fit --ilow=1 --ihigh=1 --jlow=0 --jhigh=0 --value=0.0)
+set_tests_properties (lasym_boundary_test_jac_2-2:1-1
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 add_test (NAME    lasym_boundary_test_jac_2-2:2-2
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jac_value.py --file=runlog.input.test.v3fit --ilow=1 --ihigh=1 --jlow=1 --jhigh=1 --value=100.0)
+set_tests_properties (lasym_boundary_test_jac_2-2:2-2
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 
 #  Check that the observed signal was written correctly.
 add_test (NAME    lasym_boundary_test_check_observed_prior_1
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.test.v3fit --s_name=prior_1 --attribute=observed --value=0.8 --range=1.0E-10)
+set_tests_properties (lasym_boundary_test_check_observed_prior_1
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 add_test (NAME    lasym_boundary_test_check_observed_prior_2
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.test.v3fit --s_name=prior_2 --attribute=observed --value=0.1 --range=1.0E-10)
+set_tests_properties (lasym_boundary_test_check_observed_prior_2
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 
 #  Check that the observed sigma was written correctly.
 add_test (NAME    lasym_boundary_test_check_sigma_prior_1
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.test.v3fit --s_name=prior_1 --attribute=sigma --value=1.00000E-04 --range=1.0E-10)
+set_tests_properties (lasym_boundary_test_check_sigma_prior_1
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 add_test (NAME    lasym_boundary_test_check_sigma_prior_2
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.test.v3fit --s_name=prior_2 --attribute=sigma --value=1.00000E-04 --range=1.0E-10)
+set_tests_properties (lasym_boundary_test_check_sigma_prior_2
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)
 
 #  Check correlation matrix values.
 add_test (NAME lasym_boundary_test_check_reconstruction_correlation_matrix
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_correlation_matrix.py --file=recout.input.test.v3fit --param=Reconstruction)
+set_tests_properties (lasym_boundary_test_check_reconstruction_correlation_matrix
+                      PROPERTIES
+                      DEPENDS lasym_boundary_test)

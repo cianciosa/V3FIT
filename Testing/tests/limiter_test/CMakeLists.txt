@@ -23,14 +23,30 @@ add_test (NAME    limiter_test_lgrid
           COMMAND $<TARGET_PROPERTY:lgrid,BINARY_DIR>/lgrid limiter.dat 0.7 0.001 600 -0.30 0.001 600)
 add_test (NAME    limiter_test_mgrid
           COMMAND $<TARGET_PROPERTY:mgrid,BINARY_DIR>/mgrid coils.simple_kp36)
+set_tests_properties (limiter_test_mgrid
+                      PROPERTIES
+                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 add_test (NAME    limiter_test_gridtest
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.grid.v3fit -para=-1)
+set_tests_properties (limiter_test_gridtest
+                      PROPERTIES
+                      DEPENDS "limiter_test_mgrid;limiter_test_lgrid"
+                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 add_test (NAME    limiter_test_gridtest_model
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.grid.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
+set_tests_properties (limiter_test_gridtest_model
+                      PROPERTIES
+                      DEPENDS limiter_test_gridtest)
 
 add_test (NAME    limiter_test_isotest
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.iso.v3fit -para=-1)
+set_tests_properties (limiter_test_isotest
+                      PROPERTIES
+                      DEPENDS limiter_test_mgrid
+                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 add_test (NAME    limiter_test_isotest_model
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.iso.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
-
+set_tests_properties (limiter_test_isotest_model
+                      PROPERTIES
+                      DEPENDS limiter_test_isotest)
