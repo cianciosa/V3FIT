@@ -56,7 +56,7 @@ set_tests_properties (reconstruction_task_test_pp_ne_af
                       DEPENDS reconstruction_task_test)
 add_test (NAME    reconstruction_task_test_am_aux_f
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test.v3fit --p_type=am_aux_f --value=1.0 --range=0.1 --index1=2)
-set_tests_properties (reconstruction_task_test_pp_ne_af
+set_tests_properties (reconstruction_task_test_am_aux_f
                       PROPERTIES
                       DEPENDS reconstruction_task_test)
 add_test (NAME    reconstruction_task_test_pp_te_af
@@ -707,7 +707,7 @@ set_tests_properties (reconstruction_task_test_pp_ne_af_c_diff
                       DEPENDS reconstruction_task_test_c_diff)
 add_test (NAME    reconstruction_task_test_am_aux_f_c_diff
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test2.v3fit --p_type=am_aux_f --value=1.0 --range=0.1 --index1=2)
-set_tests_properties (reconstruction_task_test_pp_ne_af_c_diff
+set_tests_properties (reconstruction_task_test_am_aux_f_c_diff
                       PROPERTIES
                       DEPENDS reconstruction_task_test_c_diff)
 add_test (NAME    reconstruction_task_test_pp_te_af_c_diff

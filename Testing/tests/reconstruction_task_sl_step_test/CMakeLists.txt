@@ -522,7 +522,7 @@ set_tests_properties (reconstruction_task_sl_step_test_check_pp_ne_af_constraint
                       DEPENDS reconstruction_task_sl_step_test)
 add_test (NAME    reconstruction_task_sl_step_test_check_am_aux_f_constraint_type
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_constraint_types.py --file=recout.input.test.v3fit --p_type=am_aux_f --index1=2 --range_l=value)
-set_tests_properties (reconstruction_task_sl_step_test_check_pp_ne_af_constraint_type
+set_tests_properties (reconstruction_task_sl_step_test_check_am_aux_f_constraint_type
                       PROPERTIES
                       DEPENDS reconstruction_task_sl_step_test)
 add_test (NAME    reconstruction_task_sl_step_test_check_pp_te_af_constraint_type
