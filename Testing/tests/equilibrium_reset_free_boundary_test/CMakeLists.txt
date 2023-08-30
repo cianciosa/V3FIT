@@ -18,10 +18,16 @@ add_test (NAME    equilibrium_reset_free_boundary_mgrid_test
 
 add_test (NAME    equilibrium_reset_free_boundary_test
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1 -serial)
+set_tests_properties (equilibrium_reset_free_boundary_test
+                      PROPERTIES
+                      DEPENDS equilibrium_reset_free_boundary_mgrid_test
+                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
 #  The reconstruction was configured with all the same reconstruction parameters. If the equilibrium was correctky reset, the number of iterations should be the same for all parameters.
 add_test (NAME    equilibrium_reset_free_boundary_test_jacobian_iter
           COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jacobian_iter.py --file=runlog.input.test.v3fit)
-
+set_tests_properties (equilibrium_reset_free_boundary_test_jacobian_iter
+                      PROPERTIES
+                      DEPENDS equilibrium_reset_free_boundary_test)
