@@ -20,9 +20,6 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
 #  results.
 add_test (NAME    reconstruction_task_sl_step_test
           COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
-set_tests_properties (reconstruction_task_sl_step_test
-                      PROPERTIES
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 

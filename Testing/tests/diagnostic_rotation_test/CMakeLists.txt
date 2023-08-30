@@ -30,9 +30,6 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/coils.null
 
 add_test (NAME    diagnostic_rotation_test_mdsig
           COMMAND $<TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
-set_tests_properties (diagnostic_rotation_test_mdsig
-                      PROPERTIES
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 add_test (NAME    diagnostic_rotation_test
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
 set_tests_properties (diagnostic_rotation_test

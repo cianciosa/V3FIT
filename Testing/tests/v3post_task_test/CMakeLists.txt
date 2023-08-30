@@ -21,9 +21,6 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/thomson.dot
 
 add_test (NAME    v3post_task_test
           COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
-set_tests_properties (v3post_task_test
-                      PROPERTIES
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 #  Since the v3post task test was run, Check the recout file for correct values.
 add_test (NAME    v3post_task_check_model_sxr001

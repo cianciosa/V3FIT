@@ -27,16 +27,12 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
 
 add_test (NAME    reconstruction_task_test_v3rfun
           COMMAND $<TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
-set_tests_properties (reconstruction_task_test_v3rfun
-                      PROPERTIES
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 add_test (NAME    reconstruction_task_test
           COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
 set_tests_properties (reconstruction_task_test
                       PROPERTIES
-                      DEPENDS reconstruction_task_test_v3rfun
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
+                      DEPENDS reconstruction_task_test_v3rfun)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
@@ -687,8 +683,7 @@ add_test (NAME    reconstruction_task_test_c_diff
           COMMAND $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1 -c_diff)
 set_tests_properties (reconstruction_task_test_c_diff
                       PROPERTIES
-                      DEPENDS reconstruction_task_test_v3rfun
-                      PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
+                      DEPENDS reconstruction_task_test_v3rfun)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
