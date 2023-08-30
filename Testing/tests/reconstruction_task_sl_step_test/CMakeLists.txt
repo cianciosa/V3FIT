@@ -11,12 +11,15 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/intpol.dot
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
                 ${CMAKE_CURRENT_BINARY_DIR}/input.test.vmec
                 COPYONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
-                ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.vmec
                 COPYONLY)
+SET (VMEC_FILE_NAME input.test.vmec)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
-                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.v3fit
-                COPYONLY)
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit)
+SET (VMEC_FILE_NAME input.test2.vmec)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.v3fit)
 
 #  Run the reconstruction task. This just tests if the reconstruction executes correctly.
 #  Subsequent tests will examine the results of the reconstruction for correct 

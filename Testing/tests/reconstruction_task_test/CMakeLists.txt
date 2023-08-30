@@ -21,15 +21,21 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/v3rfun.in
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
                 ${CMAKE_CURRENT_BINARY_DIR}/input.test.vmec
                 COPYONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
-                ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.vmec
                 COPYONLY)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
-                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.v3fit
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.vmec
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test3.vmec
                 COPYONLY)
+SET (VMEC_FILE_NAME input.test.vmec)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
-                ${CMAKE_CURRENT_BINARY_DIR}/input.test3.v3fit
-                COPYONLY)
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit)
+SET (VMEC_FILE_NAME input.test2.vmec)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test2.v3fit)
+SET (VMEC_FILE_NAME input.test3.vmec)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
+                ${CMAKE_CURRENT_BINARY_DIR}/input.test3.v3fit)
 
 add_test (NAME    reconstruction_task_test_v3rfun
           COMMAND $<TARGET_PROPERTY:xv3rfun,BINARY_DIR>/xv3rfun v3rfun.in)
