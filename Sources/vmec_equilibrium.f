@@ -4094,7 +4094,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      vmec_get_suv = 0.0
+      vmec_get_suv(:) = 0.0
       fmin = 0.0
       info = 0
       nfe = 0
