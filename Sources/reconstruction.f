@@ -1173,10 +1173,10 @@
       ALLOCATE(temp_jacobian(SIZE(signals),SIZE(params)))
       temp_jacobian = this%jacobian
 
-      ALLOCATE(temp_work(5*MAX(SIZE(signals), SIZE(params))))
+      ALLOCATE(temp_work(5*MIN(SIZE(signals), SIZE(params))))
       temp_work = 0.0
 
-      CALL dgesvd('All', 'All', SIZE(signals), SIZE(params),                   &
+      CALL dgesvd('A', 'A', SIZE(signals), SIZE(params),                       &
      &            temp_jacobian, SIZE(signals), this%j_svd_w,                  &
      &            this%j_svd_u, SIZE(signals), this%j_svd_vt,                  &
      &            SIZE(params), temp_work, SIZE(temp_work), svd_status)
