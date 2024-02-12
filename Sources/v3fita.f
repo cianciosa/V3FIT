@@ -72,25 +72,20 @@
       context => v3fit_context_construct(commandline_parser_construct())
 
 !  Run unit tests if the -test flag is set.
-      IF (commandline_parser_is_flag_set(context%cl_parser,                    &
-     &                                   '-test')) THEN
+      IF (context%cl_parser%is_flag_set('-test')) THEN
          my_task = 'unit_test'
       ELSE
          CALL v3fit_input_read_namelist(                                       &
-     &           commandline_parser_get_string(context%cl_parser,              &
-     &                                         '-file'))
+     &           context%cl_parser%get_string('-file'))
       END IF
 
 !  Configure parallel computation.
       CALL config_parallelism(context)
 
-      eq_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%equilibrium_comm, eq_rank, error)
-#endif
+      eq_rank = context%get_eq_rank()
 
       IF (eq_rank .eq. 0) THEN
-         CALL v3fit_context_create_files(context)
+         CALL context%create_files
 
          WRITE (context%recout_iou,*) '  my_task is ', my_task
          WRITE (context%runlog_iou,*) '  my_task is ', my_task
@@ -123,11 +118,7 @@
 
 !  Clean up memory
       IF (eq_rank .eq. 0) THEN
-         recon_rank = 0
-#if defined(MPI_OPT)
-         CALL MPI_COMM_RANK(context%reconstruction_comm, recon_rank,           &
-     &                      error)
-#endif
+         recon_rank = context%get_recon_rank()
 
          IF (recon_rank .eq. 0) THEN
             CALL second0(time_end)
@@ -147,7 +138,7 @@
       CALL profiler_destruct
 
       CALL cleanup_parallelism(context)
-      CALL v3fit_context_destruct(context)
+      DEALLOCATE(context)
 
 #if defined(MPI_OPT)
       CALL MPI_FINALIZE(error)
@@ -198,16 +189,12 @@
       WRITE (context%runlog_iou,*) ' *** Starting initial ' //                 &
      &                             'equilibrium convergence'
 
-#if defined (MPI_OPT)
       converged = context%model%converge(eq_steps,                             &
      &                                   context%runlog_iou,                   &
-     &                                   context%equilibrium_comm,             &
-     &                                   'All')
+     &                                   context%get_eq_comm(), 'All')
+#if defined (MPI_OPT)
       CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                         &
      &               context%equilibrium_comm, error)
-#else
-      converged = context%model%converge(eq_steps,                             &
-     &                                   context%runlog_iou, 0, 'All')
 #endif
 
       CALL v3fit_context_init_data(context, eq_steps)
@@ -262,13 +249,10 @@
       WRITE (context%runlog_iou,*) ' *** Starting initial ' //                 &
      &                             'equilibrium convergence'
       converged = context%model%converge(eq_steps, context%runlog_iou,         &
+     &                                   context%get_eq_comm(), 'All')
 #if defined(MPI_OPT)
-     &                                   context%equilibrium_comm,             &
-     &                                   'All')
       CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                         &
      &               context%equilibrium_comm, error)
-#else
-     &                                   0, 'All')
 #endif
 
 !  Set the guassian processes
@@ -310,7 +294,7 @@
       WRITE (*,1000) g2
       WRITE (context%runlog_iou,1000) g2
 
-      CALL v3fit_context_init_data(context, eq_steps)
+      CALL context%init_data(eq_steps)
 
       CALL profiler_set_stop_time('task_v3post', start_time)
 
@@ -337,7 +321,8 @@
 !  local variables
       INTEGER                                   :: eq_steps
       INTEGER                                   :: restart_step
-      INTEGER                                   :: i, error
+      INTEGER                                   :: i
+      INTEGER                                   :: error
       LOGICAL                                   :: eq_converged
       CHARACTER (len=dir_prefix_len)            :: directory
       LOGICAL                                   :: write_input
@@ -349,8 +334,7 @@
       WRITE (*,*) ' *** In task reconstruct'
 
 !  Initialize the reconstruction.
-      write_input = commandline_parser_is_flag_set(context%cl_parser,          &
-     &                                             '-out')
+      write_input = context%cl_parser%is_flag_set('-out')
 
       CALL init_equilibrium(context)
       CALL init_signals(context)
@@ -358,11 +342,10 @@
       CALL init_parameters(context)
       CALL init_reconstruction(context)
 
-      IF (commandline_parser_is_flag_set(context%cl_parser,                    &
-     &                                   '-restart')) THEN
+      IF (context%cl_parser%is_flag_set('-restart')) THEN
          WRITE (*,*) ' *** Restarting reconstruction '
 
-         eq_steps = v3fit_context_restart(context, restart_step)
+         eq_steps = context%restart(restart_step)
 #if defined(MPI_OPT)
 !  Sync the number of equilibrium steps the inital convergence took so that the'
 !  child processes start in the same place.
@@ -382,11 +365,8 @@
      &                                        context%model, context%gp,       &
      &                                        eq_steps,                        &
      &                                        context%runlog_iou,              &
-#if defined(MPI_OPT)
-     &                                        context%equilibrium_comm)
-#else
-     &                                        0)
-#endif
+     &                                        context%get_eq_comm())
+
          CALL assert(eq_converged,                                             &
      &               'task_reconstruct no inital convergence')
          CALL reconstruction_eval_f(context%recon,                             &
@@ -436,12 +416,8 @@
      &                           context%model, context%gp,                    &
      &                           context%params, eq_steps,                     &
      &                           context%runlog_iou,                           &
-#if defined(MPI_OPT)
-     &                           context%reconstruction_comm,                  &
-     &                           context%equilibrium_comm)) THEN
-#else
-     &                           0, 0)) THEN
-#endif
+     &                           context%get_recon_comm(),                     &
+     &                           context%get_eq_rank())) THEN
 
 !  Step was successful. Post process the result.
             CALL reconstruction_eval_sem(context%recon,                        &
@@ -776,10 +752,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      eq_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%equilibrium_comm, eq_rank, error)
-#endif
+      eq_rank = context%get_eq_rank()
 
       WRITE (*,*) ' *** Constructing equilibrium model'
       IF (eq_rank .eq. 0) THEN
@@ -787,8 +760,7 @@
      &                                'equilibrium model'
       END IF
 
-      force_solve =                                                            &
-     &   commandline_parser_is_flag_set(context%cl_parser, '-force')
+      force_solve = context%cl_parser%is_flag_set('-force')
 
       SELECT CASE (model_eq_type)
 
@@ -867,12 +839,8 @@
      &                                  pp_ti_b, pp_ti_as, pp_ti_af),          &
      &                   sxr, phi_offset, z_offset, pol_rad_ratio,             &
      &                   context%runlog_iou,                                   &
-#if defined(MPI_OPT)
-     &                   context%equilibrium_comm,                             &
-     &                   context%reconstruction_comm,                          &
-#else
-     &                   0, 0,                                                 &
-#endif
+     &                   context%get_eq_comm(),                                &
+     &                   context%get_recon_comm(),                             &
      &                   state_flags, force_solve)
 
       context%model => model_class(model_ne_type,                              &
@@ -999,12 +967,8 @@
      &                                      pp_ti_af),                         &
      &                       sxr, phi_offset, z_offset,                        &
      &                       pol_rad_ratio, context%runlog_iou,                &
-#if defined(MPI_OPT)
-     &                       context%equilibrium_comm,                         &
-     &                       context%reconstruction_comm,                      &
-#else
-     &                       0, 0,                                             &
-#endif
+     &                       context%get_eq_comm(),                            &
+     &                       context%get_recon_comm(),                         &
      &                       state_flags, vmec_nli_filename,                   &
      &                       vmec_wout_input, force_solve)
 
@@ -1145,7 +1109,6 @@
       INTEGER                                   :: mdsig_index
       CHARACTER (len=path_length)               :: mdsig_path
       CHARACTER (len=path_length)               :: mdsig_filename
-      INTEGER                                   :: mpi_rank
       CLASS (magnetic_class), POINTER           :: magnetic_object
       REAL (rprec)                              :: start_time
 
@@ -1155,11 +1118,7 @@
       status = 0
       mdsig_list_iou = 0
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, status)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(mdsig_list_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             mdsig_list_filename = build_path('..', mdsig_list_filename)
@@ -1186,8 +1145,7 @@
       use_point = .false.
 
       cut_comp_svd =                                                           &
-     &   commandline_parser_get_real(context%cl_parser, '-c',                  &
-     &                               cut_comp_svd)
+     &   context%cl_parser%get_real('-c', cut_comp_svd)
 
 !  Loop over each file in the list file
       DO
@@ -1280,18 +1238,12 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(sxrch_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             sxrch_dot_filename = build_path('..', sxrch_dot_filename)
@@ -1336,18 +1288,12 @@
 
 !  local variables
       LOGICAL                                   :: use_polarimetry
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(ipch_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             ipch_dot_filename = build_path('..', ipch_dot_filename)
@@ -1399,18 +1345,12 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(thscte_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             thscte_dot_filename = build_path('..', thscte_dot_filename)
@@ -1454,8 +1394,6 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       CLASS (signal_class), POINTER             :: extcurz_object
       REAL (rprec)                              :: start_time
 
@@ -1517,18 +1455,12 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(mse_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             mse_dot_filename = build_path('..', mse_dot_filename)
@@ -1578,18 +1510,12 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(ece_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             ece_dot_filename = build_path('..', ece_dot_filename)
@@ -1826,18 +1752,12 @@
       INTEGER, INTENT(inout)                    :: signals_created
 
 !  local variables
-      INTEGER                                   :: mpi_rank
-      INTEGER                                   :: error
       REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      mpi_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(context%reconstruction_comm, mpi_rank, error)
-#endif
-      IF (mpi_rank .gt. 0) THEN
+      IF (context%get_recon_rank() .gt. 0) THEN
          IF (.not.is_absolute_path(sxrem_ratio_dot_filename)) THEN
 !  Child jacobian processes run in a sub directory.
             sxrem_ratio_dot_filename =                                         &
@@ -1962,7 +1882,8 @@
       TYPE (v3fit_context_class), INTENT(inout) :: context
 
 !  local variables
-      INTEGER                                   :: i, j
+      INTEGER                                   :: i
+      INTEGER                                   :: j
       INTEGER, DIMENSION(:,:), ALLOCATABLE      :: indices
       REAL (rprec)                              :: start_time
 
@@ -2107,7 +2028,7 @@
 
 !  Override from command line if set.
       use_central_diff = use_central_diff .or.                                 &
-     &   commandline_parser_is_flag_set(context%cl_parser, '-c_diff')
+     &   context%cl_parser%is_flag_set('-c_diff')
 
       context%recon_stop = dg2_stop
       context%recon => reconstruction_construct(nrstep,                        &
@@ -2188,8 +2109,7 @@
 !-- OpenMP ---------------------------------------------------------------------
 
 !  Configure the number of threeds to use.
-!$    num_threads = commandline_parser_get_integer(context%cl_parser,          &
-!$   &                                             '-para', 1)
+!$    num_threads = context%cl_parser%get_integer('-para', 1)
 
 !$    IF (num_threads .gt. 0) THEN
 !$       CALL OMP_SET_NUM_THREADS(num_threads)
@@ -2216,8 +2136,7 @@
       SELECT CASE (my_task)
 
          CASE ('reconstruct', 'reconstruct_a1')
-            IF (commandline_parser_is_flag_set(context%cl_parser,              &
-     &                                         '-serial')) THEN
+            IF (context%cl_parser%is_flag_set('-serial')) THEN
                num_recon_processes = 1
                num_eq_processes = mpi_size
             ELSE IF (mpi_size .le. n_rp) THEN
@@ -2245,8 +2164,7 @@
 !  mode one process can use the main directory. Otherwise create one directory
 !  for each sub process and spawn a child process in it. If this point is
 !  reached and the size is greater than 1, we can assume that default was used.
-      temp_string = commandline_parser_get_string(context%cl_parser,           &
-     &                                            '-file')
+      temp_string = context%cl_parser%get_string('-file')
 
       IF (mpi_rank .eq. 0) THEN
          DO i = 2, num_recon_processes

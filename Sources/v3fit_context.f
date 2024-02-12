@@ -27,7 +27,7 @@
 !>  Base class representing a v3fit context. This contains all memory needed to
 !>  operate v3fit.
 !-------------------------------------------------------------------------------
-      TYPE v3fit_context_class
+      TYPE :: v3fit_context_class
 !>  Stopping criteria for change in g^2.
          REAL (rprec)                                 :: recon_stop
 
@@ -39,7 +39,8 @@
          INTEGER                                      :: recout_iou
 
 !>  The parsed command line options.
-         TYPE (commandline_parser_class), POINTER :: cl_parser => null()
+         CLASS (commandline_parser_class), POINTER    ::                       &
+     &      cl_parser => null()
 !>  The equilibrium model.
          CLASS (model_class), POINTER                 :: model => null()
 !>  Guassian process models.
@@ -65,50 +66,65 @@
 !  been created.
 !>  Index of the first instance of a @ref magnetic signal. The default -1
 !>  represents no @ref magnetic signal created.
-         INTEGER :: magnetic_index = -1
+         INTEGER   :: magnetic_index = -1
 !>  Index of the first instance of a @ref sxrem signal. The default -1
 !>  represents no @ref sxrem signal created.
-         INTEGER :: sxrem_index = -1
+         INTEGER   :: sxrem_index = -1
 !>  Index of the first instance of a @ref intpol signal. The default -1
 !>  represents no @ref intpol signal created.
-         INTEGER :: intpol_index = -1
+         INTEGER   :: intpol_index = -1
 !>  Index of the first instance of a @ref thomson signal. The default -1
 !>  represents no @ref thomson signal created.
-         INTEGER :: thomson_index = -1
+         INTEGER   :: thomson_index = -1
 !>  Index of the first instance of a @ref extcurz signal. The default -1
 !>  represents no @ref extcurz signal created.
-         INTEGER :: extcurz_index = -1
+         INTEGER   :: extcurz_index = -1
 !>  Index of the first instance of a @ref mse signal. The default -1
 !>  represents no @ref mse signal created.
-         INTEGER :: mse_index = -1
+         INTEGER   :: mse_index = -1
 !>  Index of the first instance of a @ref ece signal. The default -1
 !>  represents no @ref ece signal created.
-         INTEGER :: ece_index = -1
+         INTEGER   :: ece_index = -1
 !>  Index of the first instance of a @ref limiter signal. The default -1
 !>  represents no @ref limiter signal created.
-         INTEGER :: limiter_index = -1
+         INTEGER   :: limiter_index = -1
 !>  Index of the first instance of a @ref prior_gaussian signal. The default -1
 !>  represents no @ref prior_gaussian signal created.
-         INTEGER :: prior_gaussian_index = -1
+         INTEGER   :: prior_gaussian_index = -1
 !>  Index of the first instance of a @ref prior_gaussian signal. The default -1
 !>  represents no @ref prior_gaussian signal created.
-         INTEGER :: sxrem_ratio_index = -1
+         INTEGER   :: sxrem_ratio_index = -1
 !>  Index of the first instance of a @ref combination_class signal. The default
 !>  -1 represents no @ref combination_class signal created.
-         INTEGER :: combination_index = -1
+         INTEGER   :: combination_index = -1
 
 !>  NetCDF result file to write out the results in machine readable form.
-         INTEGER :: result_ncid
+         INTEGER   :: result_ncid
 
 !--- MPI -----------------------------------------------------------------------
 #if defined (MPI_OPT)
 !>  MPI communicator reference for full domain.
-         INTEGER :: global_comm = MPI_COMM_NULL
+         INTEGER   :: global_comm = MPI_COMM_NULL
 !>  MPI communicator reference for the equilibrium domain.
-         INTEGER :: equilibrium_comm = MPI_COMM_NULL
+         INTEGER   :: equilibrium_comm = MPI_COMM_NULL
 !>  MPI communicator reference for the reconstruction domain.
-         INTEGER :: reconstruction_comm = MPI_COMM_NULL
+         INTEGER   :: reconstruction_comm = MPI_COMM_NULL
 #endif
+      CONTAINS
+         FINAL     :: v3fit_context_destruct
+         PROCEDURE :: resize => v3fit_context_resize
+         PROCEDURE :: create_files => v3fit_context_create_files
+         PROCEDURE :: close_files => v3fit_context_close_files
+         PROCEDURE :: write => v3fit_context_write
+         PROCEDURE ::                                                          &
+     &      write_param_header => v3fit_context_write_param_header
+         PROCEDURE :: init_data => v3fit_context_init_data
+         PROCEDURE :: write_step_data => v3fit_context_write_step_data
+         PROCEDURE :: restart => v3fit_context_restart
+         PROCEDURE :: get_eq_comm => v3fit_context_get_eq_comm
+         PROCEDURE :: get_eq_rank => v3fit_context_get_eq_rank
+         PROCEDURE :: get_recon_comm => v3fit_context_get_recon_comm
+         PROCEDURE :: get_recon_rank => v3fit_context_get_recon_rank
       END TYPE
 
       CONTAINS
@@ -164,14 +180,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), POINTER :: this
+      TYPE (v3fit_context_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                             :: i
+      INTEGER                                   :: i
 
 !  Start of executable code
       IF (ASSOCIATED(this%cl_parser)) THEN
-         CALL commandline_parser_destruct(this%cl_parser)
+         DEALLOCATE(this%cl_parser)
          this%cl_parser => null()
       END IF
 
@@ -258,8 +274,6 @@
       this%sxrem_ratio_index = -1
       this%combination_index = -1
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -278,13 +292,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout)    :: this
+      CLASS (v3fit_context_class), INTENT(inout)    :: this
 
 !  local variables
-      INTEGER                                      :: i
-      INTEGER                                      :: minsize
-      TYPE (signal_pointer), DIMENSION(:), POINTER :: temp_signal
-      REAL (rprec)                                 :: start_time
+      INTEGER                                       :: i
+      INTEGER                                       :: minsize
+      TYPE (signal_pointer), DIMENSION(:), POINTER  :: temp_signal
+      REAL (rprec)                                  :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -341,13 +355,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
+      CLASS (v3fit_context_class), INTENT(inout) :: this
 
 !  local variables
-      CHARACTER (len=path_length)               :: filename
-      INTEGER                                   :: status
-      INTEGER                                   :: recon_rank
-      REAL (rprec)                              :: start_time
+      CHARACTER (len=path_length)                :: filename
+      INTEGER                                    :: status
+      INTEGER                                    :: recon_rank
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -421,11 +435,11 @@
 
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
+      CLASS (v3fit_context_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                                   :: status
-      REAL (rprec)                              :: start_time
+      INTEGER                                    :: status
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -456,21 +470,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
+      CLASS (v3fit_context_class), INTENT(inout) :: this
 
 !  local variables
-      INTEGER                                   :: i, j
-      REAL (rprec), DIMENSION(:), ALLOCATABLE   :: sem_row
-      INTEGER                                   :: sem_offset
+      INTEGER                                    :: i, j
+      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: sem_row
+      INTEGER                                    :: sem_offset
 !  Fortran 95 doesn't allow allocatable strings. Need to allocate a string large
 !  enough to hold every possible parameter. Fortran 95 doesn't allow allocatable
 !  scalar types so make this a pointer. This large string needs to be allocated
 !  to avoid a stack overflow.
       CHARACTER (len=26 + 14*v3fit_max_parameters), POINTER ::                 &
      &   sem_header
-      INTEGER, DIMENSION(:), ALLOCATABLE        :: indices
-      CLASS (signal_class), POINTER             :: temp_signal
-      REAL (rprec)                              :: start_time
+      INTEGER, DIMENSION(:), ALLOCATABLE         :: indices
+      CLASS (signal_class), POINTER              :: temp_signal
+      REAL (rprec)                               :: start_time
 
 !  local parameters
       CHARACTER (len=12), PARAMETER :: prefix = '            '
@@ -684,10 +698,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
-      TYPE (param_pointer), DIMENSION(:)        :: params
-      CHARACTER (len=*)                         :: prefix
-      CHARACTER (len=*)                         :: type_name
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+      TYPE (param_pointer), DIMENSION(:)         :: params
+      CHARACTER (len=*)                          :: prefix
+      CHARACTER (len=*)                          :: type_name
 
 !  local variables
 !  Fortran 95 doesn't allow allocatable strings. Need to allocate a string large
@@ -696,8 +710,8 @@
 !  to avoid a stack overflow. The longest header generate will be the signal
 !  effectiveness matrix. Make the start of this string at least 26 characters.
       CHARACTER (len=26 + 14*v3fit_max_parameters), POINTER :: header
-      INTEGER                                   :: offset, j
-      REAL (rprec)                              :: start_time
+      INTEGER                                    :: offset, j
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -807,8 +821,8 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                       :: eq_steps
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                        :: eq_steps
 
 !  local variables
       INTEGER :: i, status
@@ -840,8 +854,8 @@
       INTEGER :: signal_model_value_id
       INTEGER :: signal_sigma_value_id
 
-      CLASS (signal_class), POINTER             :: temp_signal
-      REAL (rprec)                              :: start_time
+      CLASS (signal_class), POINTER              :: temp_signal
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1142,9 +1156,9 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), INTENT(inout) :: this
-      LOGICAL, INTENT(in)                       :: first_step
-      INTEGER, INTENT(in)                       :: eq_steps
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+      LOGICAL, INTENT(in)                        :: first_step
+      INTEGER, INTENT(in)                        :: eq_steps
 
 !  local variables
       INTEGER :: i, status
@@ -1162,8 +1176,8 @@
       INTEGER :: signal_model_value_id
       INTEGER :: signal_sigma_value_id
 
-      CLASS (signal_class), POINTER             :: temp_signal
-      REAL (rprec)                              :: start_time
+      CLASS (signal_class), POINTER              :: temp_signal
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1303,19 +1317,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                                   :: v3fit_context_restart
-      TYPE (v3fit_context_class), INTENT(inout) :: this
-      INTEGER, INTENT(inout)                    :: current_step
+      INTEGER :: v3fit_context_restart
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+      INTEGER, INTENT(inout)                     :: current_step
 
 !  local variables
-      INTEGER                                   :: i
-      INTEGER                                   :: status
-      INTEGER                                   :: nsteps_id
-      INTEGER                                   :: eq_steps_id
-      INTEGER                                   :: param_value_id
-      INTEGER                                   :: param_sigma_id
-      INTEGER                                   :: param_corr_id
-      REAL (rprec)                              :: start_time
+      INTEGER                                    :: i
+      INTEGER                                    :: status
+      INTEGER                                    :: nsteps_id
+      INTEGER                                    :: eq_steps_id
+      INTEGER                                    :: param_value_id
+      INTEGER                                    :: param_sigma_id
+      INTEGER                                    :: param_corr_id
+      REAL (rprec)                               :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1366,6 +1380,135 @@
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
       CALL profiler_set_stop_time('v3fit_context_restart', start_time)
+
+      END FUNCTION
+
+!*******************************************************************************
+!  NETCDF SUBROUTINES
+!*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Get the mpi comm for the equilibrium.
+!>
+!>  @param[inout] this A @ref v3fit_context_class instance.
+!>  @returns The equilibrium comm.
+!-------------------------------------------------------------------------------
+      FUNCTION v3fit_context_get_eq_comm(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      INTEGER :: v3fit_context_get_eq_comm
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+
+!  local variables
+      REAL (rprec)                               :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+#if defined(MPI_OPT)
+      v3fit_context_get_eq_comm = this%equilibrium_comm
+#else
+      v3fit_context_get_eq_comm = 0
+#endif
+
+      CALL profiler_set_stop_time('v3fit_context_get_eq_comm',                 &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Get the mpi rank for the equilibrium.
+!>
+!>  @param[inout] this A @ref v3fit_context_class instance.
+!>  @returns The rank of the equilibrium comm.
+!-------------------------------------------------------------------------------
+      FUNCTION v3fit_context_get_eq_rank(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      INTEGER :: v3fit_context_get_eq_rank
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+
+!  local variables
+      INTEGER                                    :: error
+      REAL (rprec)                               :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      v3fit_context_get_eq_rank = 0
+#if defined(MPI_OPT)
+      CALL MPI_COMM_RANK(this%equilibrium_comm,                                &
+     &                   v3fit_context_get_eq_rank, error)
+#endif
+
+      CALL profiler_set_stop_time('v3fit_context_get_eq_rank',                 &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Get the mpi comm for the reconstruction.
+!>
+!>  @param[inout] this A @ref v3fit_context_class instance.
+!>  @returns The equilibrium comm.
+!-------------------------------------------------------------------------------
+      FUNCTION v3fit_context_get_recon_comm(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      INTEGER :: v3fit_context_get_recon_comm
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+
+!  local variables
+      REAL (rprec)                               :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+#if defined(MPI_OPT)
+      v3fit_context_get_recon_comm = this%reconstruction_comm
+#else
+      v3fit_context_get_recon_comm = 0
+#endif
+
+      CALL profiler_set_stop_time('v3fit_context_get_recon_comm',              &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Get the mpi rank for the reconstruction.
+!>
+!>  @param[inout] this A @ref v3fit_context_class instance.
+!>  @returns The rank of the equilibrium comm.
+!-------------------------------------------------------------------------------
+      FUNCTION v3fit_context_get_recon_rank(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      INTEGER :: v3fit_context_get_recon_rank
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+
+!  local variables
+      INTEGER                                    :: error
+      REAL (rprec)                               :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      v3fit_context_get_recon_rank = 0
+#if defined(MPI_OPT)
+      CALL MPI_COMM_RANK(this%reconstruction_comm,                             &
+     &                   v3fit_context_get_recon_rank, error)
+#endif
+
+      CALL profiler_set_stop_time('v3fit_context_get_recon_rank',              &
+     &                            start_time)
 
       END FUNCTION
 
