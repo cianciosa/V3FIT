@@ -60,7 +60,7 @@
 !>  Array of locking parameters.
          TYPE (param_pointer), DIMENSION(:), POINTER  :: locks => null()
 !>  The reconstruction algorithm object.
-         TYPE (reconstruction_class), POINTER         :: recon => null()
+         CLASS (reconstruction_class), POINTER        :: recon => null()
 
 !  The default for the following index is -1 indicating that this signal hasn't
 !  been created.
@@ -257,7 +257,7 @@
       END IF
 
       IF (ASSOCIATED(this%recon)) THEN
-         CALL reconstruction_destruct(this%recon)
+         DEALLOCATE(this%recon)
          this%recon => null()
       END IF
 
@@ -500,7 +500,7 @@
 
 !  Write out the reconstruction
       IF (ASSOCIATED(this%recon)) THEN
-         CALL reconstruction_write(this%recon, this%recout_iou)
+         CALL this%recon%write(this%recout_iou)
       END IF
 
 !  Write out the derived parameters
@@ -1214,7 +1214,7 @@
          status = nf90_inq_varid(this%result_ncid, 'g2', g2_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
          status = nf90_put_var(this%result_ncid, g2_id,                        &
-     &                         reconstruction_get_g2(this%recon),              &
+     &                         this%recon%get_g2(),                            &
      &                         start=(/current_step/))
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       END IF
@@ -1366,10 +1366,9 @@
 
          CALL this%model%restart(this%result_ncid, current_step)
 
-         CALL reconstruction_restart(this%recon, this%result_ncid,             &
-     &                               current_step,                             &
-     &                               this%signals, this%derived_params,        &
-     &                               this%model)
+         CALL this%recon%restart(this%result_ncid, current_step,               &
+     &                           this%signals, this%derived_params,            &
+     &                           this%model)
 
       END IF
 

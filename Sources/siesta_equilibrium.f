@@ -103,12 +103,14 @@
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(vmec_class) :: siesta_class
 !>  File name of the output of siesta.
-         CHARACTER (len=path_length)            :: restart_file_name
+         CHARACTER (len=path_length)           :: restart_file_name
 !>  File name of the siesta namelist inout file.
-         CHARACTER (len=path_length)            :: siesta_file_name
+         CHARACTER (len=path_length)           :: siesta_file_name
 
-!>  siesta context.
-         CLASS (siesta_context_class), POINTER   :: context => null()
+!>  Siesta run context.
+         CLASS (siesta_run_class), POINTER     :: run_context => null()
+!>  Siesta context.
+         CLASS (siesta_context_class), POINTER :: context => null()
       CONTAINS
          PROCEDURE :: set_param => siesta_set_param
          PROCEDURE :: set_magnetic_cache_response =>                           &
@@ -286,27 +288,31 @@
 
       siesta_construct%siesta_file_name = TRIM(file_name)
 
-      IF (eq_rank .eq. 0) THEN
-!  Save a copy of the jcf orginal jcf file.
-         CALL copy_file(TRIM(file_name), TRIM(file_name) // '_save',           &
-     &               error)
-
-         WRITE (*,*) ' *** Initializing SIESTA equilibrium from ' //           &
-     &               'file ' // TRIM(file_name)
-         WRITE (iou,*) ' *** Initializing SIESTA equilibrium from ' //         &
-     &                 'file ' // TRIM(file_name)
-
-         CALL siesta_namelist_read(TRIM(file_name))
-         WRITE (siesta_construct%restart_file_name,1000)                       &
-     &      TRIM(restart_ext)
-
-         state_flags = IBSET(state_flags, model_state_siesta_flag)
-
-         IF (restart_file_name .ne. '') THEN
+      siesta_construct%run_context =>                                          &
+     &   siesta_run_class(eq_comm, .false., .false., .false.,                  &
+     &                    siesta_construct%siesta_file_name)
+      IF (restart_file_name .ne. '') THEN
+         IF (eq_rank .eq. 0) THEN
+            WRITE (*,*) ' *** Initializing SIESTA equilibrium ' //             &
+     &                  'from restart file ' // TRIM(restart_file_name)
+            WRITE (iou,*) ' *** Initializing SIESTA equilibrium ' //           &
+     &                    'from restart file ' //                              &
+     &                    TRIM(restart_file_name)
             state_flags = IBCLR(state_flags, model_state_siesta_flag)
             siesta_construct%context =>                                        &
      &         siesta_context_construct(restart_file_name)
          END IF
+         CALL siesta_construct%run_context%set_restart
+      ELSE
+         IF (eq_rank .eq. 0) THEN
+            WRITE (*,*) ' *** Initializing SIESTA equilibrium from ' //        &
+     &                  'file ' // TRIM(file_name)
+            WRITE (iou,*) ' *** Initializing SIESTA equilibrium ' //           &
+     &                    'from file ' // TRIM(file_name)
+            WRITE (siesta_construct%restart_file_name,1000)                    &
+     &         TRIM(restart_ext)
+         END IF
+         state_flags = IBSET(state_flags, model_state_siesta_flag)
       END IF
 
       CALL profiler_set_stop_time('siesta_construct', start_time)
@@ -342,6 +348,11 @@
 
 !  Delete the restart file. Errors here can safely be ignored.
       CALL delete_file(TRIM(this%restart_file_name) // '_cache', error)
+
+      IF (ASSOCIATED(this%run_context)) THEN
+         DEALLOCATE(this%run_context)
+         this%context => null()
+      END IF
 
       IF (ASSOCIATED(this%context)) THEN
          DEALLOCATE(this%context)
@@ -415,7 +426,7 @@
 
          CASE (siesta_helpert_id)
             state_flags = IBSET(state_flags, model_state_siesta_flag)
-            helpert(i_index) = value
+            CALL this%run_context%set('helpert', value, i_index)
 
          CASE DEFAULT
             CALL vmec_set_param(this, id, i_index, j_index, value,             &
@@ -2715,14 +2726,17 @@
       INTEGER                             :: eq_rank
       INTEGER                             :: status
       INTEGER                             :: child_comm
-      TYPE (siesta_run_class), POINTER    :: run_context
       REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
+      eq_size = 1
+      eq_rank = 0
 #if defined(MPI_OPT)
       CALL MPI_BCAST(num_iter, 1, MPI_INTEGER, 0, eq_comm, status)
+      CALL MPI_COMM_RANK(eq_comm, eq_rank, status)
+      CALL MPI_COMM_SIZE(eq_comm, eq_size, status)
 #endif
 
       siesta_converge = .true.
@@ -2731,28 +2745,8 @@
      &                                   state_flags)
       END IF
 
-      eq_size = 1
-      eq_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(eq_comm, eq_rank, status)
-      CALL MPI_COMM_SIZE(eq_comm, eq_size, status)
-#endif
-      IF (eq_rank .eq. 0) THEN
-         ladd_pert = .true.
-         lresistive = .false.
-         lrestart = .false.
-
-         CALL siesta_namelist_write(TRIM(this%siesta_file_name))
-      END IF
-
-#if defined(MPI_OPT)
-      CALL MPI_BARRIER(eq_comm, status)
-#endif
-      run_context => siesta_run_class(eq_comm, .false., .false.,               &
-     &                                .false., this%siesta_file_name)
-      CALL run_context%set_vmec
-      CALL run_context%converge
-      DEALLOCATE(run_context)
+      CALL this%run_context%set_vmec(eq_rank .ne. 0)
+      CALL this%run_context%converge
 
       siesta_converge = siesta_error_state .eq. siesta_error_no_error
 
@@ -2840,7 +2834,7 @@
 !  Reset the restart file.
       CALL copy_file(TRIM(this%restart_file_name) // '_cache',                 &
      &               TRIM(this%restart_file_name), error)
-      CALL assert_eq(error, 0, 'Error moving wout file.')
+      CALL assert_eq(error, 0, 'Error moving restart file.')
 
       CALL this%context%read(this%restart_file_name)
 
@@ -2882,9 +2876,6 @@
       CALL vmec_set_namelist(this)
 
       CALL siesta_namelist_write(TRIM(this%siesta_file_name) // '_out')
-
-      CALL move_file(TRIM(this%siesta_file_name) // '_save',                   &
-     &               TRIM(this%siesta_file_name), status)
 
       CALL vmec_write(this, iou)
 

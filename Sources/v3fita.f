@@ -360,18 +360,16 @@
      &                             'equilibrium convergence'
 
          eq_steps = 1
-         eq_converged = reconstruction_eval_e(context%recon,                   &
-     &                                        context%signals,                 &
-     &                                        context%model, context%gp,       &
-     &                                        eq_steps,                        &
-     &                                        context%runlog_iou,              &
-     &                                        context%get_eq_comm())
+         eq_converged = context%recon%eval_e(context%signals,                  &
+     &                                       context%model, context%gp,        &
+     &                                       eq_steps,                         &
+     &                                       context%runlog_iou,               &
+     &                                       context%get_eq_comm())
 
          CALL assert(eq_converged,                                             &
      &               'task_reconstruct no inital convergence')
-         CALL reconstruction_eval_f(context%recon,                             &
-     &                              context%derived_params,                    &
-     &                              context%model)
+         CALL context%recon%eval_f(context%derived_params,                     &
+     &                             context%model)
 
 !  Save the signal values from the first 0th reconstruction step.
          DO i = 1, SIZE(context%signals)
@@ -388,12 +386,11 @@
 
          WRITE (*,*)
          WRITE (*,1002) 0
-         WRITE (*,1003) reconstruction_get_g2(context%recon)
+         WRITE (*,1003) context%recon%get_g2()
 
          WRITE (context%runlog_iou,*)
          WRITE (context%runlog_iou,1002) 0
-         WRITE (context%runlog_iou,1003)                                       &
-     &      reconstruction_get_g2(context%recon)
+         WRITE (context%runlog_iou,1003) context%recon%get_g2()
 
          IF (write_input) THEN
             CALL context%model%equilibrium%write_input(0)
@@ -411,42 +408,38 @@
          WRITE (context%runlog_iou,*)
          WRITE (context%runlog_iou,1002) i
 
-         IF (reconstruction_step(context%recon, context%signals,               &
-     &                           context%derived_params, context%locks,        &
-     &                           context%model, context%gp,                    &
-     &                           context%params, eq_steps,                     &
-     &                           context%runlog_iou,                           &
-     &                           context%get_recon_comm(),                     &
-     &                           context%get_eq_rank())) THEN
+         IF (context%recon%step(context%signals,                               &
+     &                          context%derived_params, context%locks,         &
+     &                          context%model, context%gp,                     &
+     &                          context%params, eq_steps,                      &
+     &                          context%runlog_iou,                            &
+     &                          context%get_recon_comm(),                      &
+     &                          context%get_eq_comm())) THEN
 
 !  Step was successful. Post process the result.
-            CALL reconstruction_eval_sem(context%recon,                        &
-     &                                   context%params,                       &
-     &                                   context%signals,                      &
-     &                                   context%derived_params)
-            CALL reconstruction_write_step(context%recon,                      &
-     &                                     context%runlog_iou)
-            CALL v3fit_context_write_step_data(context, .false.,               &
-     &                                         eq_steps)
+            CALL context%recon%eval_sem(context%params,                        &
+     &                                  context%signals,                       &
+     &                                  context%derived_params)
+            CALL context%recon%write_step(context%runlog_iou)
+            CALL context%write_step_data(.false., eq_steps)
 
             IF (write_input) THEN
                CALL context%model%equilibrium%write_input(i)
             END IF
 
 !  Test for convergence.
-            IF (reconstruction_get_dg2(context%recon) .le.                     &
-     &          context%recon_stop .or.                                        &
-     &          reconstruction_get_g2(context%recon) .eq. 0.0) THEN
+            IF ((context%recon%get_dg2() .le. context%recon_stop) .or.                                      &
+     &          (context%recon%get_g2() .eq. 0.0)) THEN
                WRITE (*,*)
                WRITE (*,*) ' *** Equilibrium reconstructed'
                WRITE (*,1000) context%recon_stop,                              &
-     &                        reconstruction_get_dg2(context%recon)
+     &                        context%recon%get_dg2()
 
                WRITE (context%runlog_iou,*)
                WRITE (context%runlog_iou,*) ' *** Equilibrium ' //             &
      &                                      'reconstructed'
                WRITE (context%runlog_iou,1000) context%recon_stop,             &
-     &                        reconstruction_get_dg2(context%recon)
+     &                                         context%recon%get_dg2()
                EXIT
             END IF
 
@@ -525,7 +518,7 @@
             CASE (mpi_jacobian_task)
                CALL MPI_BCAST(eq_steps, 1, MPI_INTEGER, 0,                     &
      &                        context%reconstruction_comm, error)
-               CALL reconstruction_eval_jacobians(context%recon,               &
+               CALL context%recon%eval_jacobians(                              &
      &                 context%signals, context%derived_params,                &
      &                 context%locks, context%model, context%gp,               &
      &                 context%params, eq_steps, context%runlog_iou,           &
@@ -533,8 +526,7 @@
      &                 context%equilibrium_comm)
 
             CASE (mpi_sync_task)
-               CALL reconstruction_sync_svd(context%recon,                     &
-     &                                      context%reconstruction_comm)
+               CALL context%recon%sync_svd(context%reconstruction_comm)
                DO i = 1, SIZE(context%params)
                   CALL param_sync_delta(context%params(i)%p,                   &
      &                                  context%reconstruction_comm)
@@ -545,7 +537,7 @@
      &                        context%reconstruction_comm, error)
                CALL MPI_BCAST(eq_steps, 1, MPI_INTEGER, 0,                     &
      &                        context%reconstruction_comm, error)
-               temp = reconstruction_try_step(context%recon,                   &
+               temp = context%recon%try_step(                                  &
      &                   context%signals, context%derived_params,              &
      &                   context%locks, context%model, context%gp,             &
      &                   context%params, eq_steps, step_use,                   &
