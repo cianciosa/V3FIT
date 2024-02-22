@@ -289,7 +289,7 @@
       siesta_construct%siesta_file_name = TRIM(file_name)
 
       siesta_construct%run_context =>                                          &
-     &   siesta_run_class(eq_comm, .false., .false., .false.,                  &
+     &   siesta_run_class(eq_comm, .true., .false., .false.,                  &
      &                    siesta_construct%siesta_file_name)
       IF (restart_file_name .ne. '') THEN
          IF (eq_rank .eq. 0) THEN
