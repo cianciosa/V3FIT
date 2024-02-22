@@ -416,7 +416,7 @@
      &      magnetic_cache => null()
 
 !>  VMEC context.
-         TYPE (vmec_context_class), POINTER     ::                             &
+         CLASS (vmec_context_class), POINTER     ::                            &
      &      vmec_context_save => null()
 
 !  Extra reconstruction parameters
@@ -1002,7 +1002,7 @@
       CALL delete_file(TRIM(this%wout_file_name) // '_cache', error)
 
       IF (ASSOCIATED(this%vmec_context_save)) THEN
-         CALL vmec_context_destruct(this%vmec_context_save)
+         DEALLOCATE(this%vmec_context_save)
          this%vmec_context_save => null()
       END IF
 
@@ -5213,16 +5213,16 @@
 !  delt_local   Value of delt on entry. Store, for restoration after error
 !               recovery.
 !  ictrl_array  Array containing various vmec control parameters.
-      REAL (rprec)                       :: delt_local
-      INTEGER                            :: niter_local
-      INTEGER, DIMENSION(5)              :: ictrl_array
-      INTEGER                            :: recovery_index
-      INTEGER                            :: error
-      INTEGER                            :: num_iter_init
-      TYPE (vmec_context_class), POINTER :: temp_context => null()
-      INTEGER                            :: eq_rank
-      INTEGER                            :: nstep_save
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: delt_local
+      INTEGER                             :: niter_local
+      INTEGER, DIMENSION(5)               :: ictrl_array
+      INTEGER                             :: recovery_index
+      INTEGER                             :: error
+      INTEGER                             :: num_iter_init
+      CLASS (vmec_context_class), POINTER :: temp_context => null()
+      INTEGER                             :: eq_rank
+      INTEGER                             :: nstep_save
+      REAL (rprec)                        :: start_time
 
 !  local parameters
       REAL (rprec), PARAMETER            :: delt_factor = 2.0
@@ -5288,7 +5288,7 @@
             CASE (jac75_flag)
 
 !  Restore the context to the state it was before runvmec was called.
-               CALL vmec_context_set_context(temp_context)
+               CALL temp_context%set_context()
 
                IF (recovery_index .le. 2) THEN
                   IF (eq_rank .eq. 0) THEN
@@ -5308,7 +5308,7 @@
 !  this on the inital convergence. Since the niter and niter_array variables in
 !  the VMEC namelist input don't change, this has no effect on the initial
 !  equilibrium convergence as a consequence of seting the restart_flag.
-               CALL vmec_context_set_context(temp_context)
+               CALL temp_context%set_context()
 
                IF (recovery_index .le. 2 .and. num_iter .gt. 1) THEN
                   IF (eq_rank .eq. 0) THEN
@@ -5338,7 +5338,7 @@
       END DO
 
 !  No longer need the local context array.
-      CALL vmec_context_destruct(temp_context)
+      DEALLOCATE(temp_context)
 
 !  Check for errors, if vmec was successful, load vmec data for use with the
 !  signals. Other wise report the error. This should only be performed on the
@@ -5439,7 +5439,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%vmec_context_save)) THEN
-         CALL vmec_context_get_context(this%vmec_context_save)
+         CALL this%vmec_context_save%get_context()
       ELSE
          this%vmec_context_save => vmec_context_construct()
       END IF
@@ -5497,7 +5497,7 @@
       start_time = profiler_get_start_time()
 
       IF (ASSOCIATED(this%vmec_context_save)) THEN
-         CALL vmec_context_set_context(this%vmec_context_save)
+         CALL this%vmec_context_save%set_context()
       END IF
 
 !  Reset the wout file.
@@ -6052,7 +6052,7 @@
          END IF
       END IF
 
-      CALL vmec_context_sync_state(this%vmec_context_save, recon_comm)
+      CALL this%vmec_context_save%sync_state(recon_comm)
 
 #endif
       END SUBROUTINE
@@ -6101,8 +6101,7 @@
          END IF
       END IF
 
-      CALL vmec_context_sync_child(this%vmec_context_save, index,              &
-     &                             recon_comm)
+      CALL this%vmec_context_save%sync_child(index, recon_comm)
 
 #endif
       END SUBROUTINE

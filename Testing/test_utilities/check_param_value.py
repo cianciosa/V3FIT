@@ -20,19 +20,22 @@ start = -1
 end = -1
 lines = recout_file.readlines()
 for i, line in enumerate(lines):
-	if (start == -1) and (line.rstrip() == "  *** Reconstruction parameters"):
-		start = i + 2
-	if (start != -1) and (end == -1) and (not line.rstrip()):
-		end = i
+    if (start == -1) and (line.rstrip() == "  *** Reconstruction parameters"):
+        start = i + 2
+    if (start != -1) and (end == -1) and (not line.rstrip()):
+        end = i
+
+value = 0
 
 if start != -1:
-	for line in lines[start:end]:
-		split_str = line.split()
-		if (split_str[1] == option.p_type) and (int(split_str[2]) == int(option.index1)) and (int(split_str[3]) == int(option.index2)):
-			test_passed = (float(split_str[4]) <= (float(option.value) + float(option.range))) and (float(split_str[4]) >= (float(option.value) - float(option.range)))
+    for line in lines[start:end]:
+        split_str = line.split()
+        if (split_str[1] == option.p_type) and (int(split_str[2]) == int(option.index1)) and (int(split_str[3]) == int(option.index2)):
+            value = float(split_str[4])
+            test_passed = (value <= (float(option.value) + float(option.range))) and (value >= (float(option.value) - float(option.range)))
 
 recout_file.close
 
 if not test_passed:
-	print("Value for p_type {0}({1},{2}) is not equal to {3} +- {4} in file {5}.".format(option.p_type, option.index1, option.index2, option.value, option.range, option.filename))
-	sys.exit(1)
+    print("Value {0} for p_type {1}({2},{3}) is not equal to {4} +- {5} in file {6}.".format(value, option.p_type, option.index1, option.index2, option.value, option.range, option.filename))
+    sys.exit(1)

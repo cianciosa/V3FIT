@@ -24,7 +24,7 @@
 !>  Base class representing a siesta_context. This contains a copy of every
 !>  variable that is needed to define the SIESTA state.
 !-------------------------------------------------------------------------------
-      TYPE siesta_context_class
+      TYPE :: siesta_context_class
 !>  Flag indicating that stellarator asymmetric terms are used.
          LOGICAL                                 :: l_asym
 
@@ -34,6 +34,8 @@
          INTEGER                                 :: mpol
 !>  Number of toroidal modes.
          INTEGER                                 :: ntor
+!>  Toroidal modes.
+         INTEGER, DIMENSION(:), POINTER          :: tor_modes => null()
 !>  Number of field periods.
          INTEGER                                 :: nfp
 
@@ -87,6 +89,9 @@
          REAL (rprec), DIMENSION(:,:,:), POINTER :: jksupvmncf => null()
 !>  Sine components of jK^v on the half mesh.
          REAL (rprec), DIMENSION(:,:,:), POINTER :: jksupvmnsf => null()
+      CONTAINS
+         FINAL     :: siesta_context_destruct
+         PROCEDURE :: read => siesta_context_read
       END TYPE
 
       CONTAINS
@@ -108,22 +113,22 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_context_class), POINTER :: siesta_context_construct
-      CHARACTER (len=*), INTENT(in)        :: restart_file_name
+      CLASS (siesta_context_class), POINTER :: siesta_context_construct
+      CHARACTER (len=*), INTENT(in)         :: restart_file_name
 
 !  local variables
-      INTEGER                              :: ncid
-      INTEGER                              :: ns
-      INTEGER                              :: mpol
-      INTEGER                              :: ntor
-      INTEGER                              :: status
-      INTEGER                              :: varid
-      INTEGER                              :: i
-      INTEGER                              :: flags
-      REAL (rprec)                         :: start_time
+      INTEGER                               :: ncid
+      INTEGER                               :: ns
+      INTEGER                               :: mpol
+      INTEGER                               :: ntor
+      INTEGER                               :: status
+      INTEGER                               :: varid
+      INTEGER                               :: i
+      INTEGER                               :: flags
+      REAL (rprec)                          :: start_time
 
 !  local parameters
-      INTEGER, PARAMETER                   :: l_asym_flag = 31
+      INTEGER, PARAMETER                    :: l_asym_flag = 31
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -131,6 +136,9 @@
       ALLOCATE(siesta_context_construct)
 
       status = nf90_open(TRIM(restart_file_name), NF90_NOWRITE, ncid)
+      IF (status .ne. 0) THEN
+         STOP 'Failed to open SIESTA Restrat file.'
+      END IF
 
       status = nf90_inq_varid(ncid, vn_nsin, varid)
       status = nf90_get_var(ncid, varid, ns)
@@ -142,6 +150,11 @@
       siesta_context_construct%ns = ns
       siesta_context_construct%mpol = mpol
       siesta_context_construct%ntor = ntor
+
+      ALLOCATE(siesta_context_construct%tor_modes(-ntor:ntor))
+      status = nf90_inq_varid(ncid, vn_tor_modes, varid)
+      status = nf90_get_var(ncid, varid,                                       &
+     &                      siesta_context_construct%tor_modes)
 
       status = nf90_inq_varid(ncid, vn_nfpin, varid)
       status = nf90_get_var(ncid, varid, siesta_context_construct%nfp)
@@ -291,9 +304,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_context_class), POINTER :: this
+      TYPE (siesta_context_class), INTENT(inout) :: this
 
 !  Start of executable code
+      IF (ASSOCIATED(this%tor_modes)) THEN
+         DEALLOCATE(this%tor_modes)
+         this%tor_modes => null()
+      END IF
+
       IF (ASSOCIATED(this%pmnch)) THEN
          DEALLOCATE(this%pmnch)
          this%pmnch => null()
@@ -394,8 +412,6 @@
          this%jksupvmncf => null()
       END IF
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -416,27 +432,27 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (siesta_context_class), POINTER :: this
-      CHARACTER (len=*), INTENT(in)        :: restart_file_name
+      CLASS (siesta_context_class), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)               :: restart_file_name
 
 !  local variables
-      INTEGER                              :: ncid
-      INTEGER                              :: status
-      INTEGER                              :: varid
-      INTEGER                              :: i
-      INTEGER                              :: flags
-      CHARACTER (len=path_length)          :: wout_file_name
-      REAL (rprec)                         :: start_time
+      INTEGER                                     :: ncid
+      INTEGER                                     :: status
+      INTEGER                                     :: varid
+      INTEGER                                     :: i
+      INTEGER                                     :: flags
+      CHARACTER (len=path_length)                 :: wout_file_name
+      REAL (rprec)                                :: start_time
 
 !  local parameters
-      INTEGER, PARAMETER                   :: l_asym_flag = 31
+      INTEGER, PARAMETER                          :: l_asym_flag = 31
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       status = nf90_open(TRIM(restart_file_name), NF90_NOWRITE, ncid)
       IF (status .ne. 0) THEN
-         STOP 'Failed'
+         STOP 'Failed to open SIESTA Restrat file.'
       END IF
 
       status = nf90_inq_varid(ncid, vn_nsin, varid)
@@ -445,6 +461,9 @@
       status = nf90_get_var(ncid, varid, this%mpol)
       status = nf90_inq_varid(ncid, vn_ntorin, varid)
       status = nf90_get_var(ncid, varid, this%ntor)
+
+      status = nf90_inq_varid(ncid, vn_tor_modes, varid)
+      status = nf90_get_var(ncid, varid, this%tor_modes)
 
       status = nf90_inq_varid(ncid, vn_nfpin, varid)
       status = nf90_get_var(ncid, varid, this%nfp)

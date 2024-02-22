@@ -2569,9 +2569,9 @@
 !>
 !>  This method is virtual. The actual writing of the equilibrium should be
 !>  handled by a subclass method.
-!>  @see vmec_equilibrium::vmec_write
-!>  @see vacuum_equilibrium::vacuum_write
-!>  @see siesta_equilibrium::siesta_write
+!>  @see vmec_equilibrium::vmec_write_input
+!>  @see vacuum_equilibrium::vacuum_write_input
+!>  @see siesta_equilibrium::siesta_write_input
 !>
 !>  @param[in] this         A @ref equilibrium_class instance.
 !>  @param[in] current_step Step number to append to input filename.

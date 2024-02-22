@@ -31,7 +31,7 @@
 !>  Base class representing a vmec_context. This contains a copy of every
 !>  variable that is needed to define the VMEC state.
 !-------------------------------------------------------------------------------
-      TYPE vmec_context_class
+      TYPE :: vmec_context_class
 !>  Cache of the vmec internal state xc array.
          REAL (rprec), DIMENSION(:), POINTER :: xc => null()
 
@@ -58,6 +58,12 @@
          REAL (rprec)                          :: vvc_smaleli
 !>  Mean elongation.
          REAL (rprec)                          :: vvc_kappa_p
+      CONTAINS
+         FINAL     :: vmec_context_destruct
+         PROCEDURE :: set_context => vmec_context_set_context
+         PROCEDURE :: get_context => vmec_context_get_context
+         PROCEDURE :: sync_state => vmec_context_sync_state
+         PROCEDURE :: sync_child => vmec_context_sync_child
       END TYPE
 
       CONTAINS
@@ -118,7 +124,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_context_class), POINTER :: this
+      TYPE (vmec_context_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%xc)) THEN
@@ -166,8 +172,6 @@
          this%zbs => null()
       END IF
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -186,10 +190,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_context_class), INTENT(in) :: this
+      CLASS (vmec_context_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                          :: start_time
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -231,10 +235,10 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_context_class), INTENT(inout) :: this
+      CLASS (vmec_context_class), INTENT(inout) :: this
 
 !  local variables
-      REAL (rprec)                             :: start_time
+      REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -282,14 +286,14 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_context_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                      :: recon_comm
+      CLASS (vmec_context_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                       :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                                  :: error
-      INTEGER                                  :: temp_size
-      INTEGER                                  :: mpi_rank
+      INTEGER                                   :: error
+      INTEGER                                   :: temp_size
+      INTEGER                                   :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
@@ -345,15 +349,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (vmec_context_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                      :: index
-      INTEGER, INTENT(in)                      :: recon_comm
+      CLASS (vmec_context_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                       :: index
+      INTEGER, INTENT(in)                       :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                                  :: error
-      INTEGER                                  :: temp_size
-      INTEGER                                  :: mpi_rank
+      INTEGER                                   :: error
+      INTEGER                                   :: temp_size
+      INTEGER                                   :: mpi_rank
 
 !  Start of executable code
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
