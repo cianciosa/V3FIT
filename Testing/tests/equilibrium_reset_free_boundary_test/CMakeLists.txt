@@ -27,7 +27,7 @@ set_tests_properties (equilibrium_reset_free_boundary_test
 
 #  The reconstruction was configured with all the same reconstruction parameters. If the equilibrium was correctky reset, the number of iterations should be the same for all parameters.
 add_test (NAME    equilibrium_reset_free_boundary_test_jacobian_iter
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jacobian_iter.py --file=runlog.input.test.v3fit)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_jacobian_iter.py --file=runlog.input.test.v3fit)
 set_tests_properties (equilibrium_reset_free_boundary_test_jacobian_iter
                       PROPERTIES
                       DEPENDS equilibrium_reset_free_boundary_test)
