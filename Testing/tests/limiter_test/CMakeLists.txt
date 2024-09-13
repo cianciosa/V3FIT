@@ -34,7 +34,7 @@ set_tests_properties (limiter_test_gridtest
                       DEPENDS "limiter_test_mgrid;limiter_test_lgrid"
                       PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 add_test (NAME    limiter_test_gridtest_model
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.grid.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.grid.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
 set_tests_properties (limiter_test_gridtest_model
                       PROPERTIES
                       DEPENDS limiter_test_gridtest)
@@ -46,7 +46,7 @@ set_tests_properties (limiter_test_isotest
                       DEPENDS limiter_test_mgrid
                       PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 add_test (NAME    limiter_test_isotest_model
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.iso.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_signal_value.py --file=recout.input.iso.v3fit --s_name=edge_lim_1 --attribute=model --value=0.00000E+00 --range=5.0E-9)
 set_tests_properties (limiter_test_isotest_model
                       PROPERTIES
                       DEPENDS limiter_test_isotest)
