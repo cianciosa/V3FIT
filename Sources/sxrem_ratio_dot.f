@@ -33,9 +33,9 @@
 !>  All thomson scattering points are specified in the following manner. Indices
 !>  a specified such that the order defines the ratio as index1/index2.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
 !>  @fixed_width{index1(INTEGER index2(INTEGER)}
 !>
 !>  @section sxrem_ratio_dot_exam_sec Example File
