@@ -39,18 +39,18 @@
 !>  @section sxrem_dot_chord_spec_sec Chord Specification
 !>  All soft x-ray chords are specified in the following manner.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
-!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)\n}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
+!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)}\n\n
 !>
 !>  Keywords that end with _geo, contain an extra geomtric factor.
 !>
-!>  @fixed_width{key_word_geo\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
-!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)\n}
-!>  @fixed_width{geo(REAL)\n}
+!>  @fixed_width{key_word_geo}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
+!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)}\n
+!>  @fixed_width{geo(REAL)}\n
 !>
 !>  @section sxrem_dot_exam_sec Example File
 !>  @code

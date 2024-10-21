@@ -36,19 +36,19 @@
 !>  @section intpol_dot_chord_spec_sec Chord Specification
 !>  All interferometry chords are specified in the following manner.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
-!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)\n}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
+!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)}\n\n
 !>
 !>  All Polarimetry chords are specified in the following manner with the wave
-!>  length .
+!>  length.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
-!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)\n}
-!>  @fixed_width{wavelength(REAL)\n}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
+!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)}\n
+!>  @fixed_width{wavelength(REAL)}\n
 !>
 !>  @section intpol_dot_exam_sec Example File
 !>  @code

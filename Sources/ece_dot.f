@@ -24,18 +24,23 @@
 !>
 !>  @section ece_dot_key_sec Keywords
 !>  @begin_table
-!>  @item2{@fixed_width{ece_chord_XYZ},          An ECE chord specified in Cartesian coordinates.}
-!>  @item2{@fixed_width{ece_chord_RPhiDegZ},     An ECE chord specified in Cylindrical coordinates.}
+!>  @item2{@fixed_width{ece_chord_XYZ},      An ECE chord specified in Cartesian coordinates.}
+!>  @item2{@fixed_width{ece_chord_RPhiDegZ}, An ECE chord specified in Cylindrical coordinates.}
 !>  @end_table
 !>
 !>  @section ece_dot_chord_spec_sec Chord Specification
 !>  All ECE chords are specified in the following manner.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
-!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)\n}
-!>  @fixed_width{frequency(REAL)}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
+!>  @fixed_width{x2(REAL) y2(REAL) z2(REAL)}\n
+!>  @fixed_width{bmod(REAL)}
+!>
+!>  @fixed_width{bmod} is the magnetude of of the magnetic field in T associated
+!>  with the electron cyclotron frequency.
+!>
+!>  |B| = ω*m/q
 !>
 !>  @section ece_dot_exam_sec Example File
 !>  @code
