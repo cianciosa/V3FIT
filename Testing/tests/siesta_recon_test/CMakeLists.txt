@@ -24,21 +24,21 @@ add_test (NAME    siesta_recon_task_test
 
 #  Check that the reconstruction parameter reconstructed to the correct values.
 add_test (NAME    siesta_recon_task_test_helpert
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test.v3fit --p_type=helpert --value=5.0E-4 --range=1.0E-4 --index1=1)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test.v3fit --p_type=helpert --value=5.0E-4 --range=1.0E-4 --index1=1)
 set_tests_properties (siesta_recon_task_test_helpert
                       PROPERTIES
                       DEPENDS siesta_recon_task_test)
 
 #  Check that the signal effectiveness total.
 add_test (NAME    siesta_recon_task_test_sem_totals
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_sem_total.py --file=recout.input.test.v3fit)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_sem_total.py --file=recout.input.test.v3fit)
 set_tests_properties (siesta_recon_task_test_sem_totals
                       PROPERTIES
                       DEPENDS siesta_recon_task_test)
 
 #  Check correlation matrix values.
 add_test (NAME siesta_recon_task_test_check_reconstruction_correlation_matrix
-          COMMAND ${PYTHON_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_correlation_matrix.py --file=recout.input.test.v3fit --param=Reconstruction)
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_correlation_matrix.py --file=recout.input.test.v3fit --param=Reconstruction)
 set_tests_properties (siesta_recon_task_test_check_reconstruction_correlation_matrix
                       PROPERTIES
                       DEPENDS siesta_recon_task_test)
