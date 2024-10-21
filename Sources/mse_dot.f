@@ -73,19 +73,19 @@
 !>  * delta: The angle between the neutral beam and the horizontal. When delta is 90, the beam points in the negative z direction.
 !>  * theta: The angle between the view chord and the horizontal. When delta is 90, the beam points in the positive z direction.
 !>
-!>  @fixed_width{key_word_ang\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x(REAL) y(REAL) z(REAL)\n}
-!>  @fixed_width{vx1(REAL) vy1(REAL) vz1(REAL)\n}
-!>  @fixed_width{vx2(REAL) vy2(REAL) vz2(REAL)\n}
-!>  @fixed_width{nx1(REAL) ny1(REAL) nz1(REAL)\n}
-!>  @fixed_width{nx2(REAL) ny2(REAL) nz2(REAL)\n}
+!>  @fixed_width{key_word_ang}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x(REAL) y(REAL) z(REAL)}\n
+!>  @fixed_width{vx1(REAL) vy1(REAL) vz1(REAL)}\n
+!>  @fixed_width{vx2(REAL) vy2(REAL) vz2(REAL)}\n
+!>  @fixed_width{nx1(REAL) ny1(REAL) nz1(REAL)}\n
+!>  @fixed_width{nx2(REAL) ny2(REAL) nz2(REAL)}\n\n
 !>
-!>  @fixed_width{key_word_ang_ang\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x(REAL) y(REAL) z(REAL)\n}
-!>  @fixed_width{alpha(REAL) omega(REAL)\n}
-!>  @fixed_width{delta(REAL) theta(REAL)\n}
+!>  @fixed_width{key_word_ang_ang}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x(REAL) y(REAL) z(REAL)}\n
+!>  @fixed_width{alpha(REAL) omega(REAL)}\n
+!>  @fixed_width{delta(REAL) theta(REAL)}\n
 !>
 !>  @section mse_dot_exam_sec Example File
 !>  @code

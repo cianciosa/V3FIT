@@ -36,9 +36,9 @@
 !>  @section thomson_dot_chord_spec_sec Chord Specification
 !>  All thomson scattering points are specified in the following manner.
 !>
-!>  @fixed_width{key_word\n}
-!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)\n}
-!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)\n}
+!>  @fixed_width{key_word}\n
+!>  @fixed_width{name(STRING len:@ref data_parameters::data_short_name_length)}\n
+!>  @fixed_width{x1(REAL) y1(REAL) z1(REAL)}\n
 !>
 !>  @section thomson_dot_exam_sec Example File
 !>  @code
