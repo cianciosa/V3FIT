@@ -93,7 +93,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class containing a parsed commandline.
 !-------------------------------------------------------------------------------
-      TYPE commandline_parser_class
+      TYPE :: commandline_parser_class
 !>  Command name of current process.
          CHARACTER (len=max_length) :: command
 !>  Array of arguments. An argument is the form of -flag
@@ -103,6 +103,12 @@
 !>  '=' character. The value maybe blank indicating there was no value provided.
          CHARACTER (len=path_length), DIMENSION(:), POINTER ::                 &
      &      value => null()
+      CONTAINS
+         FINAL     :: commandline_parser_destruct
+         PROCEDURE :: get_string => commandline_parser_get_string
+         PROCEDURE :: get_integer => commandline_parser_get_integer
+         PROCEDURE :: get_real => commandline_parser_get_real
+         PROCEDURE :: is_flag_set => commandline_parser_is_flag_set
       END TYPE
 
       CONTAINS
@@ -125,7 +131,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (commandline_parser_class), POINTER ::                              &
+      CLASS (commandline_parser_class), POINTER ::                             &
      &   commandline_parser_construct
 
 !  local variables
@@ -203,7 +209,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (commandline_parser_class), POINTER :: this
+      TYPE (commandline_parser_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%arg)) THEN
@@ -215,8 +221,6 @@
          DEALLOCATE(this%value)
          this%value => null()
       END IF
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -240,12 +244,12 @@
 
 !  Declare Arguments
       CHARACTER (len=path_length) :: commandline_parser_get_string
-      TYPE (commandline_parser_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)               :: arg
+      CLASS (commandline_parser_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)                :: arg
 
 !  Local arguments
-      INTEGER                                     :: i
-      REAL (rprec)                                :: start_time
+      INTEGER                                      :: i
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -291,14 +295,14 @@
 
 !  Declare Arguments
       INTEGER :: commandline_parser_get_integer
-      TYPE (commandline_parser_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)               :: arg
-      INTEGER, INTENT(in)                         :: default_value
+      CLASS (commandline_parser_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)                :: arg
+      INTEGER, INTENT(in)                          :: default_value
 
 !  Local arguments
-      CHARACTER (len=path_length)                 :: value
-      INTEGER                                     :: status
-      REAL (rprec)                                :: start_time
+      CHARACTER (len=path_length)                  :: value
+      INTEGER                                      :: status
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -346,14 +350,14 @@
 
 !  Declare Arguments
       REAL (rprec) :: commandline_parser_get_real
-      TYPE (commandline_parser_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)               :: arg
-      REAL (rprec), INTENT(in)                    :: default_value
+      CLASS (commandline_parser_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)                :: arg
+      REAL (rprec), INTENT(in)                     :: default_value
 
 !  Local arguments
-      CHARACTER (len=path_length)                 :: value
-      INTEGER                                     :: status
-      REAL (rprec)                                :: start_time
+      CHARACTER (len=path_length)                  :: value
+      INTEGER                                      :: status
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -399,12 +403,12 @@
 
 !  Declare Arguments
       LOGICAL :: commandline_parser_is_flag_set
-      TYPE (commandline_parser_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)               :: arg
+      CLASS (commandline_parser_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)                :: arg
 
 !  Local arguments
-      INTEGER                                     :: i
-      REAL (rprec)                                :: start_time
+      INTEGER                                      :: i
+      REAL (rprec)                                 :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()

@@ -39,7 +39,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class containing all the data needed to reconstruct a model.
 !-------------------------------------------------------------------------------
-      TYPE reconstruction_class
+      TYPE :: reconstruction_class
 !>  Type descriptor of the boundry type for the lower(1) and upper(2) ranges.
 !>  @par Possible values are:
 !>  * @ref reconstruction_no_step_type
@@ -117,18 +117,36 @@
 
 !>  Last signals.
          REAL (rprec), DIMENSION(:,:), POINTER :: last_values => null()
+      CONTAINS
+         FINAL     :: reconstruction_destruct
+         PROCEDURE :: get_k_use => reconstruction_get_k_use
+         PROCEDURE :: get_exp_dg2 => reconstruction_get_exp_dg2
+         PROCEDURE :: get_exp_g2 => reconstruction_get_exp_g2
+         PROCEDURE :: get_g2 => reconstruction_get_g2
+         PROCEDURE :: get_lastg2 => reconstruction_get_lastg2
+         PROCEDURE :: get_dg2 => reconstruction_get_dg2
+         PROCEDURE :: eval_e => reconstruction_eval_e
+         PROCEDURE :: eval_f => reconstruction_eval_f
+         PROCEDURE :: eval_jacobians => reconstruction_eval_jacobians
+         PROCEDURE :: eval_step => reconstruction_eval_step
+         PROCEDURE :: sl_step => reconstruction_sl_step
+         PROCEDURE :: seg_step => reconstruction_seg_step
+         PROCEDURE :: lm_step => reconstruction_lm_step
+         PROCEDURE :: lm_rootfind => reconstruction_lm_rootfind
+         PROCEDURE :: lm_function => reconstruction_lm_function
+         PROCEDURE :: step => reconstruction_step
+         PROCEDURE :: try_step => reconstruction_try_step
+         PROCEDURE :: eval_sem => reconstruction_eval_sem
+         PROCEDURE :: invert_matrix => reconstruction_invert_matrix
+         PROCEDURE :: write => reconstruction_write
+         PROCEDURE :: write_step1 => reconstruction_write_step1
+         PROCEDURE :: write_step2 => reconstruction_write_step2
+         GENERIC   :: write_step => write_step1, write_step2
+         PROCEDURE :: restart => reconstruction_restart
+         PROCEDURE :: sync_state => reconstruction_sync_state
+         PROCEDURE :: sync_svd => reconstruction_sync_svd
+         PROCEDURE :: sync_parent => reconstruction_sync_parent
       END TYPE
-
-!*******************************************************************************
-!  INTERFACE BLOCKS
-!*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  Interface for writing out step data.
-!-------------------------------------------------------------------------------
-      INTERFACE reconstruction_write_step
-         MODULE PROCEDURE reconstruction_write_step1,                          &
-     &                    reconstruction_write_step2
-      END INTERFACE
 
       CONTAINS
 !*******************************************************************************
@@ -175,25 +193,25 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), POINTER :: reconstruction_construct
-      INTEGER, INTENT(in)                  :: num_steps
-      INTEGER, INTENT(in)                  :: num_signals
-      INTEGER, INTENT(in)                  :: num_derived_parameters
-      INTEGER, INTENT(in)                  :: num_parameters
-      CHARACTER (len=*), INTENT(in)        :: step_type
-      REAL (rprec), INTENT(in)             :: step_max
-      REAL (rprec), INTENT(in)             :: cut_svd
-      REAL (rprec), INTENT(in)             :: cut_eff
-      REAL (rprec), INTENT(in)             :: cut_marg_eff
-      REAL (rprec), INTENT(in)             :: cut_delta_a
-      REAL (rprec), INTENT(in)             :: cut_dg2
-      INTEGER, INTENT(in)                  :: last_para_signal
-      REAL (rprec), INTENT(in)             :: cut_inv_svd
-      LOGICAL, INTENT(in)                  :: use_central
+      CLASS (reconstruction_class), POINTER :: reconstruction_construct
+      INTEGER, INTENT(in)                   :: num_steps
+      INTEGER, INTENT(in)                   :: num_signals
+      INTEGER, INTENT(in)                   :: num_derived_parameters
+      INTEGER, INTENT(in)                   :: num_parameters
+      CHARACTER (len=*), INTENT(in)         :: step_type
+      REAL (rprec), INTENT(in)              :: step_max
+      REAL (rprec), INTENT(in)              :: cut_svd
+      REAL (rprec), INTENT(in)              :: cut_eff
+      REAL (rprec), INTENT(in)              :: cut_marg_eff
+      REAL (rprec), INTENT(in)              :: cut_delta_a
+      REAL (rprec), INTENT(in)              :: cut_dg2
+      INTEGER, INTENT(in)                   :: last_para_signal
+      REAL (rprec), INTENT(in)              :: cut_inv_svd
+      LOGICAL, INTENT(in)                   :: use_central
 
 !  local variables
-      INTEGER                              :: num_svd
-      REAL (rprec)                         :: start_time
+      INTEGER                               :: num_svd
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -281,7 +299,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), POINTER :: this
+      TYPE (reconstruction_class), INTENT(inout) :: this
 
 !  Start of executable code
       this%step_type = reconstruction_no_step_type
@@ -379,8 +397,6 @@
          this%last_values => null()
       END IF
 
-      DEALLOCATE(this)
-
       END SUBROUTINE
 
 !*******************************************************************************
@@ -401,17 +417,17 @@
 
 !  Declare Arguments
       INTEGER :: reconstruction_get_k_use
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: num_sv
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: num_sv
 
 !  local variables
-      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: dg2exp
-      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: exp_eff
-      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: marg_exp_eff
-      INTEGER                                    :: k
-      REAL (rprec)                               :: denom
-      REAL (rprec)                               :: largest_w
-      REAL (rprec)                               :: start_time
+      REAL (rprec), DIMENSION(:), ALLOCATABLE     :: dg2exp
+      REAL (rprec), DIMENSION(:), ALLOCATABLE     :: exp_eff
+      REAL (rprec), DIMENSION(:), ALLOCATABLE     :: marg_exp_eff
+      INTEGER                                     :: k
+      REAL (rprec)                                :: denom
+      REAL (rprec)                                :: largest_w
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -423,8 +439,7 @@
 !  Estimate the expected changes in g^2. Equation 22 in Hanson et. al.
 !  doi: 10.1088/0029-5515/49/7/075031
       DO k = 0, num_sv
-         dg2exp(k) = reconstruction_get_exp_dg2(this,                          &
-     &                                          this%delta_a(:,k))
+         dg2exp(k) = this%get_exp_dg2(this%delta_a(:,k))
 
          this%delta_a_len(k) = SQRT(DOT_PRODUCT(this%delta_a(:,k),             &
      &                                          this%delta_a(:,k)))
@@ -498,13 +513,13 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_get_exp_dg2
-      TYPE (reconstruction_class), INTENT(in) :: this
-      REAL (rprec), DIMENSION(:), INTENT(in)  :: delta_a
+      CLASS (reconstruction_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(:), INTENT(in)   :: delta_a
 
 !  local variables
-      REAL (rprec)                            :: dg2exp_lin
-      REAL (rprec)                            :: dg2exp_quad
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: dg2exp_lin
+      REAL (rprec)                             :: dg2exp_quad
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -540,18 +555,17 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_get_exp_g2
-      TYPE (reconstruction_class), INTENT(in) :: this
-      REAL (rprec), DIMENSION(:), INTENT(in)  :: delta_a
+      CLASS (reconstruction_class), INTENT(in) :: this
+      REAL (rprec), DIMENSION(:), INTENT(in)   :: delta_a
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      reconstruction_get_exp_g2 = reconstruction_get_g2(this)                  &
-     &                          - reconstruction_get_exp_dg2(this,             &
-     &                                                       delta_a)
+      reconstruction_get_exp_g2 = this%get_g2()                                &
+     &                          - this%get_exp_dg2(delta_a)
 
       CALL profiler_set_stop_time('reconstruction_get_exp_g2',                 &
      &                            start_time)
@@ -572,10 +586,10 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_get_g2
-      TYPE (reconstruction_class), INTENT(in) :: this
+      CLASS (reconstruction_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -602,7 +616,7 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_get_lastg2
-      TYPE (reconstruction_class), INTENT(in) :: this
+      CLASS (reconstruction_class), INTENT(in) :: this
 
 !  local variables
       REAL (rprec)                            :: start_time
@@ -633,16 +647,15 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_get_dg2
-      TYPE (reconstruction_class), INTENT(in) :: this
+      CLASS (reconstruction_class), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      reconstruction_get_dg2 = reconstruction_get_lastg2(this)                 &
-     &                       - reconstruction_get_g2(this)
+      reconstruction_get_dg2 = this%get_lastg2() - this%get_g2()
 
       CALL profiler_set_stop_time('reconstruction_get_dg2', start_time)
       END FUNCTION
@@ -672,7 +685,7 @@
 
 !  Declare Arguments
       LOGICAL :: reconstruction_eval_e
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
@@ -739,7 +752,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout)     :: this
+      CLASS (reconstruction_class), INTENT(inout)    :: this
       TYPE (param_pointer), DIMENSION(:), INTENT(in) :: derived_params
       CLASS (model_class), INTENT(inout)             :: a_model
 
@@ -787,7 +800,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
@@ -827,7 +840,7 @@
      &                         eq_comm, this%use_central)
       END DO
       CALL a_model%sync_state(recon_comm)
-      CALL reconstruction_sync_state(this, recon_comm)
+      CALL this%sync_state(recon_comm)
 
 !  Set the locked values.
       DO i = 1, SIZE(locks)
@@ -1058,9 +1071,9 @@
 !  At this point, the computed jacobian rows should be returned to the parent
 !  process.
 #if defined(MPI_OPT)
-      CALL reconstruction_sync_parent(this, params, SIZE(signals),             &
-     &                                SIZE(derived_params), stride,            &
-     &                                offset, recon_comm)
+      CALL this%sync_parent(params, SIZE(signals),                             &
+     &                      SIZE(derived_params), stride,                      &
+     &                      offset, recon_comm)
 #endif
 
       DEALLOCATE(stride)
@@ -1101,7 +1114,7 @@
 
 !  Declare Arguments
       INTEGER :: reconstruction_eval_step
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
@@ -1137,10 +1150,9 @@
       CALL MPI_BCAST(eq_steps, 1, MPI_INTEGER, 0, recon_comm, error)
 #endif
 
-      CALL reconstruction_eval_jacobians(this, signals, derived_params,        &
-     &                                   locks, a_model, gaussp, params,       &
-     &                                   eq_steps, iou, recon_comm,            &
-     &                                   eq_comm)
+      CALL this%eval_jacobians(signals, derived_params, locks, a_model,        &
+     &                         gaussp, params, eq_steps, iou,                  &
+     &                         recon_comm, eq_comm)
 
 !  Compute the positive definite Hessian, matrix. Equation 14 in Hanson et. al.
 !  doi:10.1088/0029-5515/49/7/075031
@@ -1214,8 +1226,7 @@
       DEALLOCATE(temp_work2)
       DEALLOCATE(temp_work3)
 
-      reconstruction_eval_step =                                               &
-     &   reconstruction_get_k_use(this, SIZE(this%j_svd_w))
+      reconstruction_eval_step = this%get_k_use(SIZE(this%j_svd_w))
 
       CALL profiler_set_stop_time('reconstruction_eval_step',                  &
      &                            start_time)
@@ -1239,13 +1250,13 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_sl_step
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: k_use
-      REAL (rprec), INTENT(in)                   :: step_size
-      REAL (rprec), DIMENSION(:), INTENT(out)    :: delta_a
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: k_use
+      REAL (rprec), INTENT(in)                    :: step_size
+      REAL (rprec), DIMENSION(:), INTENT(out)     :: delta_a
 
 !  local variables
-      REAL (rprec)                               :: start_time
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1281,17 +1292,17 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_seg_step
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: k_use
-      REAL (rprec), INTENT(in)                   :: step_size
-      REAL (rprec), DIMENSION(:), INTENT(out)    :: delta_a
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: k_use
+      REAL (rprec), INTENT(in)                    :: step_size
+      REAL (rprec), DIMENSION(:), INTENT(out)     :: delta_a
 
 !  local variables
-      INTEGER                                    :: k, k_min
-      REAL (rprec)                               :: ysq, zsq, ydz
-      REAL (rprec)                               :: aa, bb, cc, xx
-      REAL (rprec)                               :: discriminant
-      REAL (rprec)                               :: start_time
+      INTEGER                                     :: k, k_min
+      REAL (rprec)                                :: ysq, zsq, ydz
+      REAL (rprec)                                :: aa, bb, cc, xx
+      REAL (rprec)                                :: discriminant
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1371,15 +1382,15 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_lm_step
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: k_use
-      REAL (rprec), INTENT(in)                   :: step_size
-      REAL (rprec), DIMENSION(:), INTENT(out)    :: delta_a
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: k_use
+      REAL (rprec), INTENT(in)                    :: step_size
+      REAL (rprec), DIMENSION(:), INTENT(out)     :: delta_a
 
 !  local variables
-      REAL (rprec)                               :: lambda
-      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: utdote
-      REAL (rprec)                               :: start_time
+      REAL (rprec)                                :: lambda
+      REAL (rprec), DIMENSION(:), ALLOCATABLE     :: utdote
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1397,8 +1408,7 @@
          utdote = MATMUL(this%e(:,this%current_step), this%j_svd_u)
 
 !  Find the L-M parameter lambda that corresponds to a step length of step_size.
-         lambda = reconstruction_lm_rootfind(this, k_use, lambda,              &
-     &                                       step_size, utdote)
+         lambda = this%lm_rootfind(k_use, lambda, step_size, utdote)
 
 !  Find the step
          utdote(1:k_use) = utdote(1:k_use)*this%j_svd_w(1:k_use)               &
@@ -1442,25 +1452,25 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_lm_rootfind
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: k_use
-      REAL (rprec), INTENT(in)                   :: lambda_default
-      REAL (rprec), INTENT(in)                   :: step_size
-      REAL (rprec), DIMENSION(:), INTENT(in)     :: utdote
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: k_use
+      REAL (rprec), INTENT(in)                    :: lambda_default
+      REAL (rprec), INTENT(in)                    :: step_size
+      REAL (rprec), DIMENSION(:), INTENT(in)      :: utdote
 
 !  local variables
-      INTEGER                                    :: i
-      REAL (rprec), DIMENSION(:), ALLOCATABLE    :: f_sqrd
-      REAL (rprec)                               :: step_size_sqrd
-      REAL (rprec)                               :: f_0
-      REAL (rprec)                               :: f_2
-      REAL (rprec)                               :: lambda_0
-      REAL (rprec)                               :: lambda_2
-      REAL (rprec)                               :: lambda_try
-      REAL (rprec)                               :: lambda_new
-      REAL (rprec)                               :: f_try, f_new
-      REAL (rprec)                               :: s
-      REAL (rprec)                               :: start_time
+      INTEGER                                     :: i
+      REAL (rprec), DIMENSION(:), ALLOCATABLE     :: f_sqrd
+      REAL (rprec)                                :: step_size_sqrd
+      REAL (rprec)                                :: f_0
+      REAL (rprec)                                :: f_2
+      REAL (rprec)                                :: lambda_0
+      REAL (rprec)                                :: lambda_2
+      REAL (rprec)                                :: lambda_try
+      REAL (rprec)                                :: lambda_new
+      REAL (rprec)                                :: f_try, f_new
+      REAL (rprec)                                :: s
+      REAL (rprec)                                :: start_time
 
 !  local parameters
       REAL (rprec), PARAMETER :: d_lambda_min = 1.0E-6_rprec
@@ -1481,8 +1491,7 @@
 !  give a positive function value. f_0 should be greater than zero, as the step
 !  size at k_use is larger than step_size.
       lambda_0 = 0.0
-      f_0 = reconstruction_lm_function(this, f_sqrd, step_size_sqrd,           &
-     &                                 lambda_0)
+      f_0 = this%lm_function(f_sqrd, step_size_sqrd, lambda_0)
       IF (f_0 .lt. 0.0) THEN
          CALL err_warn('reconstruction_lm_rootfind: f_0 < 0.0')
          DEALLOCATE(f_sqrd)
@@ -1493,16 +1502,13 @@
 
 !  Look for a large value of lambda, to give a negative function value.
       lambda_2 = this%j_svd_w(1)**2.0
-      f_2 = reconstruction_lm_function(this, f_sqrd, step_size_sqrd,           &
-     &                                 lambda_2)
+      f_2 = this%lm_function(f_sqrd, step_size_sqrd, lambda_2)
       DO i = 1, 20
          IF (f_2 .le. 0.0) THEN
             EXIT
          ELSE
             lambda_2 = 4.0*lambda_2
-            f_2 = reconstruction_lm_function(this, f_sqrd,                     &
-     &                                       step_size_sqrd,                   &
-     &                                       lambda_2)
+            f_2 = this%lm_function(f_sqrd, step_size_sqrd, lambda_2)
          END IF
       END DO
       IF (f_2 .gt. 0.0) THEN
@@ -1527,9 +1533,7 @@
       reconstruction_lm_rootfind = -9.99E99_rprec
       DO i = 1, 99
          lambda_try = 0.5*(lambda_0 + lambda_2)
-         f_try = reconstruction_lm_function(this, f_sqrd,                      &
-     &                                      step_size_sqrd,                    &
-     &                                      lambda_try)
+         f_try = this%lm_function(f_sqrd, step_size_sqrd, lambda_try)
          s = SQRT(f_try**2.0 - f_0*f_2)
          IF (s .eq. 0.0) THEN
             EXIT
@@ -1544,9 +1548,7 @@
          END IF
 
          reconstruction_lm_rootfind = lambda_new
-         f_new = reconstruction_lm_function(this, f_sqrd,                      &
-     &                                      step_size_sqrd,                    &
-     &                                      lambda_new)
+         f_new = this%lm_function(f_sqrd, step_size_sqrd, lambda_new)
          IF (f_new .eq. 0.0) THEN
             EXIT
          ELSE IF (SIGN(f_try, f_new) .ne. f_try) THEN
@@ -1595,14 +1597,14 @@
 
 !  Declare Arguments
       REAL (rprec) :: reconstruction_lm_function
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      REAL (rprec), DIMENSION(:), INTENT(in)     :: f_sqrd
-      REAL (rprec), INTENT(in)                   :: step_size_sqrd
-      REAL (rprec), INTENT(in)                   :: lambda
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      REAL (rprec), DIMENSION(:), INTENT(in)      :: f_sqrd
+      REAL (rprec), INTENT(in)                    :: step_size_sqrd
+      REAL (rprec), INTENT(in)                    :: lambda
 
 !  local variables
-      INTEGER                                    :: i
-      REAL (rprec)                               :: start_time
+      INTEGER                                     :: i
+      REAL (rprec)                                :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1650,7 +1652,7 @@
 
 !  Declare Arguments
       LOGICAL :: reconstruction_step
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
@@ -1679,10 +1681,9 @@
       reconstruction_step = .false.
 
 !  Evaluate the quasi-Newton step.
-      k_use = reconstruction_eval_step(this, signals, derived_params,          &
-     &                                 locks, a_model, gaussp, params,         &
-     &                                 eq_steps, iou, recon_comm,              &
-     &                                 eq_comm)
+      k_use = this%eval_step(signals, derived_params, locks, a_model,          &
+     &                       gaussp, params, eq_steps, iou, recon_comm,        &
+     &                       eq_comm)
       this%num_sv(this%current_step + 1) = k_use
 
 !  Sync the results of the jacobian and singular value decomposition to the
@@ -1690,7 +1691,7 @@
 #if defined(MPI_OPT)
       CALL MPI_BCAST(mpi_sync_task, 1, MPI_INTEGER, 0, recon_comm,             &
      &               error)
-      CALL reconstruction_sync_svd(this, recon_comm)
+      CALL this%sync_svd(recon_comm)
       DO i = 1, SIZE(params)
          CALL param_sync_delta(params(i)%p, recon_comm)
       END DO
@@ -1701,15 +1702,14 @@
 
       DO i = 1, reconstruction_max_step_try
 
-         IF (reconstruction_try_step(this, signals, derived_params,            &
-     &                               locks, a_model, gaussp, params,           &
-     &                               eq_steps, step_use, iou,                  &
-     &                               recon_comm, eq_comm)) THEN
+         IF (this%try_step(signals, derived_params, locks, a_model,            &
+     &                     gaussp, params, eq_steps, step_use, iou,            &
+     &                     recon_comm, eq_comm)) THEN
 
 !  Equilibrium converged
 
-            IF (reconstruction_get_dg2(this) .ge. 0.0) THEN
-               CALL reconstruction_eval_f(this, derived_params, a_model)
+            IF (this%get_dg2() .ge. 0.0) THEN
+               CALL this%eval_f(derived_params, a_model)
 
 !  The signal cache holds the next set of good signal values.
                DO j = 1, SIZE(signals)
@@ -1721,31 +1721,27 @@
                WRITE (*,*) ' *** Step succeeded'
                WRITE (*,*) ' Result of step'
                WRITE (*,1000)
-               WRITE (*,1001) reconstruction_get_lastg2(this),                 &
-     &                        reconstruction_get_g2(this),                     &
-     &                        reconstruction_get_dg2(this)
+               WRITE (*,1001) this%get_lastg2(), this%get_g2(),                &
+     &                        this%get_dg2()
 
                WRITE (iou,*)
                WRITE (iou,*) ' *** Step succeeded'
                WRITE (iou,*) ' Result of step'
                WRITE (iou,1000)
-               WRITE (iou,1001) reconstruction_get_lastg2(this),               &
-     &                          reconstruction_get_g2(this),                   &
-     &                          reconstruction_get_dg2(this)
+               WRITE (iou,1001) this%get_lastg2(), this%get_g2(),              &
+     &                          this%get_dg2()
                EXIT
             ELSE
 !  Equilibrium converged but g^2 increased
                WRITE (*,*) 'Equilibrium converged but g2 increased'
                WRITE (*,1000)
-               WRITE (*,1001) reconstruction_get_lastg2(this),                 &
-     &                        reconstruction_get_g2(this),                     &
-     &                        reconstruction_get_dg2(this)
+               WRITE (*,1001) this%get_lastg2(), this%get_g2(),                &
+     &                        this%get_dg2()
 !               WRITE (*,1002) MAXLOC(ABS(delta_a))
                WRITE (iou,*) 'Equilibrium converged but g2 increased'
                WRITE (iou,1000)
-               WRITE (iou,1001) reconstruction_get_lastg2(this),               &
-     &                          reconstruction_get_g2(this),                   &
-     &                          reconstruction_get_dg2(this)
+               WRITE (iou,1001) this%get_lastg2(), this%get_g2(),              &
+     &                          this%get_dg2()
 !               WRITE (iou,1002) MAXLOC(ABS(delta_a))
             END IF
 
@@ -1762,8 +1758,8 @@
          IF (i .eq. reconstruction_max_step_try) THEN
 !  The signals contain cached values. If the step fails recompute the modeled
 !  signals so that values written to the recout match the result file.
-            temp = reconstruction_eval_e(this, signals, a_model,               &
-     &                                   gaussp, eq_steps, iou, eq_comm)
+            temp = this%eval_e(signals, a_model, gaussp, eq_steps, iou,        &
+     &                         eq_comm)
 
             WRITE (*,*) 'Reconstruction step failed.'
             WRITE (iou,*) 'Reconstruction step failed.'
@@ -1813,7 +1809,7 @@
 
 !  Declare Arguments
       LOGICAL :: reconstruction_try_step
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
@@ -1898,28 +1894,25 @@
       SELECT CASE (this%step_type)
 
          CASE (reconstruction_sl_step_type)
-            step_use = reconstruction_sl_step(this, k_use, step_use,           &
-     &                                        delta_a)
+            step_use = this%sl_step(k_use, step_use, delta_a)
             this%exp_g2(this%current_step + 1) =                               &
-     &         reconstruction_get_exp_g2(this, delta_a)
+     &         this%get_exp_g2(delta_a)
             this%step_size(this%current_step + 1) = step_use
-            CALL reconstruction_write_step(this, 'sl', iou)
+            CALL this%write_step('sl', iou)
 
          CASE (reconstruction_lm_step_type)
-            step_use = reconstruction_lm_step(this, k_use, step_use,           &
-     &                                        delta_a)
+            step_use = this%lm_step(k_use, step_use, delta_a)
             this%exp_g2(this%current_step + 1) =                               &
-     &         reconstruction_get_exp_g2(this, delta_a)
+     &         this%get_exp_g2(delta_a)
             this%step_size(this%current_step + 1) = step_use
-            CALL reconstruction_write_step(this, 'lm', iou)
+            CALL this%write_step('lm', iou)
 
          CASE (reconstruction_seg_step_type)
-            step_use = reconstruction_seg_step(this, k_use, step_use,          &
-     &                                         delta_a)
+            step_use = this%seg_step(k_use, step_use, delta_a)
             this%exp_g2(this%current_step + 1) =                               &
-     &         reconstruction_get_exp_g2(this, delta_a)
+     &         this%get_exp_g2(delta_a)
             this%step_size(this%current_step + 1) = step_use
-            CALL reconstruction_write_step(this, 'seg', iou)
+            CALL this%write_step('seg', iou)
 
       END SELECT
 
@@ -1954,21 +1947,21 @@
 !  Reconverge the equilibrium. Increment the current step so
 !  reconstruction_eval_e writes the e array to the correct index.
       this%current_step = this%current_step + 1
-      converged = reconstruction_eval_e(this, signals, a_model,                &
-     &                                  gaussp, eq_steps, iou, eq_comm)
+      converged = this%eval_e(signals, a_model, gaussp, eq_steps, iou,         &
+     &                        eq_comm)
 
 !  Search all the processes for the lowest value of g^2.
       best_index = -1
 #if defined(MPI_OPT)
       IF (mpi_rank .gt. 0) THEN
-         CALL MPI_SSEND(converged, 1, MPI_LOGICAL, 0, mpi_rank,                 &
+         CALL MPI_SSEND(converged, 1, MPI_LOGICAL, 0, mpi_rank,                &
      &                 recon_comm, error)
 
 !  If the equilibrium converged send the value of g^2.
          IF (converged) THEN
-            best_g2 = reconstruction_get_g2(this)
+            best_g2 = this%get_g2()
             WRITE (*,1002) mpi_rank, best_g2, step_use
-            CALL MPI_SSEND(best_g2, 1, MPI_REAL8, 0, mpi_rank,                  &
+            CALL MPI_SSEND(best_g2, 1, MPI_REAL8, 0, mpi_rank,                 &
      &                    recon_comm, error)
          END IF
 
@@ -1976,7 +1969,7 @@
 #endif
          IF (converged) THEN
             best_index = 0
-            best_g2 = reconstruction_get_g2(this)
+            best_g2 = this%get_g2()
             WRITE (*,1002) mpi_rank, best_g2, step_use
          END IF
 
@@ -2042,8 +2035,8 @@
          CALL MPI_BARRIER(recon_comm, error)
 
 !  If the equilibrium failed to converge reset the parameters and equilibrium.
-         IF ((best_index                   .lt. 0) .or.                        &
-     &       (reconstruction_get_dg2(this) .lt. 0.0)) THEN
+         IF ((best_index     .lt. 0) .or.                                      &
+     &       (this%get_dg2() .lt. 0.0)) THEN
 !  The step failed, reset the param values so that they remain in sync with the
 !  step.
              DO i = 1, SIZE(params)
@@ -2139,7 +2132,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout)         :: this
+      CLASS (reconstruction_class), INTENT(inout)        :: this
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  ::                    &
@@ -2179,7 +2172,7 @@
       cp = this%hessian
 
 !  Invert C_p^-1 to get the parameter covariance matrix.
-      CALL reconstruction_invert_matrix(this, cp, sub_name, 'C_p^-1')
+      CALL this%invert_matrix(cp, sub_name, 'C_p^-1')
 
 !  From the parameter covariance matrix, map the reconstructed uncertainty to
 !  the derived parameters by the derived jacobian.
@@ -2258,7 +2251,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout) :: this
+      CLASS (reconstruction_class), INTENT(inout) :: this
       REAL (rprec), DIMENSION(:,:), POINTER      :: matrix
       CHARACTER (len=*), INTENT(in)              :: sub
       CHARACTER (len=*), INTENT(in)              :: name
@@ -2375,13 +2368,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), POINTER :: this
-      INTEGER, INTENT(in)                  :: iou
+      CLASS (reconstruction_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                      :: iou
 
 !  local variables
-      INTEGER                              :: i
-      REAL (rprec)                         :: temp_g2
-      REAL (rprec)                         :: start_time
+      INTEGER                                  :: i
+      REAL (rprec)                             :: temp_g2
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2429,12 +2422,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(in) :: this
-      CHARACTER (len=*), INTENT(in)           :: step_type
-      INTEGER, INTENT(in)                     :: iou
+      CLASS (reconstruction_class), INTENT(in) :: this
+      CHARACTER (len=*), INTENT(in)            :: step_type
+      INTEGER, INTENT(in)                      :: iou
 
 !  local variables
-      REAL (rprec)                            :: start_time
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2473,13 +2466,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(in) :: this
-      INTEGER, INTENT(in)                     :: iou
+      CLASS (reconstruction_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                      :: iou
 
 !  local variables
-      CHARACTER (len=21)                      :: jac_format
-      INTEGER                                 :: i
-      REAL (rprec)                            :: start_time
+      CHARACTER (len=21)                       :: jac_format
+      INTEGER                                  :: i
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2558,7 +2551,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout)      :: this
+      CLASS (reconstruction_class), INTENT(inout)     :: this
       INTEGER, INTENT(in)                             :: result_ncid
       INTEGER, INTENT(in)                             :: current_step
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
@@ -2597,7 +2590,7 @@
      &      signals(i)%p%get_e(a_model, .false., this%last_values(:,i))
       END DO
 
-      CALL reconstruction_eval_f(this, derived_params, a_model)
+      CALL this%eval_f(derived_params, a_model)
 
       CALL profiler_set_stop_time('reconstruction_restart', start_time)
 
@@ -2620,13 +2613,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: recon_comm
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      REAL (rprec)                               :: start_time
-      INTEGER                                    :: error
+      REAL (rprec)                                :: start_time
+      INTEGER                                     :: error
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2661,13 +2654,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)                        :: recon_comm
+      CLASS (reconstruction_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                         :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      REAL (rprec)                               :: start_time
-      INTEGER                                    :: error
+      REAL (rprec)                                :: start_time
+      INTEGER                                     :: error
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -2721,21 +2714,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (reconstruction_class), INTENT(inout) :: this
+      CLASS (reconstruction_class), INTENT(inout) :: this
       TYPE (param_pointer), DIMENSION(:), INTENT(inout) :: params
-      INTEGER, INTENT(in)                        :: num_signal
-      INTEGER, INTENT(in)                        :: num_derived_params
-      INTEGER, DIMENSION(:), INTENT(in)          :: stride
-      INTEGER, DIMENSION(:), INTENT(in)          :: offset
-      INTEGER, INTENT(in)                        :: recon_comm
+      INTEGER, INTENT(in)                         :: num_signal
+      INTEGER, INTENT(in)                         :: num_derived_params
+      INTEGER, DIMENSION(:), INTENT(in)           :: stride
+      INTEGER, DIMENSION(:), INTENT(in)           :: offset
+      INTEGER, INTENT(in)                         :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      REAL (rprec)                               :: start_time
-      INTEGER                                    :: error
-      INTEGER                                    :: mpi_rank
-      INTEGER                                    :: i
-      INTEGER                                    :: iLow, iHigh
+      REAL (rprec)                                :: start_time
+      INTEGER                                     :: error
+      INTEGER                                     :: mpi_rank
+      INTEGER                                     :: i
+      INTEGER                                     :: iLow, iHigh
 
 !  Start of executable code
       start_time = profiler_get_start_time()

@@ -103,12 +103,14 @@
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(vmec_class) :: siesta_class
 !>  File name of the output of siesta.
-         CHARACTER (len=path_length)            :: restart_file_name
+         CHARACTER (len=path_length)           :: restart_file_name
 !>  File name of the siesta namelist inout file.
-         CHARACTER (len=path_length)            :: siesta_file_name
+         CHARACTER (len=path_length)           :: siesta_file_name
 
-!>  siesta context.
-         TYPE (siesta_context_class), POINTER   :: context => null()
+!>  Siesta run context.
+         CLASS (siesta_run_class), POINTER     :: run_context => null()
+!>  Siesta context.
+         CLASS (siesta_context_class), POINTER :: context => null()
       CONTAINS
          PROCEDURE :: set_param => siesta_set_param
          PROCEDURE :: set_magnetic_cache_response =>                           &
@@ -284,29 +286,33 @@
       CALL MPI_BCAST(recon_rank, 1, MPI_INTEGER, 0, eq_comm, error)
 #endif
 
-      IF (eq_rank .eq. 0) THEN
-!  Save a copy of the jcf orginal jcf file.
-         CALL copy_file(TRIM(file_name), TRIM(file_name) // '_save',           &
-     &               error)
+      siesta_construct%siesta_file_name = TRIM(file_name)
 
-         WRITE (*,*) ' *** Initializing SIESTA equilibrium from ' //           &
-     &               'file ' // TRIM(file_name)
-         WRITE (iou,*) ' *** Initializing SIESTA equilibrium from ' //         &
-     &                 'file ' // TRIM(file_name)
-
-         siesta_construct%siesta_file_name = TRIM(file_name)
-
-         CALL siesta_namelist_read(TRIM(file_name))
-         WRITE (siesta_construct%restart_file_name,1000)                       &
-     &      TRIM(restart_ext)
-
-         state_flags = IBSET(state_flags, model_state_siesta_flag)
-
-         IF (restart_file_name .ne. '') THEN
+      siesta_construct%run_context =>                                          &
+     &   siesta_run_class(eq_comm, .false., .false., .false.,                  &
+     &                    siesta_construct%siesta_file_name)
+      IF (restart_file_name .ne. '') THEN
+         IF (eq_rank .eq. 0) THEN
+            WRITE (*,*) ' *** Initializing SIESTA equilibrium ' //             &
+     &                  'from restart file ' // TRIM(restart_file_name)
+            WRITE (iou,*) ' *** Initializing SIESTA equilibrium ' //           &
+     &                    'from restart file ' //                              &
+     &                    TRIM(restart_file_name)
             state_flags = IBCLR(state_flags, model_state_siesta_flag)
             siesta_construct%context =>                                        &
      &         siesta_context_construct(restart_file_name)
          END IF
+         CALL siesta_construct%run_context%set_restart
+      ELSE
+         IF (eq_rank .eq. 0) THEN
+            WRITE (*,*) ' *** Initializing SIESTA equilibrium from ' //        &
+     &                  'file ' // TRIM(file_name)
+            WRITE (iou,*) ' *** Initializing SIESTA equilibrium ' //           &
+     &                    'from file ' // TRIM(file_name)
+            WRITE (siesta_construct%restart_file_name,1000)                    &
+     &         TRIM(restart_ext)
+         END IF
+         state_flags = IBSET(state_flags, model_state_siesta_flag)
       END IF
 
       CALL profiler_set_stop_time('siesta_construct', start_time)
@@ -343,8 +349,13 @@
 !  Delete the restart file. Errors here can safely be ignored.
       CALL delete_file(TRIM(this%restart_file_name) // '_cache', error)
 
+      IF (ASSOCIATED(this%run_context)) THEN
+         DEALLOCATE(this%run_context)
+         this%context => null()
+      END IF
+
       IF (ASSOCIATED(this%context)) THEN
-         CALL siesta_context_destruct(this%context)
+         DEALLOCATE(this%context)
          this%context => null()
       END IF
 
@@ -415,7 +426,7 @@
 
          CASE (siesta_helpert_id)
             state_flags = IBSET(state_flags, model_state_siesta_flag)
-            helpert(i_index) = value
+            CALL this%run_context%set('helpert', value, i_index)
 
          CASE DEFAULT
             CALL vmec_set_param(this, id, i_index, j_index, value,             &
@@ -624,7 +635,7 @@
       USE stel_constants, only: mu0
       USE read_wout_mod, only: mnmax, xm, xn, rmnc, rmns, zmnc, zmns,          &
      &                         lasym, nsvmec => ns
-      USE siesta_namelist, ONLY: mpolin, ntorin, nfpin
+      USE siesta_namelist, ONLY: mpolin, ntorin, nfpin, ntor_modes
 
       IMPLICIT NONE
 
@@ -637,6 +648,7 @@
       INTEGER                                    :: numS, numU, numV
       INTEGER                                    :: m, n
       INTEGER                                    :: mpol, ntor
+      INTEGER, DIMENSION(:), ALLOCATABLE         :: tor_modes
       INTEGER                                    :: nfp
       REAL (rprec)                               :: r, rs, ru, rv
       REAL (rprec)                               :: z, zs, zu, zv
@@ -675,6 +687,14 @@
             mpol = mpolin
             ntor = ntorin
             nfp = nfpin
+         END IF
+
+         ALLOCATE(tor_modes(-ntor:ntor))
+
+         IF (ASSOCIATED(this%context)) THEN
+            tor_modes = this%context%tor_modes
+         ELSE
+            tor_modes = ntor_modes(-ntor:ntor)
          END IF
 
 !$OMP PARALLEL
@@ -721,8 +741,8 @@
 
                DO n = -ntor, ntor
                   DO m = 0, mpol
-                     cosmn(m,n) = COS(m*u + nfp*n*v)
-                     sinmn(m,n) = SIN(m*u + nfp*n*v)
+                     cosmn(m,n) = COS(m*u + nfp*tor_modes(n)*v)
+                     sinmn(m,n) = SIN(m*u + nfp*tor_modes(n)*v)
                   END DO
                END DO
 
@@ -948,7 +968,7 @@
 
                DO n = -ntor, ntor
                   DO m = 0, mpol
-                     cosmn(m,n) = COS(m*u + nfp*n*v)
+                     cosmn(m,n) = COS(m*u + nfp*tor_modes(n)*v)
                   END DO
                END DO
 
@@ -972,7 +992,7 @@
 
                   DO n = -ntor, ntor
                      DO m = 0, mpol
-                        sinmn(m,n) = SIN(m*u + nfp*n*v)
+                        sinmn(m,n) = SIN(m*u + nfp*tor_modes(n)*v)
                      END DO
                   END DO
 
@@ -1034,7 +1054,7 @@
 
                DO n = -ntor, ntor
                   DO m = 0, mpol
-                     cosmn(m,n) = COS(m*u + nfp*n*v)
+                     cosmn(m,n) = COS(m*u + nfp*tor_modes(n)*v)
                   END DO
                END DO
 
@@ -1053,7 +1073,7 @@
 
                   DO n = -ntor, ntor
                      DO m = 0, mpol
-                        sinmn(m,n) = SIN(m*u + nfp*n*v)
+                        sinmn(m,n) = SIN(m*u + nfp*tor_modes(n)*v)
                      END DO
                   END DO
 
@@ -2046,13 +2066,13 @@
             siesta_get_p_flux = siesta_get_p_flux +                            &
      &         (wlow*this%context%pmnch(m,n,ilow) +                            &
      &          whigh*this%context%pmnch(m,n,ihigh))*                          &
-     &         COS(m*flux(2) + nfp*n*flux(3))
+     &         COS(m*flux(2) + nfp*this%context%tor_modes(n)*flux(3))
 
             IF (this%context%l_asym) THEN
                siesta_get_p_flux = siesta_get_p_flux +                         &
      &            (wlow*this%context%pmnsh(m,n,ilow) +                         &
      &             whigh*this%context%pmnsh(m,n,ihigh))*                       &
-     &            SIN(m*flux(2) + nfp*n*flux(3))
+     &            SIN(m*flux(2) + nfp*this%context%tor_modes(n)*flux(3))
             END IF
          END DO
       END DO
@@ -2482,17 +2502,17 @@
             bs = bs +                                                          &
      &         (wlow_s*this%context%bsupsmnsh(m,n,ilow_s) +                    &
      &          whigh_s*this%context%bsupsmnsh(m,n,ihigh_s))*                  &
-     &         SIN(m*flux(2) + nfp*n*flux(3))
+     &         SIN(m*flux(2) + nfp*this%context%tor_modes(n)*flux(3))
 
             bu = bu +                                                          &
      &         (wlow_s*this%context%bsupumnch(m,n,ilow_s) +                    &
      &          whigh_s*this%context%bsupumnch(m,n,ihigh_s))*                  &
-     &         COS(m*flux(2) + nfp*n*flux(3))
+     &         COS(m*flux(2) + nfp*this%context%tor_modes(n)*flux(3))
 
             bv = bv +                                                          &
      &         (wlow_s*this%context%bsupvmnch(m,n,ilow_s) +                    &
      &          whigh_s*this%context%bsupvmnch(m,n,ihigh_s))*                  &
-     &         COS(m*flux(2) + nfp*n*flux(3))
+     &         COS(m*flux(2) + nfp*this%context%tor_modes(n)*flux(3))
          END DO
       END DO
 
@@ -2522,17 +2542,20 @@
                bs = bs +                                                       &
      &              (wlow_s*this%context%bsupsmnch(m,n,ilow_s) +               &
      &               whigh_s*this%context%bsupsmnch(m,n,ihigh_s))*             &
-     &              COS(m*flux(2) + nfp*n*flux(3))
+     &              COS(m*flux(2) +                                            &
+     &                  nfp*this%context%tor_modes(n)*flux(3))
 
                bu = bu +                                                       &
      &              (wlow_s*this%context%bsupumnsh(m,n,ilow_s) +               &
      &               whigh_s*this%context%bsupumnsh(m,n,ihigh_s))*             &
-     &              SIN(m*flux(2) + nfp*n*flux(3))
+     &              SIN(m*flux(2) +                                            &
+     &                  nfp*this%context%tor_modes(n)*flux(3))
 
                bv = bv +                                                       &
      &              (wlow_s*this%context%bsupvmnsh(m,n,ilow_s) +               &
      &               whigh_s*this%context%bsupvmnsh(m,n,ihigh_s))*             &
-     &              SIN(m*flux(2) + nfp*n*flux(3))
+     &              SIN(m*flux(2) +                                            &
+     &                  nfp*this%context%tor_modes(n)*flux(3))
             END DO
          END DO
       END IF
@@ -2703,14 +2726,17 @@
       INTEGER                             :: eq_rank
       INTEGER                             :: status
       INTEGER                             :: child_comm
-      TYPE (siesta_run_class), POINTER    :: run_context
       REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
+      eq_size = 1
+      eq_rank = 0
 #if defined(MPI_OPT)
       CALL MPI_BCAST(num_iter, 1, MPI_INTEGER, 0, eq_comm, status)
+      CALL MPI_COMM_RANK(eq_comm, eq_rank, status)
+      CALL MPI_COMM_SIZE(eq_comm, eq_size, status)
 #endif
 
       siesta_converge = .true.
@@ -2719,28 +2745,8 @@
      &                                   state_flags)
       END IF
 
-      eq_size = 1
-      eq_rank = 0
-#if defined(MPI_OPT)
-      CALL MPI_COMM_RANK(eq_comm, eq_rank, status)
-      CALL MPI_COMM_SIZE(eq_comm, eq_size, status)
-#endif
-      IF (eq_rank .eq. 0) THEN
-         ladd_pert = .true.
-         lresistive = .false.
-         lrestart = .false.
-
-         CALL siesta_namelist_write(TRIM(this%siesta_file_name))
-      END IF
-
-#if defined(MPI_OPT)
-      CALL MPI_BARRIER(eq_comm, status)
-#endif
-      run_context => siesta_run_class(eq_comm, .false., .false.,               &
-     &                                .false., this%siesta_file_name)
-      CALL run_context%set_vmec
-      CALL run_context%converge
-      DEALLOCATE(run_context)
+      CALL this%run_context%set_vmec(eq_rank .ne. 0)
+      CALL this%run_context%converge
 
       siesta_converge = siesta_error_state .eq. siesta_error_no_error
 
@@ -2749,8 +2755,7 @@
 
       IF (siesta_converge .and. eq_rank .eq. 0) THEN
          IF (ASSOCIATED(this%context)) THEN
-            CALL siesta_context_read(this%context,                             &
-     &                                  this%restart_file_name)
+            CALL this%context%read(this%restart_file_name)
          ELSE
             this%context =>                                                    &
      &         siesta_context_construct(this%restart_file_name)
@@ -2829,9 +2834,9 @@
 !  Reset the restart file.
       CALL copy_file(TRIM(this%restart_file_name) // '_cache',                 &
      &               TRIM(this%restart_file_name), error)
-      CALL assert_eq(error, 0, 'Error moving wout file.')
+      CALL assert_eq(error, 0, 'Error moving restart file.')
 
-      CALL siesta_context_read(this%context, this%restart_file_name)
+      CALL this%context%read(this%restart_file_name)
 
       CALL profiler_set_stop_time('siesta_reset_state', start_time)
 
@@ -2871,9 +2876,6 @@
       CALL vmec_set_namelist(this)
 
       CALL siesta_namelist_write(TRIM(this%siesta_file_name) // '_out')
-
-      CALL move_file(TRIM(this%siesta_file_name) // '_save',                   &
-     &               TRIM(this%siesta_file_name), status)
 
       CALL vmec_write(this, iou)
 
@@ -3005,8 +3007,7 @@
      &                  TRIM(this%restart_file_name), error)
 
          IF (ASSOCIATED(this%context)) THEN
-            CALL siesta_context_read(this%context,                             &
-     &                               this%restart_file_name)
+            CALL this%context%read(this%restart_file_name)
          ELSE
             this%context =>                                                    &
      &         siesta_context_construct(this%restart_file_name)
@@ -3051,14 +3052,14 @@
 !  siesta magnetic cache.
       CALL vmec_sync_child(this, index, recon_comm)
 
-!  If this is the parent process, load the wout file.
+!  If this is the parent process, load the restart file.
       IF (mpi_rank .eq. 0) THEN
          CALL copy_file(build_path(process_dir(index + 1),                     &
      &                             this%restart_file_name),                    &
      &                  TRIM(this%restart_file_name), error)
          CALL assert_eq(error, 0, 'Error reading synced restart file.')
 
-         CALL siesta_context_read(this%context, this%restart_file_name)
+         CALL this%context%read(this%restart_file_name)
 
          IF (ASSOCIATED(this%magnetic_cache)) THEN
             CALL this%set_magnetic_cache_calc()

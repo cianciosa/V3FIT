@@ -42,7 +42,7 @@
 !>  Class to hold variables needed when a parameter is a reconstruction
 !>  parameter.
 !-------------------------------------------------------------------------------
-      TYPE param_recon_class
+      TYPE :: param_recon_class
 !>  The maximum increment size of the parameter for calculating the jacobian.
 !>  @see param_increment
          REAL (rprec)                          :: vrnc = 0.0
