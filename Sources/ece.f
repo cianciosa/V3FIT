@@ -172,6 +172,11 @@
 
       sigma = 0.0
 
+      CALL assert(a_model%resonace_range .gt.  0.0,                            &
+     &            'Search aglorithm failure. Set'              //              &
+     &            ' ece_resonce_range to a value greater than' //              &
+     &            ' zero.')
+
       IF (BTEST(a_model%state_flags, model_state_vmec_flag)   .or.             &
      &    BTEST(a_model%state_flags, model_state_siesta_flag) .or.             &
      &    BTEST(a_model%state_flags, model_state_te_flag)     .or.             &
@@ -488,8 +493,7 @@
 
       IF (ABS(bmod1 - bmod2) .lt.                                              &
      &    context%model%resonace_range) THEN
-         ece_function = is_in_range(context%resonance,                    &
-     &                              bmod1, bmod2)
+         ece_function = is_in_range(context%resonance, bmod1, bmod2)
       END IF
 
       CALL profiler_set_stop_time('ece_function', start_time)
