@@ -202,7 +202,14 @@
      &      is_recon_param => equilibrium_is_recon_param
          PROCEDURE                                           ::                &
      &      is_using_point => equilibrium_is_using_point
+         PROCEDURE                                           ::                &
+     &      has_vacuum_field => equilibrium_has_vacuum_field
+         PROCEDURE                                           ::                &
+     &      is_in_plasma => equilibrium_is_in_plasma
 
+         PROCEDURE                                           ::                &
+     &      limit_path_to_boundary =>                                          &
+     &         equilibrium_limit_path_to_boundary
          PROCEDURE                                           ::                &
      &      converge => equilibrium_converge
          PROCEDURE                                           ::                &
@@ -2370,12 +2377,11 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Checks if a the point magnetics are being used.
+!>  @brief Checks if the point magnetics are being used.
 !>
 !>  This method is virtual. The actual check should be handled by a subclass
 !>  method.
 !>  @see vmec_equilibrium::vmec_is_using_point
-!>  @see siesta_equilibrium::siesta_is_using_point
 !>
 !>  @param[in] this A @ref equilibrium_class instance.
 !>  @returns True if the point magnetic are being used.
@@ -2401,9 +2407,108 @@
 
       END FUNCTION
 
+!-------------------------------------------------------------------------------
+!>  @brief Determines if vacuum field information is available.
+!>
+!>  This method is virtual. The actual check should be handled by a subclass
+!>  method.
+!>  @see vmec_equilibrium::vmec_has_vacuum_field
+!>
+!>  @param[in] this A @ref equilibrium_class instance.
+!>  @returns True of vacuum fields are available.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_has_vacuum_field(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL :: equilibrium_has_vacuum_field
+      CLASS (equilibrium_class), INTENT(in) :: this
+
+!  local variables
+      REAL (rprec)                          :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      equilibrium_has_vacuum_field = .true.
+
+      CALL profiler_set_stop_time('equilibrium_has_vacuum_field',              &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Determines if a point is inside the plasma or outside.
+!>
+!>  This method is virtual. The actual check should be handled by a subclass
+!>  method.
+!>  @see vmec_equilibrium::vmec_is_in_plasma
+!>
+!>  @param[in] this   A @ref model_class instance.
+!>  @param[in] x_cart Cartesian position to check.
+!>  @returns True if the point is inside the plasma.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_is_in_plasma(this, x_cart)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                                :: equilibrium_is_in_plasma
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+      CLASS (equilibrium_class), INTENT(in)  :: this
+
+!  local variables
+      REAL (rprec)                           :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      WRITE (*,*) 'equilibrium_is_in_plasma'
+      equilibrium_is_in_plasma = .false.
+
+      CALL profiler_set_stop_time('equilibrium_is_in_plasma',                  &
+     &                            start_time)
+
+      END FUNCTION
+
 !*******************************************************************************
 !  UTILITY SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Limit an integration path to the boundary.
+!>
+!>  This method is virtual. The actual check should be handled by a subclass
+!>  method.
+!>  @see vmec_equilibrium::vmec_limit_path_to_boundary
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @param[in] path A chord path.
+!>  @returns The chord path limited to the boundary.
+!-------------------------------------------------------------------------------
+      FUNCTION equilibrium_limit_path_to_boundary(this, path)
+      USE integration_path
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (vertex), POINTER :: equilibrium_limit_path_to_boundary
+      CLASS (equilibrium_class), INTENT(in) :: this
+      TYPE (vertex), POINTER                :: path
+
+!  local variables
+      REAL (rprec)                          :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      equilibrium_limit_path_to_boundary => path
+
+      CALL profiler_set_stop_time('equilibrium_limit_path_to_boundary',        &
+     &                            start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Solves the equilibrium.
 !>

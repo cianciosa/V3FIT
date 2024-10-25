@@ -160,7 +160,7 @@
          PROCEDURE :: get_grid_size => siesta_get_grid_size
 
          PROCEDURE :: is_1d_array => siesta_is_1d_array
-         PROCEDURE :: is_recon_param => siesta_is_recon_param\
+         PROCEDURE :: is_recon_param => siesta_is_recon_param
 
          PROCEDURE :: converge => siesta_converge
 

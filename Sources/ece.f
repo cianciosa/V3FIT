@@ -225,6 +225,7 @@
 ! local variables
       CLASS (ece_context), ALLOCATABLE :: context
       REAL (rprec)                     :: start_time
+      TYPE (vertex), POINTER           :: temp_path
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -235,7 +236,16 @@
       context%resonance = this%resonance
       context%model => a_model
 
-      ece_get_cart = search_paths(this%chord_path, context, found)
+      IF (a_model%has_vacuum_field()) THEN
+!  Assume chord points are inside the vaccum field points.
+         ece_get_cart = search_paths(this%chord_path, context, found)
+      ELSE
+!  Otherwise we need to check both points to ensure the they are within the
+!  plasma boundary.
+         temp_path => a_model%limit_path_to_boundary(this%chord_path)
+         ece_get_cart = search_paths(temp_path, context, found)
+         CALL path_destruct(temp_path)
+      END IF
 
       DEALLOCATE(context)
 

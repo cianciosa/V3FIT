@@ -522,7 +522,13 @@
          PROCEDURE :: is_2d_array => vmec_is_2d_array
          PROCEDURE :: is_recon_param => vmec_is_recon_param
          PROCEDURE :: is_using_point => vmec_is_using_point
+         PROCEDURE :: has_vacuum_field => vmec_has_vacuum_field
+         PROCEDURE :: is_in_plasma => vmec_is_in_plasma
 
+         PROCEDURE :: limit_path_to_boundary =>                                &
+     &                   vmec_limit_path_to_boundary
+         PROCEDURE :: gradient_descent => vmec_gradient_descent
+         PROCEDURE :: limit_chi => vmec_limit_chi
          PROCEDURE :: converge => vmec_converge
 
          PROCEDURE :: read_vac_file => vmec_read_vac_file
@@ -4000,7 +4006,8 @@
      &                  vmec_get_B_vec(1), vmec_get_B_vec(2),                  &
      &                  vmec_get_B_vec(3), sflx=s_temp, info=status)
 
-      IF (lfreeb .and. (s_temp .gt. 1.0 .or. status .eq. -3)) THEN
+      IF (this%has_vacuum_field() .and.                                        &
+     &    (s_temp .gt. 1.0 .or. status .eq. -3)) THEN
 !  The measurement point stays fixed relative to the field coils so there should
 !  be no rotation or offset here. vmec_get_ext_b_plasma handles shift of the
 !  plasma internally.
@@ -5138,7 +5145,7 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Checks if a the point magnetics are being used.
+!>  @brief Checks if the point magnetics are being used.
 !>
 !>  This method overrides @ref equilibrium::equilibrium_is_using_point.
 !>
@@ -5171,9 +5178,330 @@
 
       END FUNCTION
 
+!-------------------------------------------------------------------------------
+!>  @brief Determines if vacuum field information is available.
+!>
+!>  This method overrides @ref equilibrium::equilibrium_has_vacuum_field.
+!>
+!>  @todo FIXME: Currently this method assumes that VMEC takes care of the
+!>               vacuum fields. But SIESTA has a free boundary capability and
+!>               a point could still be outside of that.
+!>
+!>  @param[in] this A @ref vmec_class instance.
+!>  @returns True of vacuum fields are available.
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_has_vacuum_field(this)
+      USE vmec_input, only: lfreeb
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                        :: vmec_has_vacuum_field
+      CLASS (vmec_class), INTENT(in) :: this
+
+!  local variables
+      REAL (rprec)                   :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      vmec_has_vacuum_field = lfreeb
+
+      CALL profiler_set_stop_time('vmec_has_vacuum_field', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Determines if a point is inside the plasma or outside.
+!>
+!>  This method overrides @ref equilibrium::equilibrium_is_in_plasma.
+!>
+!>  @param[in] this   A @ref model_class instance.
+!>  @param[in] x_cart Cartesian position to check.
+!>  @returns True if the point is inside the plasma.
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_is_in_plasma(this, x_cart)
+      USE coordinate_utilities, ONLY : cart_to_cyl
+      USE vmec_utils, ONLY : GetBcyl_WOUT
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                                :: vmec_is_in_plasma
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+      CLASS (vmec_class), INTENT(in)         :: this
+
+!  local variables
+      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)             :: r_cyl
+      REAL (rprec), DIMENSION(3)             :: r_cyl_rot
+      REAL (rprec), DIMENSION(3)             :: b_vec
+      REAL (rprec)                           :: s_temp
+      INTEGER                                :: status
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      r_cyl = cart_to_cyl(x_cart)
+      r_cyl_rot = r_cyl
+      r_cyl_rot(2) = r_cyl(2) + this%phi_offset
+      r_cyl_rot(3) = r_cyl(3) - this%z_offset
+
+      b_vec = 0.0
+      s_temp = 0.0
+      CALL GetBcyl_WOUT(r_cyl_rot(1), r_cyl_rot(2), r_cyl_rot(3),              &
+     &                  b_vec(1), b_vec(2), b_vec(3), sflx=s_temp,             &
+     &                  info=status)
+
+      vmec_is_in_plasma = s_temp .le. 1.0 .and. status .ne. -3
+
+      CALL profiler_set_stop_time('vmec_is_in_plasma', start_time)
+
+      END FUNCTION
+
 !*******************************************************************************
 !  UTILITY SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Limit an integration path to the boundary.
+!>
+!>  This method overrides @ref equilibrium::equilibrium_limit_path_to_boundary.
+!>
+!>  The any point along the chord can be parameterized by
+!>
+!>    x_vec[t] = t*x_hat + x0_vec                                            (1)
+!>
+!>  where
+!>
+!>    x_hat = (x1_vec - x0_vec)/h                                            (2)
+!>
+!>    h = |x1_vec - x0_vec| = Sqrt[(x1_vec - x0_vec).(x1_vec - x0_vec)]      (3)
+!>
+!>  The path along the cord t ranges from 0 to h.
+!>
+!>  The R, Phi,and Z components of x_vec become
+!>
+!>    r[t] = Sqrt[(t*(x1 - x0)/h + x0)^2 + (t*(y1 - y0)/h + y0)^2]           (4)
+!>
+!>    ɸ[t] = ArcTan[t*(x1 - x0)/h + x0, t*(y1 - y0)/h + y0]                  (5)
+!>
+!>    z[t] = t*(z1 - z0)/h + z0                                              (6)
+!>
+!>  A chord intersects the boundary when
+!>
+!>    r[t] == r_vmec(1, u, ɸ[t])                                             (7)
+!>
+!>    z[t] == z_vmec(1, u, ɸ[t])                                             (8)
+!>
+!>  We can solve for t and u by finding the minimum of                       (9)
+!>
+!>    chi[t,u] = (r[t] - r_vmec(1, u, ɸ[t]))^2
+!>             + (z[t] - z_vmec(1, u, ɸ[t]))^2                              (10)
+!>
+!>  There are two solutions to this function so we need to determine a good
+!>  inital guess. For t use 0 for points closer to x0_vec and h for points
+!>  closer to x1_vec. For use we assume one is close to the origin. For that
+!>  point assume u = π. For farther points assume u = 0 or 2π.
+!>
+!>  To find the minimum we can use a gradient decent method. To do this we need
+!>  the derivatives.
+!>
+!>  chi
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @param[in] path A chord path.
+!>  @returns The chord path limited to the boundary.
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_limit_path_to_boundary(this, path)
+      USE integration_path
+      USE stel_constants, only: pi, one, zero
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (vertex), POINTER :: vmec_limit_path_to_boundary
+      CLASS (vmec_class), INTENT(in)  :: this
+      TYPE (vertex), POINTER          :: path
+
+!  local variables
+      REAL (rprec)                    :: start_time
+      REAL (rprec)                    :: h
+      REAL (rprec)                    :: length1
+      REAL (rprec)                    :: length2
+      REAL (rprec), DIMENSION(3)      :: dx
+      REAL (rprec), DIMENSION(3)      :: x_cart
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      dx = path%next%position - path%position
+      h = SQRT(DOT_PRODUCT(dx, dx))
+
+      length1 = SQRT(DOT_PRODUCT(path%position, path%position))
+      length2 = SQRT(DOT_PRODUCT(path%next%position,                           &
+     &                           path%next%position))
+
+      vmec_limit_path_to_boundary => null()
+      If (this%is_in_plasma(path%position)) THEN
+         CALL path_append_vertex(vmec_limit_path_to_boundary,                  &
+     &                           path%position)
+      ELSE IF (length1 .gt. length2) THEN
+         x_cart = this%gradient_descent(zero, zero, dx, path%position)
+         CALL path_append_vertex(vmec_limit_path_to_boundary, x_cart)
+      ELSE
+         x_cart = this%gradient_descent(zero, pi, dx, path%position)
+         CALL path_append_vertex(vmec_limit_path_to_boundary, x_cart)
+      END IF
+
+      If (this%is_in_plasma(path%next%position)) THEN
+         CALL path_append_vertex(vmec_limit_path_to_boundary,                  &
+     &                           path%next%position)
+      ELSE IF (length1 .gt. length2) THEN
+         x_cart = this%gradient_descent(one, pi, dx, path%position)
+         CALL path_append_vertex(vmec_limit_path_to_boundary, x_cart)
+      ELSE
+         x_cart = this%gradient_descent(one, zero, dx, path%position)
+         CALL path_append_vertex(vmec_limit_path_to_boundary, x_cart)
+      END IF
+
+      CALL profiler_set_stop_time('vmec_limit_path_to_boundary',               &
+     &                            start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Gradient descent to minize the @ref vmec_equilibrium::vmec_limit_chi.
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @param[in] t    The current value of t.
+!>  @param[in] u    The current value of u.
+!>  @param[in] dx   The dx consant.
+!>  @param[in] x0   The x0 consant.
+!>  @returns The x,y,z position at the edge.
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_gradient_descent(this, t, u, dx, x0)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec), DIMENSION(3)             :: vmec_gradient_descent
+      CLASS (vmec_class), INTENT(in)         :: this
+      REAL (rprec), INTENT(in)               :: t
+      REAL (rprec), INTENT(in)               :: u
+      REAL (rprec), DIMENSION(3), INTENT(in) :: dx
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x0
+
+!  local variables
+      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)             :: chi
+      REAL (rprec)                           :: t_work
+      REAL (rprec)                           :: u_work
+
+!  Local Paramaters
+      REAL (rprec), PARAMETER                :: tolarance = 1.0E-20
+      REAL (rprec), PARAMETER                :: step = 1.0
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      t_work = t
+      u_work = u
+      chi = this%limit_chi(t, u, dx, x0)
+      DO WHILE (chi(1) .gt. tolarance)
+         t_work = t_work - step*chi(2)
+         u_work = u_work - step*chi(3)
+         chi = this%limit_chi(t_work, u_work, dx, x0)
+      END DO
+
+      vmec_gradient_descent = t_work*dx + x0
+
+      CALL profiler_set_stop_time('vmec_gradient_descent', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Function to compute chi value and it's gradients.
+!>
+!>  Compute the chi and gradient values for the
+!>  @ref vmec_equilbrium::vmec_limit_path_to_boundary method.
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @param[in] t    The current value of t.
+!>  @param[in] u    The current value of u.
+!>  @param[in] dx   The dx consant.
+!>  @param[in] x0   The x0 consant.
+!>  @returns χ, dχdt, dχdu
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_limit_chi(this, t, u, dx, x0)
+      USE read_wout_mod, only: xm, xn, rmnc, zmns, rmns, zmnc, lasym,          &
+     &                         ns
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      REAL (rprec), DIMENSION(3)             :: vmec_limit_chi
+      CLASS (vmec_class), INTENT(in)         :: this
+      REAL (rprec), INTENT(in)               :: t
+      REAL (rprec), INTENT(in)               :: u
+      REAL (rprec), DIMENSION(3), INTENT(in) :: dx
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x0
+
+!  local variables
+      REAL (rprec)                           :: start_time
+      REAL (rprec), DIMENSION(3)             :: chord
+      REAL (rprec)                           :: rchord
+      REAL (rprec)                           :: zchord
+      REAL (rprec)                           :: drchorddt
+      REAL (rprec)                           :: dzchorddt
+      REAL (rprec)                           :: rvmec
+      REAL (rprec)                           :: zvmec
+      REAL (rprec)                           :: phi
+      REAL (rprec)                           :: dphidt
+      REAL (rprec)                           :: drvmecdt
+      REAL (rprec)                           :: dzvmecdt
+      REAL (rprec)                           :: drvmecdu
+      REAL (rprec)                           :: dzvmecdu
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      chord = t*dx + x0
+      rchord = SQRT(DOT_PRODUCT(chord(1:2), chord(1:2)))
+      zchord = chord(3)
+      drchorddt = DOT_PRODUCT(dx(1:2), chord(1:2))/rchord
+      dzchorddt = dx(3)
+
+      phi = ATAN2(chord(2), chord(1))
+      dphidt = SUM((dx(1:2)*chord(1:2)*[-1.0, 0.0])/(rchord*rchord))
+
+      rvmec = SUM(rmnc(:,ns)*COS(xm*u - xn*phi))
+      zvmec = SUM(zmns(:,ns)*SIN(xm*u - xn*phi))
+      drvmecdt = SUM(rmnc(:,ns)*xn*SIN(xm*u - xn*phi)*dphidt)
+      dzvmecdt = SUM(-zmns(:,ns)*xn*COS(xm*u - xn*phi)*dphidt)
+      drvmecdu = SUM(-rmnc(:,ns)*xm*SIN(xm*u - xn*phi))
+      dzvmecdu = SUM(zmns(:,ns)*xm*COS(xm*u - xn*phi))
+      IF (lasym) THEN
+         rvmec = rvmec + SUM(rmns(:,ns)*SIN(xm*u - xn*phi))
+         zvmec = zvmec + SUM(zmnc(:,ns)*COS(xm*u - xn*phi))
+         drvmecdt = drvmecdt                                                   &
+     &            - SUM(rmns(:,ns)*xn*COS(xm*u - xn*phi)*dphidt)
+         dzvmecdt = dzvmecdt                                                   &
+     &            + SUM(zmnc(:,ns)*xn*SIN(xm*u - xn*phi)*dphidt)
+         drvmecdu = drvmecdu + SUM(rmns(:,ns)*xm*COS(xm*u - xn*phi))
+         dzvmecdu = dzvmecdu - SUM(zmnc(:,ns)*xm*SIN(xm*u - xn*phi))
+      END IF
+
+      vmec_limit_chi(1) = (rchord - rvmec)*(rchord - rvmec)                    &
+     &                  + (zchord - zvmec)*(zchord - zvmec)
+      vmec_limit_chi(2) = 2.0*((rchord - rvmec)*(drchorddt - drvmecdt) +       &
+     &                         (zchord - zvmec)*(dzchorddt - dzvmecdt))
+      vmec_limit_chi(3) = 2.0*((rvmec - rchord)*drvmecdu +                     &
+     &                         (zvmec - zchord)*dzvmecdu)
+
+      CALL profiler_set_stop_time('vmec_limit_chi', start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Solves the VMEC equilibrium.
 !>
