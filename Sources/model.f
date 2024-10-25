@@ -257,6 +257,10 @@
          PROCEDURE :: get_signal_factor => model_get_signal_factor
          PROCEDURE :: get_signal_offset => model_get_signal_offset
          PROCEDURE :: is_recon_param => model_is_recon_param
+         PROCEDURE :: has_vacuum_field => model_has_vacuum_field
+         PROCEDURE :: is_in_plasma => model_is_in_plasma
+         PROCEDURE ::                                                          &
+     &      limit_path_to_boundary => model_limit_path_to_boundary
          PROCEDURE :: reset_state => model_reset_state
          PROCEDURE :: save_state => model_save_state
          PROCEDURE :: converge => model_converge
@@ -2419,9 +2423,94 @@
 
       END FUNCTION
 
+!-------------------------------------------------------------------------------
+!>  @brief Determines if vacuum field information is available.
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @returns True of vacuum fields are available.
+!-------------------------------------------------------------------------------
+      FUNCTION model_has_vacuum_field(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                         :: model_has_vacuum_field
+      CLASS (model_class), INTENT(in) :: this
+
+!  local variables
+      REAL (rprec)                    :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      model_has_vacuum_field = this%equilibrium%has_vacuum_field()
+
+      CALL profiler_set_stop_time('model_has_vacuum_field', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Determines if a point is inside the plasma or outside.
+!>
+!>  @param[in] this   A @ref model_class instance.
+!>  @param[in] x_cart Cartesian position to check.
+!>  @returns True if the point is inside the plasma.
+!-------------------------------------------------------------------------------
+      FUNCTION model_is_in_plasma(this, x_cart)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      LOGICAL                                :: model_is_in_plasma
+      CLASS (model_class), INTENT(in)        :: this
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x_cart
+
+!  local variables
+      REAL (rprec)                           :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      model_is_in_plasma = this%equilibrium%is_in_plasma(x_cart)
+
+      CALL profiler_set_stop_time('model_is_in_plasma', start_time)
+
+      END FUNCTION
+
 !*******************************************************************************
 !  UTILITY SUBROUTINES
 !*******************************************************************************
+!-------------------------------------------------------------------------------
+!>  @brief Limit an integration path to the boundary.
+!>
+!>  @param[in] this A @ref model_class instance.
+!>  @param[in] path A chord path.
+!>  @returns The chord path limited to the boundary.
+!-------------------------------------------------------------------------------
+      FUNCTION model_limit_path_to_boundary(this, path)
+      USE integration_path
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (vertex), POINTER          :: model_limit_path_to_boundary
+      CLASS (model_class), INTENT(in) :: this
+      TYPE (vertex), POINTER          :: path
+
+!  local variables
+      REAL (rprec)                           :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      model_limit_path_to_boundary =>                                          &
+     &    this%equilibrium%limit_path_to_boundary(path)
+
+      CALL profiler_set_stop_time('model_limit_path_to_boundary',              &
+     &                            start_time)
+
+      END FUNCTION
+
 !-------------------------------------------------------------------------------
 !>  @brief Reset the internal state of the model.
 !>
@@ -2430,15 +2519,15 @@
 !>
 !>  @param[inout] this A @ref equilibrium_class instance.
 !-------------------------------------------------------------------------------
-       SUBROUTINE model_reset_state(this)
+      SUBROUTINE model_reset_state(this)
 
-       IMPLICIT NONE
+      IMPLICIT NONE
 
 !  Declare Arguments
-       CLASS (model_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout) :: this
 
 !  local variables
-       REAL (rprec)                       :: start_time
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
