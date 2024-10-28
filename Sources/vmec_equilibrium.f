@@ -138,6 +138,7 @@
       USE vmec_context
       USE equilibrium
       USE model_state
+      USE gradient_descent
 
       IMPLICIT NONE
 
@@ -528,7 +529,6 @@
          PROCEDURE :: limit_path_to_boundary =>                                &
      &                   vmec_limit_path_to_boundary
          PROCEDURE :: gradient_descent => vmec_gradient_descent
-         PROCEDURE :: limit_chi => vmec_limit_chi
          PROCEDURE :: converge => vmec_converge
 
          PROCEDURE :: read_vac_file => vmec_read_vac_file
@@ -550,6 +550,16 @@
          FINAL     :: vmec_destruct
       END TYPE
 
+!-------------------------------------------------------------------------------
+!>  @brief Extended @ref gradient_descent_class.
+!-------------------------------------------------------------------------------
+      TYPE, EXTENDS(gradient_descent_class) :: vmec_descent_class
+         REAL (rprec), DIMENSION(3) :: dx
+         REAL (rprec), DIMENSION(3) :: x0
+      CONTAINS
+         PROCEDURE :: chi2 => vmec_descent_chi2
+      END TYPE
+
 !*******************************************************************************
 !  INTERFACE BLOCKS
 !*******************************************************************************
@@ -559,6 +569,14 @@
 !-------------------------------------------------------------------------------
       INTERFACE vmec_class
          MODULE PROCEDURE vmec_construct
+      END INTERFACE
+
+!-------------------------------------------------------------------------------
+!>  Interface for the construction of @ref vmec_descent_class type using
+!>  @ref vmec_descent_construct
+!-------------------------------------------------------------------------------
+      INTERFACE vmec_descent_class
+         MODULE PROCEDURE vmec_descent_construct
       END INTERFACE
 
 !-------------------------------------------------------------------------------
@@ -866,6 +884,51 @@
      &                        force_solve)
 
       CALL profiler_set_stop_time('vmec_construct', start_time)
+
+      END FUNCTION
+
+!-------------------------------------------------------------------------------
+!>  @brief Construct a @ref vmec_descent_class.
+!>
+!>  Allocates memory and initializes a @ref vmec_descent_class object.
+!>
+!>  @param[in] t0 Inital value of t0.
+!>  @param[in] u0 Inital value of u0.
+!>  @param[in] dx Dx constant.
+!>  @param[in] x0 X0 constant.
+!>  @returns A pointer to a constructed @ref vmec_descent_class object.
+!-------------------------------------------------------------------------------
+      FUNCTION vmec_descent_construct(t0, u0, dx, x0)
+
+!  Declare Arguments
+      CLASS (vmec_descent_class), POINTER ::                                   &
+     &   vmec_descent_construct
+      REAL (rprec), INTENT(in)               :: t0
+      REAL (rprec), INTENT(in)               :: u0
+      REAL (rprec), DIMENSION(3), INTENT(in) :: dx
+      REAL (rprec), DIMENSION(3), INTENT(in) :: x0
+
+!  local variables
+      REAL (rprec)                           :: start_time
+
+!  Local Paramaters
+      REAL (rprec), PARAMETER                :: tolarance = 1.0E-20
+      REAL (rprec), PARAMETER                :: step = 1.0
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      ALLOCATE(vmec_descent_construct)
+
+      ALLOCATE(vmec_descent_construct%x_var(2))
+      vmec_descent_construct%x_var(1) = t0
+      vmec_descent_construct%x_var(2) = u0
+      vmec_descent_construct%dx = dx
+      vmec_descent_construct%x0 = x0
+      vmec_descent_construct%step = step
+      vmec_descent_construct%tolarance = tolarance
+
+      CALL profiler_set_stop_time('vmec_descent_construct', start_time)
 
       END FUNCTION
 
@@ -5393,9 +5456,8 @@
 
 !  local variables
       REAL (rprec)                           :: start_time
-      REAL (rprec), DIMENSION(3)             :: chi
-      REAL (rprec)                           :: t_work
-      REAL (rprec)                           :: u_work
+      REAL (rprec)                           :: chi
+      CLASS (vmec_descent_class), POINTER    :: context
 
 !  Local Paramaters
       REAL (rprec), PARAMETER                :: tolarance = 1.0E-20
@@ -5404,16 +5466,11 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      t_work = t
-      u_work = u
-      chi = this%limit_chi(t, u, dx, x0)
-      DO WHILE (chi(1) .gt. tolarance)
-         t_work = t_work - step*chi(2)
-         u_work = u_work - step*chi(3)
-         chi = this%limit_chi(t_work, u_work, dx, x0)
-      END DO
+      context => vmec_descent_construct(t, u, dx, x0)
+      chi = context%minimize()
 
-      vmec_gradient_descent = t_work*dx + x0
+      vmec_gradient_descent = context%x_var(1)*dx + x0
+      DEALLOCATE(context)
 
       CALL profiler_set_stop_time('vmec_gradient_descent', start_time)
 
@@ -5425,82 +5482,83 @@
 !>  Compute the chi and gradient values for the
 !>  @ref vmec_equilbrium::vmec_limit_path_to_boundary method.
 !>
-!>  @param[in] this A @ref model_class instance.
-!>  @param[in] t    The current value of t.
-!>  @param[in] u    The current value of u.
-!>  @param[in] dx   The dx consant.
-!>  @param[in] x0   The x0 consant.
-!>  @returns χ, dχdt, dχdu
+!>  @param[in]  this A @ref vmec_descent_class instance.
+!>  @param[out] chi2 χ, dχdt, dχdu
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_limit_chi(this, t, u, dx, x0)
+      SUBROUTINE vmec_descent_chi2(this, chi2)
       USE read_wout_mod, only: xm, xn, rmnc, zmns, rmns, zmnc, lasym,          &
      &                         ns
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(3)             :: vmec_limit_chi
-      CLASS (vmec_class), INTENT(in)         :: this
-      REAL (rprec), INTENT(in)               :: t
-      REAL (rprec), INTENT(in)               :: u
-      REAL (rprec), DIMENSION(3), INTENT(in) :: dx
-      REAL (rprec), DIMENSION(3), INTENT(in) :: x0
+      CLASS (vmec_descent_class), INTENT(in)  :: this
+      REAL (rprec), DIMENSION(:), INTENT(out) :: chi2
 
 !  local variables
-      REAL (rprec)                           :: start_time
-      REAL (rprec), DIMENSION(3)             :: chord
-      REAL (rprec)                           :: rchord
-      REAL (rprec)                           :: zchord
-      REAL (rprec)                           :: drchorddt
-      REAL (rprec)                           :: dzchorddt
-      REAL (rprec)                           :: rvmec
-      REAL (rprec)                           :: zvmec
-      REAL (rprec)                           :: phi
-      REAL (rprec)                           :: dphidt
-      REAL (rprec)                           :: drvmecdt
-      REAL (rprec)                           :: dzvmecdt
-      REAL (rprec)                           :: drvmecdu
-      REAL (rprec)                           :: dzvmecdu
+      REAL (rprec)                            :: start_time
+      REAL (rprec), DIMENSION(3)              :: chord
+      REAL (rprec)                            :: rchord
+      REAL (rprec)                            :: zchord
+      REAL (rprec)                            :: drchorddt
+      REAL (rprec)                            :: dzchorddt
+      REAL (rprec)                            :: rvmec
+      REAL (rprec)                            :: zvmec
+      REAL (rprec)                            :: phi
+      REAL (rprec)                            :: dphidt
+      REAL (rprec)                            :: drvmecdt
+      REAL (rprec)                            :: dzvmecdt
+      REAL (rprec)                            :: drvmecdu
+      REAL (rprec)                            :: dzvmecdu
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      chord = t*dx + x0
+      chord = this%x_var(1)*this%dx + this%x0
       rchord = SQRT(DOT_PRODUCT(chord(1:2), chord(1:2)))
       zchord = chord(3)
-      drchorddt = DOT_PRODUCT(dx(1:2), chord(1:2))/rchord
-      dzchorddt = dx(3)
+      drchorddt = DOT_PRODUCT(this%dx(1:2), chord(1:2))/rchord
+      dzchorddt = this%dx(3)
 
       phi = ATAN2(chord(2), chord(1))
-      dphidt = SUM((dx(1:2)*chord(1:2)*[-1.0, 0.0])/(rchord*rchord))
+      dphidt = SUM((this%dx(1:2)*chord(1:2)*[-1.0, 0.0])                       &
+     &       / (rchord*rchord))
 
-      rvmec = SUM(rmnc(:,ns)*COS(xm*u - xn*phi))
-      zvmec = SUM(zmns(:,ns)*SIN(xm*u - xn*phi))
-      drvmecdt = SUM(rmnc(:,ns)*xn*SIN(xm*u - xn*phi)*dphidt)
-      dzvmecdt = SUM(-zmns(:,ns)*xn*COS(xm*u - xn*phi)*dphidt)
-      drvmecdu = SUM(-rmnc(:,ns)*xm*SIN(xm*u - xn*phi))
-      dzvmecdu = SUM(zmns(:,ns)*xm*COS(xm*u - xn*phi))
+      rvmec = SUM(rmnc(:,ns)*COS(xm*this%x_var(2) - xn*phi))
+      zvmec = SUM(zmns(:,ns)*SIN(xm*this%x_var(2) - xn*phi))
+      drvmecdt = SUM(rmnc(:,ns)*xn*SIN(xm*this%x_var(2) -                      &
+     &                                 xn*phi)*dphidt)
+      dzvmecdt = SUM(-zmns(:,ns)*xn*COS(xm*this%x_var(2) -                     &
+     &                                  xn*phi)*dphidt)
+      drvmecdu = SUM(-rmnc(:,ns)*xm*SIN(xm*this%x_var(2) - xn*phi))
+      dzvmecdu = SUM(zmns(:,ns)*xm*COS(xm*this%x_var(2) - xn*phi))
       IF (lasym) THEN
-         rvmec = rvmec + SUM(rmns(:,ns)*SIN(xm*u - xn*phi))
-         zvmec = zvmec + SUM(zmnc(:,ns)*COS(xm*u - xn*phi))
+         rvmec = rvmec                                                         &
+     &         + SUM(rmns(:,ns)*SIN(xm*this%x_var(2) - xn*phi))
+         zvmec = zvmec                                                         &
+     &         + SUM(zmnc(:,ns)*COS(xm*this%x_var(2) - xn*phi))
          drvmecdt = drvmecdt                                                   &
-     &            - SUM(rmns(:,ns)*xn*COS(xm*u - xn*phi)*dphidt)
+     &            - SUM(rmns(:,ns)*xn*COS(xm*this%x_var(2) -                   &
+     &                                    xn*phi)*dphidt)
          dzvmecdt = dzvmecdt                                                   &
-     &            + SUM(zmnc(:,ns)*xn*SIN(xm*u - xn*phi)*dphidt)
-         drvmecdu = drvmecdu + SUM(rmns(:,ns)*xm*COS(xm*u - xn*phi))
-         dzvmecdu = dzvmecdu - SUM(zmnc(:,ns)*xm*SIN(xm*u - xn*phi))
+     &            + SUM(zmnc(:,ns)*xn*SIN(xm*this%x_var(2) -                   &
+     &                                    xn*phi)*dphidt)
+         drvmecdu = drvmecdu                                                   &
+     &            + SUM(rmns(:,ns)*xm*COS(xm*this%x_var(2) - xn*phi))
+         dzvmecdu = dzvmecdu                                                   &
+     &            - SUM(zmnc(:,ns)*xm*SIN(xm*this%x_var(2) - xn*phi))
       END IF
 
-      vmec_limit_chi(1) = (rchord - rvmec)*(rchord - rvmec)                    &
-     &                  + (zchord - zvmec)*(zchord - zvmec)
-      vmec_limit_chi(2) = 2.0*((rchord - rvmec)*(drchorddt - drvmecdt) +       &
-     &                         (zchord - zvmec)*(dzchorddt - dzvmecdt))
-      vmec_limit_chi(3) = 2.0*((rvmec - rchord)*drvmecdu +                     &
-     &                         (zvmec - zchord)*dzvmecdu)
+      chi2(1) = (rchord - rvmec)*(rchord - rvmec)                              &
+     &        + (zchord - zvmec)*(zchord - zvmec)
+      chi2(2) = 2.0*((rchord - rvmec)*(drchorddt - drvmecdt) +                 &
+     &               (zchord - zvmec)*(dzchorddt - dzvmecdt))
+      chi2(3) = 2.0*((rvmec - rchord)*drvmecdu +                               &
+     &               (zvmec - zchord)*dzvmecdu)
 
-      CALL profiler_set_stop_time('vmec_limit_chi', start_time)
+      CALL profiler_set_stop_time('vmec_descent_chi2', start_time)
 
-      END FUNCTION
+      END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Solves the VMEC equilibrium.
