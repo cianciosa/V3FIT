@@ -147,11 +147,11 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (v3fit_context_class), POINTER  :: v3fit_context_construct
-      TYPE (commandline_parser_class), POINTER :: cl_parser
+      TYPE (v3fit_context_class), POINTER :: v3fit_context_construct
+      CLASS (commandline_parser_class), POINTER :: cl_parser
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                              :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
