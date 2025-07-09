@@ -24,7 +24,8 @@
 !>  reconstructed that change the equilibirum. These parameters require
 !>  the equilibrium to reconverge.
 !>  @begin_table
-!>     @item{helpert,       1D Array of helical perturbation amplitudes.,         @ref siesta_context::helpert}
+!>     @item{helpert,  1D Array of helical perturbation amplitudes., @ref siesta_namelist::helpert}
+!>     @item{helphase, 1D Array of helical perturbation amplitudes., @ref siesta_namelist::helphase}
 !>  @end_table
 !>  @subsection siesta_equilibrium_aux_recon_param_sec SIESTA Auxiliary Reconstruction Parameters
 !>  SIESTA Auxiliary reconstruction parameters are parameters that maybe
@@ -87,8 +88,10 @@
 !  updated if any new model parameters are added. Siesta uses the VMEC model
 !  parameters but overwrites the auxilary parameters.
 
-!>  Helical perturbation parameter.
-      INTEGER, PARAMETER :: siesta_helpert_id     = 82
+!>  Helical perturbation amplitude parameter.
+      INTEGER, PARAMETER :: siesta_helpert_id  = 82
+!>  Helical perturbation phase parameter.
+      INTEGER, PARAMETER :: siesta_helphase_id = 83
 
 !*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
@@ -384,7 +387,6 @@
       SUBROUTINE siesta_set_param(this, id, i_index, j_index, value,           &
      &                            eq_comm, state_flags)
       USE model_state
-      USE siesta_namelist, ONLY: helpert
 
       IMPLICIT NONE
 
@@ -427,6 +429,10 @@
          CASE (siesta_helpert_id)
             state_flags = IBSET(state_flags, model_state_siesta_flag)
             CALL this%run_context%set('helpert', value, i_index)
+
+         CASE (siesta_helphase_id)
+            state_flags = IBSET(state_flags, model_state_siesta_flag)
+            CALL this%run_context%set('helphase', value, i_index)
 
          CASE DEFAULT
             CALL vmec_set_param(this, id, i_index, j_index, value,             &
@@ -1247,6 +1253,9 @@
          CASE ('helpert')
             siesta_get_param_id = siesta_helpert_id
 
+         CASE ('helphase')
+            siesta_get_param_id = siesta_helphase_id
+
          CASE DEFAULT
             siesta_get_param_id = vmec_get_param_id(this, param_name)
 
@@ -1268,7 +1277,6 @@
 !>  @returns The value of the parameter.
 !-------------------------------------------------------------------------------
       FUNCTION siesta_get_param_value(this, id, i_index, j_index)
-      USE siesta_namelist, ONLY: helpert
 
       IMPLICIT NONE
 
@@ -1288,7 +1296,12 @@
       SELECT CASE (id)
 
          CASE (siesta_helpert_id)
-            siesta_get_param_value = helpert(i_index)
+            siesta_get_param_value = this%run_context%get('helpert',           &
+     &                                                    i_index)
+
+         CASE (siesta_helphase_id)
+            siesta_get_param_value = this%run_context%get('helphase',          &
+     &                                                    i_index)
 
          CASE DEFAULT
             siesta_get_param_value =                                           &
@@ -1328,6 +1341,9 @@
 
          CASE (siesta_helpert_id)
             siesta_get_param_name = 'helpert'
+
+         CASE (siesta_helphase_id)
+            siesta_get_param_name = 'helphase'
 
          CASE DEFAULT
             siesta_get_param_name = vmec_get_param_name(this, id)
@@ -2637,6 +2653,9 @@
          CASE (siesta_helpert_id)
             siesta_is_1d_array = .true.
 
+         CASE (siesta_helphase_id)
+            siesta_is_1d_array = .true.
+
          CASE DEFAULT
             siesta_is_1d_array = vmec_is_1d_array(this, id)
 
@@ -2673,6 +2692,9 @@
       SELECT CASE (id)
 
          CASE (siesta_helpert_id)
+            siesta_is_recon_param = .true.
+
+         CASE (siesta_helphase_id)
             siesta_is_recon_param = .true.
 
          CASE DEFAULT
