@@ -9,7 +9,7 @@
  FTOL=  1.0E-20
  LEVMARQ_PARAM=  0.1
  MRES = 2
- HELPERT = 5.0E-4
+ HELPERT = 1.0E-4
  NSIN = 100
  NTOR_TYPE = "sparse"
  MPOLIN = 2
