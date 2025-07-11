@@ -29,17 +29,17 @@
 !>  @end_table
 !>
 !>  @table_section{vacuum_sr_var_sec, Shifts and rotations of external coils.}
-!>     @item{cg_shift_1,        Vector to shift all the coils. (Before rotation),                          @ref vacuum_input::cg_shift_1}
-!>     @item{cg_rot_theta,      Spherical polar angle to specify axis of rotation.,                        @ref vacuum_input::cg_rot_theta}
-!>     @item{cg_rot_phi,        Spherical azimuthal angle to specify axis of rotation.,                    @ref vacuum_input::cg_rot_phi}
+!>     @item{cg_shift_1,        Vector to shift all the coils. (Before rotation),                          vacuum_input::cg_shift_1}
+!>     @item{cg_rot_theta,      Spherical polar angle to specify axis of rotation.,                        vacuum_input::cg_rot_theta}
+!>     @item{cg_rot_phi,        Spherical azimuthal angle to specify axis of rotation.,                    vacuum_input::cg_rot_phi}
 !>     @item{cg_rot_angle,      Angle to rotate about axis of rotation. NB - LEFT HAND
 !>                              convention. Put left thumb along axis of rotation\,
-!>                              fingers indicate direction of positive rotation.,                          @ref vacuum_input::cg_rot_angle}
-!>     @item{cg_rot_xcent,      Position of center of rotation.,                                           @ref vacuum_input::cg_rot_xcent}
+!>                              fingers indicate direction of positive rotation.,                          vacuum_input::cg_rot_angle}
+!>     @item{cg_rot_xcent,      Position of center of rotation.,                                           vacuum_input::cg_rot_xcent}
 !>     @item{l_rot_coil_center, Chooses the center of rotation.
 !>                              * True - use current-averaged center of coil-group for center of rotation.
-!>                              * False - use position specified in cg_rot_xcent for center of rotation.,  @ref vacuum_input::l_rot_coil_center}
-!>     @item{cg_shift_2,        Vector to shift all the coils. (After rotation),                           @ref vacuum_input::cg_shift_2}
+!>                              * False - use position specified in cg_rot_xcent for center of rotation.,  vacuum_input::l_rot_coil_center}
+!>     @item{cg_shift_2,        Vector to shift all the coils. (After rotation),                           vacuum_input::cg_shift_2}
 !>  @end_table
 !>
 !>  @section vacuum_namelist_exam_sec Example Files

@@ -16,7 +16,7 @@
 !>
 !>  @section vacuum_equilibrium_recon_param_sec Vacuum Reconstruction Parameters
 !>  @begin_table
-!>     @item{extcur, 1D Array of external currents., @ref vacuum_equilibrium::vacuum_class::extcur}
+!>     @item{extcur, 1D Array of external currents., vacuum_equilibrium::vacuum_class::extcur}
 !>  @end_table
 !*******************************************************************************
 !>  @file vacuum_equilibrium.f

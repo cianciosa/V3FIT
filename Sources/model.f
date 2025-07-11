@@ -17,25 +17,25 @@
 !>
 !>  @section model_recon_param_sec Model Reconstruction Parameters
 !>  @begin_table
-!>     @item{ne_unit,           Electron density scaling.,                                @ref model::model_class::ne_unit}
-!>     @item{ne_min,            Minimum electron density.,                                @ref model::model_class::ne_min}
-!>     @item{te_min,            Minimum electron temperature.,                            @ref model::model_class::te_min}
-!>     @item{ti_min,            Minimum ion temperature.,                                 @ref model::model_class::ti_min}
-!>     @item{sxrem_min,         Minimum soft x-ray emission.,                             @ref model::model_class::sxrem_min}
-!>     @item{pressure_fraction, Fractional portion of the pressure due to the electrons., @ref model::model_class::pressure_fraction}
-!>     @item{coosig_wgts,       Combination signal weights.,                              @ref model::model_class::coosig_wgts}
-!>     @item{signal_factor,     Signal scaling factor for signal models.,                 @ref model::model_class::signal_factor}
-!>     @item{signal_offset,     Signal offset factor for signal models.,                  @ref model::model_class::signal_offset}
+!>     @item{ne_unit,           Electron density scaling.,                                model::model_class::ne_unit}
+!>     @item{ne_min,            Minimum electron density.,                                model::model_class::ne_min}
+!>     @item{te_min,            Minimum electron temperature.,                            model::model_class::te_min}
+!>     @item{ti_min,            Minimum ion temperature.,                                 model::model_class::ti_min}
+!>     @item{sxrem_min,         Minimum soft x-ray emission.,                             model::model_class::sxrem_min}
+!>     @item{pressure_fraction, Fractional portion of the pressure due to the electrons., model::model_class::pressure_fraction}
+!>     @item{coosig_wgts,       Combination signal weights.,                              model::model_class::coosig_wgts}
+!>     @item{signal_factor,     Signal scaling factor for signal models.,                 model::model_class::signal_factor}
+!>     @item{signal_offset,     Signal offset factor for signal models.,                  model::model_class::signal_offset}
 !>  @end_table
 !>
 !>  @section model_derived_param_sec Model Derived Parameters
 !>  The following derived parameters are defined on a grid. The size of that
 !>  grid will depend on equilibrium used.
 !>  @begin_table
-!>     @item{ne_grid,    Electron density grid.,      @ref model::model_class::ne_grid}
-!>     @item{te_grid,    Electron temperature grid.,  @ref model::model_class::te_grid}
-!>     @item{ti_grid,    Ion temperature grid.,       @ref model::model_class::ti_grid}
-!>     @item{sxrem_grid, Soft X-ray emissivity grid., @ref model::model_class::sxrem_grid}
+!>     @item{ne_grid,    Electron density grid.,      model::model_class::ne_grid}
+!>     @item{te_grid,    Electron temperature grid.,  model::model_class::te_grid}
+!>     @item{ti_grid,    Ion temperature grid.,       model::model_class::ti_grid}
+!>     @item{sxrem_grid, Soft X-ray emissivity grid., model::model_class::sxrem_grid}
 !>  @end_table
 !>
 !>  @section model_sxrem_sec Model Soft X-ray Emissivity
