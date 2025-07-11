@@ -24,40 +24,40 @@
 !>  reconstructed that change the equilibirum. These parameters require
 !>  the equilibrium to reconverge.
 !>  @begin_table
-!>     @item{helpert,  1D Array of helical perturbation amplitudes., @ref siesta_namelist::helpert}
-!>     @item{helphase, 1D Array of helical perturbation amplitudes., @ref siesta_namelist::helphase}
+!>     @item{helpert,  1D Array of helical perturbation amplitudes., siesta_namelist::helpert}
+!>     @item{helphase, 1D Array of helical perturbation amplitudes., siesta_namelist::helphase}
 !>  @end_table
 !>  @subsection siesta_equilibrium_aux_recon_param_sec SIESTA Auxiliary Reconstruction Parameters
 !>  SIESTA Auxiliary reconstruction parameters are parameters that maybe
 !>  reconstructed that do not change the equilibirum. These parameters do not
 !>  require the equilibrium to reconverge.
 !>  @begin_table
-!>     @item{pp_ne_b,       1D Array of function density profile parameters.,              @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_ne_as,      1D Array of segment density profile s poitions.,               @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_ne_af,      1D Array of segment density profile f values.,                 @ref pprofile_T::pprofile_class::af}
+!>     @item{pp_ne_b,       1D Array of function density profile parameters.,              pprofile_T::pprofile_class::b}
+!>     @item{pp_ne_as,      1D Array of segment density profile s poitions.,               pprofile_T::pprofile_class::as}
+!>     @item{pp_ne_af,      1D Array of segment density profile f values.,                 pprofile_T::pprofile_class::af}
 !>     @item{pp_sxrem_b,    1D Array of function sxrem profile parameters.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::b}
+!>                          specification.,                                                pprofile_T::pprofile_class::b}
 !>     @item{pp_sxrem_as,   1D Array of segment sxrem profile s poitions.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::as}
+!>                          specification.,                                                pprofile_T::pprofile_class::as}
 !>     @item{pp_sxrem_af,   1D Array of segment sxrem profile f values.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::af}
+!>                          specification.,                                                pprofile_T::pprofile_class::af}
 !>     @item{pp_sxrem_b_a,  2D Array of function sxrem profile parameters.
-!>                          First index is the profile number.,                            @ref siesta_equilibrium::siesta_class::sxrem}
+!>                          First index is the profile number.,                            siesta_equilibrium::siesta_class::sxrem}
 !>     @item{pp_sxrem_as_a, 2D Array of segment sxrem profile s poitions.
-!>                          First index is the profile number.,                            @ref siesta_equilibrium::siesta_class::sxrem}
+!>                          First index is the profile number.,                            siesta_equilibrium::siesta_class::sxrem}
 !>     @item{pp_sxrem_af_a, 2D Array of segment sxrem profile f values.
-!>                          First index is the profile number.,                            @ref siesta_equilibrium::siesta_class::sxrem}
-!>     @item{pp_te_b,       1D Array of function electron temperature profile parameters., @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_te_as,      1D Array of segment electron temperature profile s poitions.,  @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_te_af,      1D Array of segment electron temperature profile f values.,    @ref pprofile_T::pprofile_class::af}
-!>     @item{pp_ti_b,       1D Array of function ion temperature profile parameters.,      @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_ti_as,      1D Array of segment ion temperature profile s poitions.,       @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_ti_af,      1D Array of segment ion temperature profile f values.,         @ref pprofile_T::pprofile_class::af}
-!>     @item{phi_offset,    Phi angle offset in radians,                                   @ref siesta_equilibrium::siesta_class::phi_offset}
-!>     @item{z_offset,      Z offset in meters,                                            @ref siesta_equilibrium::siesta_class::z_offset}
+!>                          First index is the profile number.,                            siesta_equilibrium::siesta_class::sxrem}
+!>     @item{pp_te_b,       1D Array of function electron temperature profile parameters., pprofile_T::pprofile_class::b}
+!>     @item{pp_te_as,      1D Array of segment electron temperature profile s poitions.,  pprofile_T::pprofile_class::as}
+!>     @item{pp_te_af,      1D Array of segment electron temperature profile f values.,    pprofile_T::pprofile_class::af}
+!>     @item{pp_ti_b,       1D Array of function ion temperature profile parameters.,      pprofile_T::pprofile_class::b}
+!>     @item{pp_ti_as,      1D Array of segment ion temperature profile s poitions.,       pprofile_T::pprofile_class::as}
+!>     @item{pp_ti_af,      1D Array of segment ion temperature profile f values.,         pprofile_T::pprofile_class::af}
+!>     @item{phi_offset,    Phi angle offset in radians,                                   siesta_equilibrium::siesta_class::phi_offset}
+!>     @item{z_offset,      Z offset in meters,                                            siesta_equilibrium::siesta_class::z_offset}
 !>  @end_table
 !*******************************************************************************
 !>  @file siesta_equilibrium.f

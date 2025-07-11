@@ -24,101 +24,101 @@
 !>  reconstructed that change the equilibirum. These parameters require
 !>  the equilibrium to reconverge.
 !>  @begin_table
-!>     @item{ac,         1D Array of function current profile parameters.,  @ref vmec_input::ac}
-!>     @item{ac_aux_s,   1D Array of segment current profile s poitions.,   @ref vmec_input::ac_aux_s}
-!>     @item{ac_aux_f,   1D Array of segment current profile f values.,     @ref vmec_input::ac_aux_f}
-!>     @item{ai,         1D Array of function current profile parameters.,  @ref vmec_input::ai}
-!>     @item{ai_aux_s,   1D Array of segment iotabar profile s poitions.,   @ref vmec_input::ai_aux_s}
-!>     @item{ai_aux_f,   1D Array of segment iotabar profile f values.,     @ref vmec_input::ai_aux_f}
-!>     @item{am,         1D Array of function current profile parameters.,  @ref vmec_input::am}
-!>     @item{am_aux_s,   1D Array of segment pressure profile s poitions.,  @ref vmec_input::am_aux_s}
-!>     @item{am_aux_f,   1D Array of segment pressure profile f values.,    @ref vmec_input::am_aux_f}
-!>     @item{bloat,      Extends the field into the vacuum region.,         @ref vmec_input::bloat}
-!>     @item{rbc,        2D Array of outer boundary R cosine coeffiecents., @ref vmec_input::rbc}
-!>     @item{zbs,        2D Array of outer boundary Z sine coeffiecents.,   @ref vmec_input::zbs}
-!>     @item{rbs,        2D Array of outer boundary R sine coeffiecents.,   @ref vmec_input::rbs}
-!>     @item{zbc,        2D Array of outer boundary Z cosine coeffiecents., @ref vmec_input::zbc}
-!>     @item{extcur,     1D Array of external currents.,                    @ref vmec_input::extcur}
-!>     @item{curtor,     Toroidal current.,                                 @ref vmec_input::curtor}
-!>     @item{phiedge,    The edge magnetic flux.,                           @ref vmec_input::phiedge}
-!>     @item{pres_scale, The scaling parameter for the pressure.,           @ref vmec_input::pres_scale}
+!>     @item{ac,         1D Array of function current profile parameters.,  vmec_input::ac}
+!>     @item{ac_aux_s,   1D Array of segment current profile s poitions.,   vmec_input::ac_aux_s}
+!>     @item{ac_aux_f,   1D Array of segment current profile f values.,     vmec_input::ac_aux_f}
+!>     @item{ai,         1D Array of function current profile parameters.,  vmec_input::ai}
+!>     @item{ai_aux_s,   1D Array of segment iotabar profile s poitions.,   vmec_input::ai_aux_s}
+!>     @item{ai_aux_f,   1D Array of segment iotabar profile f values.,     vmec_input::ai_aux_f}
+!>     @item{am,         1D Array of function current profile parameters.,  vmec_input::am}
+!>     @item{am_aux_s,   1D Array of segment pressure profile s poitions.,  vmec_input::am_aux_s}
+!>     @item{am_aux_f,   1D Array of segment pressure profile f values.,    vmec_input::am_aux_f}
+!>     @item{bloat,      Extends the field into the vacuum region.,         vmec_input::bloat}
+!>     @item{rbc,        2D Array of outer boundary R cosine coeffiecents., vmec_input::rbc}
+!>     @item{zbs,        2D Array of outer boundary Z sine coeffiecents.,   vmec_input::zbs}
+!>     @item{rbs,        2D Array of outer boundary R sine coeffiecents.,   vmec_input::rbs}
+!>     @item{zbc,        2D Array of outer boundary Z cosine coeffiecents., vmec_input::zbc}
+!>     @item{extcur,     1D Array of external currents.,                    vmec_input::extcur}
+!>     @item{curtor,     Toroidal current.,                                 vmec_input::curtor}
+!>     @item{phiedge,    The edge magnetic flux.,                           vmec_input::phiedge}
+!>     @item{pres_scale, The scaling parameter for the pressure.,           vmec_input::pres_scale}
 !>  @end_table
 !>  @subsection vmec_equilibrium_aux_recon_param_sec VMEC Auxiliary Reconstruction Parameters
 !>  VMEC Auxiliary reconstruction parameters are parameters that maybe
 !>  reconstructed that do not change the equilibirum. These parameters do not
 !>  require the equilibrium to reconverge.
 !>  @begin_table
-!>     @item{pp_ne_b,       1D Array of function density profile parameters.,              @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_ne_as,      1D Array of segment density profile s poitions.,               @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_ne_af,      1D Array of segment density profile f values.,                 @ref pprofile_T::pprofile_class::af}
+!>     @item{pp_ne_b,       1D Array of function density profile parameters.,              pprofile_T::pprofile_class::b}
+!>     @item{pp_ne_as,      1D Array of segment density profile s poitions.,               pprofile_T::pprofile_class::as}
+!>     @item{pp_ne_af,      1D Array of segment density profile f values.,                 pprofile_T::pprofile_class::af}
 !>     @item{pp_sxrem_b,    1D Array of function sxrem profile parameters.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::b}
+!>                          specification.,                                                pprofile_T::pprofile_class::b}
 !>     @item{pp_sxrem_as,   1D Array of segment sxrem profile s poitions.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::as}
+!>                          specification.,                                                pprofile_T::pprofile_class::as}
 !>     @item{pp_sxrem_af,   1D Array of segment sxrem profile f values.
 !>                          DEPREICATED only use id when using the old profile
-!>                          specification.,                                                @ref pprofile_T::pprofile_class::af}
+!>                          specification.,                                                pprofile_T::pprofile_class::af}
 !>     @item{pp_sxrem_b_a,  2D Array of function sxrem profile parameters.
-!>                          First index is the profile number.,                            @ref vmec_equilibrium::vmec_class::sxrem}
+!>                          First index is the profile number.,                            vmec_equilibrium::vmec_class::sxrem}
 !>     @item{pp_sxrem_as_a, 2D Array of segment sxrem profile s poitions.
-!>                          First index is the profile number.,                            @ref vmec_equilibrium::vmec_class::sxrem}
+!>                          First index is the profile number.,                            vmec_equilibrium::vmec_class::sxrem}
 !>     @item{pp_sxrem_af_a, 2D Array of segment sxrem profile f values.
-!>                          First index is the profile number.,                            @ref vmec_equilibrium::vmec_class::sxrem}
-!>     @item{pp_te_b,       1D Array of function electron temperature profile parameters., @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_te_as,      1D Array of segment electron temperature profile s poitions.,  @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_te_af,      1D Array of segment electron temperature profile f values.,    @ref pprofile_T::pprofile_class::af}
-!>     @item{pp_ti_b,       1D Array of function ion temperature profile parameters.,      @ref pprofile_T::pprofile_class::b}
-!>     @item{pp_ti_as,      1D Array of segment ion temperature profile s poitions.,       @ref pprofile_T::pprofile_class::as}
-!>     @item{pp_ti_af,      1D Array of segment ion temperature profile f values.,         @ref pprofile_T::pprofile_class::af}
-!>     @item{phi_offset,    Phi angle offset in radians,                                   @ref vmec_equilibrium::vmec_class::phi_offset}
-!>     @item{z_offset,      Z offset in meters,                                            @ref vmec_equilibrium::vmec_class::z_offset}
+!>                          First index is the profile number.,                            vmec_equilibrium::vmec_class::sxrem}
+!>     @item{pp_te_b,       1D Array of function electron temperature profile parameters., pprofile_T::pprofile_class::b}
+!>     @item{pp_te_as,      1D Array of segment electron temperature profile s poitions.,  pprofile_T::pprofile_class::as}
+!>     @item{pp_te_af,      1D Array of segment electron temperature profile f values.,    pprofile_T::pprofile_class::af}
+!>     @item{pp_ti_b,       1D Array of function ion temperature profile parameters.,      pprofile_T::pprofile_class::b}
+!>     @item{pp_ti_as,      1D Array of segment ion temperature profile s poitions.,       pprofile_T::pprofile_class::as}
+!>     @item{pp_ti_af,      1D Array of segment ion temperature profile f values.,         pprofile_T::pprofile_class::af}
+!>     @item{phi_offset,    Phi angle offset in radians,                                   vmec_equilibrium::vmec_class::phi_offset}
+!>     @item{z_offset,      Z offset in meters,                                            vmec_equilibrium::vmec_class::z_offset}
 !>  @end_table
 !>
 !>  @section vmec_equilibrium_derive_param_sec VMEC Derived Parameters
 !>  Derived parameters are parameters that come from the equilibrium but are not
 !>  reconstructable.
 !>  @begin_table
-!>     @item{rmnc,        2D Array of surface R cosine coeffiecents.,      @ref read_wout_mod::rmnc}
-!>     @item{zmns,        2D Array of surface Z sine coeffiecents.,        @ref read_wout_mod::zmns}
-!>     @item{lmns,        2D Array of surface lambda sine coeffiecents.,   @ref read_wout_mod::lmns}
-!>     @item{gmnc,        2D Array of surface g cosine coeffiecents.,      @ref read_wout_mod::gmnc}
-!>     @item{bsubsmns,    2D Array of surface B_s sine coeffiecents.,      @ref read_wout_mod::bsubsmns}
-!>     @item{bsubumnc,    2D Array of surface B_u cosine coeffiecents.,    @ref read_wout_mod::bsubumnc}
-!>     @item{bsubvmnc,    2D Array of surface B_v cosine coeffiecents.,    @ref read_wout_mod::bsubvmnc}
-!>     @item{bsupumnc,    2D Array of surface B^u cosine coeffiecents.,    @ref read_wout_mod::bsupumnc}
-!>     @item{bsupvmnc,    2D Array of surface B^v cosine coeffiecents.,    @ref read_wout_mod::bsupvmnc}
-!>     @item{rmns,        2D Array of surface R sine coeffiecents.,        @ref read_wout_mod::rmns}
-!>     @item{zmnc,        2D Array of surface Z cosine coeffiecents.,      @ref read_wout_mod::zmnc}
-!>     @item{lmnc,        2D Array of surface lambda cosine coeffiecents., @ref read_wout_mod::lmnc}
-!>     @item{gmns,        2D Array of surface g sine coeffiecents.,        @ref read_wout_mod::gmns}
-!>     @item{bsubsmnc,    2D Array of surface B_s cosine coeffiecents.,    @ref read_wout_mod::bsubsmnc}
-!>     @item{bsubumns,    2D Array of surface B_u sine coeffiecents.,      @ref read_wout_mod::bsubumns}
-!>     @item{bsubvmns,    2D Array of surface B_v sine coeffiecents.,      @ref read_wout_mod::bsubvmns}
-!>     @item{bsupumns,    2D Array of surface B^u sine coeffiecents.,      @ref read_wout_mod::bsupumns}
-!>     @item{bsupvmns,    2D Array of surface B^v sine coeffiecents.,      @ref read_wout_mod::bsupvmns}
-!>     @item{phi,         1D Array of Toroidal flux.,                      @ref read_wout_mod::phi}
-!>     @item{iotaf,       1D Array of full grid iotabar.,                  @ref read_wout_mod::iotaf}
-!>     @item{iotas,       1D Array of half grid iotabar.,                  @ref read_wout_mod::iotas}
-!>     @item{vvc_smaleli, Internal inducance. Computed in @ref eqfor.,     @ref v3f_vmec_comm::vvc_smaleli}
-!>     @item{vvc_kappa_p, Mean elongation. Computed in @ref eqfor.,        @ref v3f_vmec_comm::vvc_kappa_p}
-!>     @item{betatot,     Total beta.,                                     @ref read_wout_mod::betatot}
-!>     @item{betapol,     Poloidal beta.,                                  @ref read_wout_mod::betapol}
-!>     @item{betator,     Toroidal beta.,                                  @ref read_wout_mod::betator}
-!>     @item{betaxis,     Beta on axis.,                                   @ref read_wout_mod::betaxis}
-!>     @item{jcuru,       Poloidal current density.,                       @ref read_wout_mod::jcuru}
-!>     @item{jcurv,       Toroidal current density.,                       @ref read_wout_mod::jcurv}
-!>     @item{jdotb,       Current density in direction of b field.,        @ref read_wout_mod::jdotb}
-!>     @item{raxis_cc,    Magnetic axis R cosine coeffiecents.,            @ref read_wout_mod::raxis}
-!>     @item{raxis_cs,    Magnetic axis R sine coeffiecents.,              @ref read_wout_mod::raxis}
-!>     @item{zaxis_cc,    Magnetic axis Z cosine coeffiecents.,            @ref read_wout_mod::zaxis}
-!>     @item{zaxis_cs,    Magnetic axis Z sine coeffiecents.,              @ref read_wout_mod::zaxis}
-!>     @item{qfact,       Safety factor profile.,                          @ref read_wout_mod::qfact}
+!>     @item{rmnc,        2D Array of surface R cosine coeffiecents.,      read_wout_mod::rmnc}
+!>     @item{zmns,        2D Array of surface Z sine coeffiecents.,        read_wout_mod::zmns}
+!>     @item{lmns,        2D Array of surface lambda sine coeffiecents.,   read_wout_mod::lmns}
+!>     @item{gmnc,        2D Array of surface g cosine coeffiecents.,      read_wout_mod::gmnc}
+!>     @item{bsubsmns,    2D Array of surface B_s sine coeffiecents.,      read_wout_mod::bsubsmns}
+!>     @item{bsubumnc,    2D Array of surface B_u cosine coeffiecents.,    read_wout_mod::bsubumnc}
+!>     @item{bsubvmnc,    2D Array of surface B_v cosine coeffiecents.,    read_wout_mod::bsubvmnc}
+!>     @item{bsupumnc,    2D Array of surface B^u cosine coeffiecents.,    read_wout_mod::bsupumnc}
+!>     @item{bsupvmnc,    2D Array of surface B^v cosine coeffiecents.,    read_wout_mod::bsupvmnc}
+!>     @item{rmns,        2D Array of surface R sine coeffiecents.,        read_wout_mod::rmns}
+!>     @item{zmnc,        2D Array of surface Z cosine coeffiecents.,      read_wout_mod::zmnc}
+!>     @item{lmnc,        2D Array of surface lambda cosine coeffiecents., read_wout_mod::lmnc}
+!>     @item{gmns,        2D Array of surface g sine coeffiecents.,        read_wout_mod::gmns}
+!>     @item{bsubsmnc,    2D Array of surface B_s cosine coeffiecents.,    read_wout_mod::bsubsmnc}
+!>     @item{bsubumns,    2D Array of surface B_u sine coeffiecents.,      read_wout_mod::bsubumns}
+!>     @item{bsubvmns,    2D Array of surface B_v sine coeffiecents.,      read_wout_mod::bsubvmns}
+!>     @item{bsupumns,    2D Array of surface B^u sine coeffiecents.,      read_wout_mod::bsupumns}
+!>     @item{bsupvmns,    2D Array of surface B^v sine coeffiecents.,      read_wout_mod::bsupvmns}
+!>     @item{phi,         1D Array of Toroidal flux.,                      read_wout_mod::phi}
+!>     @item{iotaf,       1D Array of full grid iotabar.,                  read_wout_mod::iotaf}
+!>     @item{iotas,       1D Array of half grid iotabar.,                  read_wout_mod::iotas}
+!>     @item{vvc_smaleli, Internal inducance. Computed in eqfor.,          v3f_vmec_comm::vvc_smaleli}
+!>     @item{vvc_kappa_p, Mean elongation. Computed in eqfor.,             v3f_vmec_comm::vvc_kappa_p}
+!>     @item{betatot,     Total beta.,                                     read_wout_mod::betatot}
+!>     @item{betapol,     Poloidal beta.,                                  read_wout_mod::betapol}
+!>     @item{betator,     Toroidal beta.,                                  read_wout_mod::betator}
+!>     @item{betaxis,     Beta on axis.,                                   read_wout_mod::betaxis}
+!>     @item{jcuru,       Poloidal current density.,                       read_wout_mod::jcuru}
+!>     @item{jcurv,       Toroidal current density.,                       read_wout_mod::jcurv}
+!>     @item{jdotb,       Current density in direction of b field.,        read_wout_mod::jdotb}
+!>     @item{raxis_cc,    Magnetic axis R cosine coeffiecents.,            read_wout_mod::raxis}
+!>     @item{raxis_cs,    Magnetic axis R sine coeffiecents.,              read_wout_mod::raxis}
+!>     @item{zaxis_cc,    Magnetic axis Z cosine coeffiecents.,            read_wout_mod::zaxis}
+!>     @item{zaxis_cs,    Magnetic axis Z sine coeffiecents.,              read_wout_mod::zaxis}
+!>     @item{qfact,       Safety factor profile.,                          read_wout_mod::qfact}
 !>     @item{pres,        Half grid pressure. Should only be used when
-!>                        reconstructing a pressure profile parameter.,    @ref read_wout_mod::pres}
+!>                        reconstructing a pressure profile parameter.,    read_wout_mod::pres}
 !>     @item{presf,       Full grid pressure. Should only be used when
-!>                        reconstructing a pressure profile parameter.,    @ref read_wout_mod::pres}
+!>                        reconstructing a pressure profile parameter.,    read_wout_mod::pres}
 !>  @end_table
 !*******************************************************************************
 !>  @file vmec_equilibrium.f
