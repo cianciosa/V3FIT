@@ -1,0 +1,125 @@
+&v3fit_main_nli
+my_task = 'reconstruct',
+vmec_nli_filename = '${VMEC_FILE_NAME}'
+siesta_nli_filename = '${SIESTA_FILE_NAME}'
+
+model_eq_type = 'siesta'
+
+thscte_dot_filename = 'thomson.dot',
+
+model_te_type = 'pp_te'
+pp_te_ptype = 'two_power_r'
+pp_te_b = 0.0, 5.0, 1.0, 0.5,
+
+nrstep = 20,
+dg2_stop = 0.1,
+cut_svd = 2.0E-5,
+cut_eff = 1.0E-8,
+cut_marg_eff = 0.0,
+cut_delta_a = 0.0,
+cut_dg2 = 0.0,
+astep_max = 100.0,
+step_type = 'lm',
+
+n_rp = 2,
+
+rp_type(1) = 'helpert',
+rp_vrnc(1) = 1.0E-5,
+rp_index(1) = 1,
+rp_range_type(1,1) = 'value',
+rp_range_value(1,1) = 0,
+
+rp_type(2) = 'helphase',
+rp_vrnc(2) = 1.0,
+rp_index(2) = 1,
+rp_range_type(2,1) = 'value',
+rp_range_value(2,1) = 0,
+rp_range_type(2,2) = 'value',
+rp_range_value(2,2) = 360.0,
+
+sdo_data_a(1) = 0.00000E+00
+sdo_data_a(2) = 1.18088E+00
+sdo_data_a(3) = 2.55109E+00
+sdo_data_a(4) = 3.55848E+00
+sdo_data_a(5) = 4.00024E+00
+sdo_data_a(6) = 4.25356E+00
+sdo_data_a(7) = 4.45003E+00
+sdo_data_a(8) = 4.60264E+00
+sdo_data_a(9) = 4.71822E+00
+sdo_data_a(10) = 4.80434E+00
+sdo_data_a(11) = 4.86823E+00
+sdo_data_a(12) = 0.00000E+00
+sdo_data_a(13) = 1.17942E+00
+sdo_data_a(14) = 2.56126E+00
+sdo_data_a(15) = 3.62447E+00
+sdo_data_a(16) = 4.06574E+00
+sdo_data_a(17) = 4.30416E+00
+sdo_data_a(18) = 4.48670E+00
+sdo_data_a(19) = 4.62837E+00
+sdo_data_a(20) = 4.73565E+00
+sdo_data_a(21) = 4.81571E+00
+sdo_data_a(22) = 4.87539E+00
+sdo_data_a(23) = 0.00000E+00
+sdo_data_a(24) = 1.18253E+00
+sdo_data_a(25) = 2.53952E+00
+sdo_data_a(26) = 3.48220E+00
+sdo_data_a(27) = 3.92470E+00
+sdo_data_a(28) = 4.19548E+00
+sdo_data_a(29) = 4.40811E+00
+sdo_data_a(30) = 4.57332E+00
+sdo_data_a(31) = 4.69840E+00
+sdo_data_a(32) = 4.79142E+00
+sdo_data_a(33) = 4.86010E+00
+sdo_data_a(34) = 0.00000E+00
+sdo_data_a(35) = 1.18935E+00
+sdo_data_a(36) = 2.49102E+00
+sdo_data_a(37) = 3.14651E+00
+sdo_data_a(38) = 3.59486E+00
+sdo_data_a(39) = 3.94576E+00
+sdo_data_a(40) = 4.23001E+00
+sdo_data_a(41) = 4.44977E+00
+sdo_data_a(42) = 4.61535E+00
+sdo_data_a(43) = 4.73752E+00
+sdo_data_a(44) = 4.82630E+00
+sdo_data_a(45) = 0.00000E+00
+sdo_data_a(46) = 1.19800E+00
+sdo_data_a(47) = 2.42763E+00
+sdo_data_a(48) = 2.65658E+00
+sdo_data_a(49) = 3.12315E+00
+sdo_data_a(50) = 3.60158E+00
+sdo_data_a(51) = 3.99090E+00
+sdo_data_a(52) = 4.28673E+00
+sdo_data_a(53) = 4.50702E+00
+sdo_data_a(54) = 4.66775E+00
+sdo_data_a(55) = 4.78276E+00
+sdo_data_a(56) = 0.00000E+00
+sdo_data_a(57) = 1.20615E+00
+sdo_data_a(58) = 2.36588E+00
+sdo_data_a(59) = 2.08763E+00
+sdo_data_a(60) = 2.59720E+00
+sdo_data_a(61) = 3.24119E+00
+sdo_data_a(62) = 3.74981E+00
+sdo_data_a(63) = 4.12599E+00
+sdo_data_a(64) = 4.40170E+00
+sdo_data_a(65) = 4.60053E+00
+sdo_data_a(66) = 4.74105E+00
+sdo_data_a(67) = 0.00000E+00
+sdo_data_a(68) = 1.21165E+00
+sdo_data_a(69) = 2.32303E+00
+sdo_data_a(70) = 1.58940E+00
+sdo_data_a(71) = 2.16874E+00
+sdo_data_a(72) = 2.97178E+00
+sdo_data_a(73) = 3.57694E+00
+sdo_data_a(74) = 4.01323E+00
+sdo_data_a(75) = 4.32876E+00
+sdo_data_a(76) = 4.55434E+00
+sdo_data_a(77) = 4.71254E+00
+ 
+sdo_s_spec_imin(1) = 1,
+sdo_s_spec_imax(1) = 77,
+sdo_s_spec_floor(1) = 0.001,
+sdo_s_spec_fraction(1) = 0.01,
+
+n_sdata_o = 77,
+
+&END
