@@ -17,31 +17,38 @@ SET (SIESTA_FILE_NAME siesta.jcf)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/input.test.v3fit
                 ${CMAKE_CURRENT_BINARY_DIR}/input.test.v3fit)
 
-add_test (NAME    siesta_recon_task_test
+add_test (NAME    siesta_recon_asym_task_test
           COMMAND $<TARGET_PROPERTY:stell,MPIEXEC_EXECUTABLE> $<TARGET_PROPERTY:stell,MPIEXEC_NUMPROC_FLAG> $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS> $<TARGET_PROPERTY:xv3fit,BINARY_DIR>/xv3fit input.test.v3fit -para=-1)
-set_tests_properties (siesta_recon_task_test
+set_tests_properties (siesta_recon_asym_task_test
                       PROPERTIES
                       PROCESSORS $<TARGET_PROPERTY:stell,MPIEXEC_MAX_NUMPROCS>)
 
 #  Since the reconstruction task test was run, Check the output files for correct values.
 
 #  Check that the reconstruction parameter reconstructed to the correct values.
-add_test (NAME    siesta_recon_task_test_helpert
+add_test (NAME    siesta_recon_asym_task_test_helpert
           COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test.v3fit --p_type=helpert --value=5.0E-4 --range=1.0E-4 --index1=1)
-set_tests_properties (siesta_recon_task_test_helpert
+set_tests_properties (siesta_recon_asym_task_test_helpert
                       PROPERTIES
-                      DEPENDS siesta_recon_task_test)
+                      DEPENDS siesta_recon_asym_task_test)
+
+#  Check that the reconstruction parameter reconstructed to the correct values.
+add_test (NAME    siesta_recon_asym_task_test_helphase
+          COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_param_value.py --file=recout.input.test.v3fit --p_type=helphase --value=25.0 --range=2.0 --index1=1)
+set_tests_properties (siesta_recon_asym_task_test_helphase
+                      PROPERTIES
+                      DEPENDS siesta_recon_asym_task_test)
 
 #  Check that the signal effectiveness total.
-add_test (NAME    siesta_recon_task_test_sem_totals
+add_test (NAME    siesta_recon_asym_task_test_sem_totals
           COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_sem_total.py --file=recout.input.test.v3fit)
-set_tests_properties (siesta_recon_task_test_sem_totals
+set_tests_properties (siesta_recon_asym_task_test_sem_totals
                       PROPERTIES
-                      DEPENDS siesta_recon_task_test)
+                      DEPENDS siesta_recon_asym_task_test)
 
 #  Check correlation matrix values.
-add_test (NAME siesta_recon_task_test_check_reconstruction_correlation_matrix
+add_test (NAME siesta_recon_asym_task_test_check_reconstruction_correlation_matrix
           COMMAND ${Python3_EXECUTABLE} ${TEST_SCRIPT_DIR}/check_correlation_matrix.py --file=recout.input.test.v3fit --param=Reconstruction)
-set_tests_properties (siesta_recon_task_test_check_reconstruction_correlation_matrix
+set_tests_properties (siesta_recon_asym_task_test_check_reconstruction_correlation_matrix
                       PROPERTIES
-                      DEPENDS siesta_recon_task_test)
+                      DEPENDS siesta_recon_asym_task_test)

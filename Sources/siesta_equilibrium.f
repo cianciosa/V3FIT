@@ -318,6 +318,11 @@
          state_flags = IBSET(state_flags, model_state_siesta_flag)
       END IF
 
+      IF (recon_rank .gt. 0) THEN
+         CALL siesta_construct%run_context%clear_state(                        &
+     &           siesta_run_write_profiles)
+      END IF
+
       CALL profiler_set_stop_time('siesta_construct', start_time)
 
 1000  FORMAT('siesta_',a,'.nc')
