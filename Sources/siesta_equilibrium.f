@@ -269,6 +269,9 @@
       start_time = profiler_get_start_time()
 
       ALLOCATE(siesta_construct)
+      siesta_construct%flags = 0
+      siesta_construct%flags = IBSET(siesta_construct%flags,                   &
+     &                               siesta_eq_flag)
 
       CALL vmec_construct_sub(siesta_construct, vmec_namelist,                 &
      &                        wout_file_name, ne, te, ti, sxrem,               &

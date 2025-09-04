@@ -24,6 +24,16 @@
       IMPLICIT NONE
 
 !*******************************************************************************
+!  module parameters
+!*******************************************************************************
+!>  Vacuum Equilibrium flag bit position.
+      INTEGER, PARAMETER :: vacuum_eq_flag = 0
+!>  Vacuum Equilibrium flag bit position.
+      INTEGER, PARAMETER :: vmec_eq_flag = 1
+!>  SIESTA Equilibrium flag bit position.
+      INTEGER, PARAMETER :: siesta_eq_flag = 2
+
+!*******************************************************************************
 !  DERIVED-TYPE DECLARATIONS
 !  1) equilibrium base class
 !
@@ -36,6 +46,8 @@
       TYPE :: equilibrium_class
 !>  Controls if an equilibrium is forced to be resolved or not.
          LOGICAL :: force_solve
+!>  Equilibium flags.
+         INTEGER :: flags
       CONTAINS
          PROCEDURE                                           ::                &
      &      set_param => equilibrium_set_param
