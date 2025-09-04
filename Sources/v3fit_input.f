@@ -359,7 +359,7 @@
 !>  vmec_nli_filename = 'input.example.vmec'
 !>
 !>  ! Diagnostic inout files.
-!>  mdsig_list_file = 'diagnostic.example_mdsig.LIST'
+!>  mdsig_list_filename = 'diagnostic.example_mdsig.LIST'
 !>
 !>  my_task = 'v3post'
 !>  /
@@ -373,7 +373,7 @@
 !>  vmec_nli_filename = 'input.example.vmec'
 !>
 !>  ! Diagnostic inout files.
-!>  mdsig_list_file = 'diagnostic.example_mdsig.LIST'
+!>  mdsig_list_filename = 'diagnostic.example_mdsig.LIST'
 !>  sxrch_dot_filename = 'sxrch.example'
 !>  thscte_dot_filename = 'thscte.example'
 !>
