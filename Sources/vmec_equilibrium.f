@@ -673,6 +673,7 @@
       start_time = profiler_get_start_time()
 
       CALL equilibrium_construct_sub(this, force_solve)
+      this%flags = IBSET(this%flags, vmec_eq_flag)
 
       this%ne => ne
       this%te => te
@@ -876,6 +877,7 @@
       start_time = profiler_get_start_time()
 
       ALLOCATE(vmec_construct)
+      vmec_construct%flags = 0
 
       CALL vmec_construct_sub(vmec_construct, file_name,                       &
      &                        wout_file_name, ne, te, ti, sxrem,               &
@@ -5739,7 +5741,8 @@
                CALL LoadRZL
 
                vmec_converge = .true.
-               IF (ASSOCIATED(this%magnetic_cache)) THEN
+               IF (ASSOCIATED(this%magnetic_cache) .and.                       &
+     &             .not.BTEST(this%flags, siesta_eq_flag)) THEN
                   CALL this%set_magnetic_cache_calc()
                END IF
 
