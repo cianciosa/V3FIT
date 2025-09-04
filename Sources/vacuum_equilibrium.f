@@ -131,6 +131,9 @@
      &              TRIM(file_name)
 
       ALLOCATE(vacuum_construct)
+      vacuum_construct%flags = 0
+      vacuum_construct%flags = IBSET(vacuum_construct%flags,                   &
+     &                               vacuum_eq_flag)
 
       CALL equilibrium_construct_sub(vacuum_construct, force_solve)
 
