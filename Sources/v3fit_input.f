@@ -163,6 +163,9 @@
 !>                           The second index specifies the low and high ranges repectively.
 !>                           The third index contains the first and second index of the
 !>                           inequality constraint parameter.,                                   v3fit_input::rp_range_index}
+!>     @item{rp_scan_num,    The number of scan iterations.,                                     v3fit_input::rp_scan_num}
+!>     @item{rp_scan_array,  2D Array of can values. The first index corresponds to the
+!>                           reconstruction parameters in @fixed_width{'rp_type'}.,              v3fit_input::rp_scan_array}
 !>  @end_table
 !>
 !>  @table_section{lock_param_sec, Locking parameter specification}
@@ -857,6 +860,12 @@
 !>  the upper range.
       INTEGER, DIMENSION(v3fit_max_parameters,2,data_max_indices) ::           &
      &   rp_range_index = 0
+!>  Number of iterations in the scan.
+      INTEGER                              :: rp_scan_num = 0
+!>  Scan values.
+      REAL (rprec),                                                            &
+     &   DIMENSION(v3fit_max_parameters, data_max_scan) ::                     &
+     &      rp_scan_array = 0
 
 !  Reconstruction parameters
 !>  Number of locking parameters
@@ -1170,7 +1179,7 @@
      &   n_dp, dp_type, dp_index,                                              &
 !  Reconstruction parameters
      &   n_rp, rp_type, rp_index, rp_index2, rp_vrnc, rp_range_type,           &
-     &   rp_range_value, rp_range_index,                                       &
+     &   rp_range_value, rp_range_index, rp_scan_num, rp_scan_array,           &
 !  Locking parameters
      &   n_lp, lp_type, lp_index, lp_index2, lp_sets, lp_sets_index,           &
      &   lp_sets_index2, lp_sets_coeff,
