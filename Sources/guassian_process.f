@@ -22,7 +22,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class representing a gaussian process.
 !-------------------------------------------------------------------------------
-      TYPE gaussp_class
+      TYPE :: gaussp_class
 !>  Type descriptor of the gaussian procees type.
 !>  @par Possible values are:
 !>  * @ref gaussp_no_type
@@ -56,11 +56,16 @@
          REAL (rprec), DIMENSION(:), POINTER   :: fpoints => null()
 
 !>  Array of hyper parameters.
-         TYPE (param_pointer), DIMENSION(:), POINTER ::                        &
+         TYPE (param_recon_pointer), DIMENSION(:), POINTER ::                  &
      &      params => null()
 
 !>  Log file input output unit.
          INTEGER                               :: iou
+      CONTAINS
+         PROCEDURE :: set_signal => gaussp_set_signal
+         PROCEDURE :: set_profile => gaussp_set_profile
+         PROCEDURE :: get_evidence => gaussp_get_evidence
+         FINAL     :: gaussp_destruct
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -252,7 +257,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (gaussp_class), POINTER :: this
+      TYPE (gaussp_class), INTENT(inout) :: this
 
 !  Local Variables
       INTEGER                       :: i
@@ -291,7 +296,7 @@
       IF (ASSOCIATED(this%params)) THEN
          DO i = 1, SIZE(this%params)
             IF (ASSOCIATED(this%params(i)%p)) THEN
-               CALL param_destruct(this%params(i)%p)
+               DEALLOCATE(this%params(i)%p)
                this%params(i)%p => null()
             END IF
          END DO
@@ -300,8 +305,6 @@
       END IF
 
       CLOSE (this%iou)
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -324,12 +327,12 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (gaussp_class), INTENT(inout) :: this
-      CLASS (signal_class), POINTER      :: signal
-      INTEGER, INTENT(in)                :: index
+      CLASS (gaussp_class), INTENT(inout) :: this
+      CLASS (signal_class), POINTER       :: signal
+      INTEGER, INTENT(in)                 :: index
 
 !  local Variables
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -355,7 +358,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (gaussp_class), INTENT(inout)        :: this
+      CLASS (gaussp_class), INTENT(inout)       :: this
       CLASS (model_class), POINTER              :: a_model
 
 !  Local Variables
@@ -396,7 +399,7 @@
          ALLOCATE(gradient(SIZE(this%params)))
 
          DO i = 1, SIZE(this%params)
-            cached_value(i) = param_get_value(this%params(i)%p, a_model)
+            cached_value(i) = this%params(i)%p%get_value(a_model)
          END DO
 
          WRITE (this%iou,1000)
@@ -408,21 +411,21 @@
 
 !  Compute gradient.
             DO i = 1, SIZE(this%params)
-               CALL param_increment(this%params(i)%p, a_model,                 &
-     &                              MPI_COMM_NULL, .false.)
+               CALL this%params(i)%p%increment(a_model,                        &
+     &                                         MPI_COMM_NULL, .false.)
                gradient(i) = (gaussp_get_evidence(this, a_model) -             &
-     &                        evidence)/this%params(i)%p%recon%delta
-               CALL param_decrement(this%params(i)%p, a_model,                 &
-     &                              MPI_COMM_NULL)
+     &                        evidence)/this%params(i)%p%delta
+               CALL this%params(i)%p%decrement(a_model, MPI_COMM_NULL)
             END DO
 
 !  Step towards the maximum.
             cached_value = cached_value + gamma*gradient
 
             DO i = 1, SIZE(this%params)
-               CALL param_set_value(this%params(i)%p, a_model,                 &
-     &                              cached_value(i), MPI_COMM_NULL,            &
-     &                              .false.)
+               CALL this%params(i)%p%set_value(a_model,                        &
+     &                                         cached_value(i),                &
+     &                                         MPI_COMM_NULL,                  &
+     &                                         .false.)
             END DO
             new_evidence = gaussp_get_evidence(this, a_model)
 
@@ -431,9 +434,10 @@
                cached_value = cached_value - gamma*gradient
 
                DO i = 1, SIZE(this%params)
-                  CALL param_set_value(this%params(i)%p, a_model,              &
-     &                                 cached_value(i), MPI_COMM_NULL,         &
-     &                                 .false.)
+                  CALL this%params(i)%p%set_value(a_model,                     &
+     &                                            cached_value(i),             &
+     &                                            MPI_COMM_NULL,               &
+     &                                            .false.)
                END DO
                new_evidence = gaussp_get_evidence(this, a_model)
             END DO
@@ -496,19 +500,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                       :: gaussp_get_evidence
-      TYPE (gaussp_class), INTENT(inout) :: this
-      CLASS (model_class), POINTER       :: a_model
+      REAL (rprec)                        :: gaussp_get_evidence
+      CLASS (gaussp_class), INTENT(inout) :: this
+      CLASS (model_class), POINTER        :: a_model
 
 !  Local Variables
-      CLASS (signal_class), POINTER      :: signal_obj
-      INTEGER                            :: i
-      INTEGER                            :: j
-      REAL (rprec)                       :: start_time
-      INTEGER                            :: ierr
+      CLASS (signal_class), POINTER       :: signal_obj
+      INTEGER                             :: i
+      INTEGER                             :: j
+      REAL (rprec)                        :: start_time
+      INTEGER                             :: ierr
 
 !  Local Parameters
-      REAL (rprec), PARAMETER            :: log2pi = LOG(twopi)
+      REAL (rprec), PARAMETER             :: log2pi = LOG(twopi)
 
 !  Start of executable code
       start_time = profiler_get_start_time()

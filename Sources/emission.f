@@ -50,7 +50,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class representing the soft x-ray emission function.
 !-------------------------------------------------------------------------------
-      TYPE emission_class
+      TYPE :: emission_class
 !>  Initial temperature.
          REAL (rprec)                          :: te_start = 0.0
 !>  Temperature step.
@@ -58,6 +58,9 @@
 
 !>  X-Ray Emission function.
          REAL (rprec), DIMENSION(:,:), POINTER :: emissivity => null()
+      CONTAINS
+         PROCEDURE :: get_emission => emission_get_emission
+         FINAL     :: emission_destruct
       END TYPE
 
 !*******************************************************************************
@@ -87,15 +90,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (emission_class), POINTER :: emission_construct_netcdf
-      CHARACTER (len=*), INTENT(in)  :: filename
+      CLASS (emission_class), POINTER :: emission_construct_netcdf
+      CHARACTER (len=*), INTENT(in)   :: filename
 
 !  local variables
-      REAL (rprec)                   :: start_time
-      INTEGER                        :: iou
-      INTEGER                        :: varid
-      INTEGER                        :: status
-      INTEGER, DIMENSION(2)          :: dim_lengths
+      REAL (rprec)                    :: start_time
+      INTEGER                         :: iou
+      INTEGER                         :: varid
+      INTEGER                         :: status
+      INTEGER, DIMENSION(2)           :: dim_lengths
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -147,15 +150,13 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (emission_class), POINTER :: this
+      TYPE (emission_class), INTENT(inout) :: this
 
 !  Start of executable code
       IF (ASSOCIATED(this%emissivity)) THEN
          DEALLOCATE(this%emissivity)
          this%emissivity => null()
       END IF
-
-      DEALLOCATE(this)
 
       END SUBROUTINE
 
@@ -180,17 +181,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                      :: emission_get_emission
-      TYPE (emission_class), INTENT(in) :: this
-      REAL (rprec), INTENT(in)          :: te
-      REAL (rprec), INTENT(in)          :: ne
-      INTEGER, INTENT(in)               :: index
+      REAL (rprec)                       :: emission_get_emission
+      CLASS (emission_class), INTENT(in) :: this
+      REAL (rprec), INTENT(in)           :: te
+      REAL (rprec), INTENT(in)           :: ne
+      INTEGER, INTENT(in)                :: index
 
 !  local variables
-      INTEGER                           :: i_low, i_high
-      REAL (rprec)                      :: w_low, w_high
-      INTEGER                           :: num_temp
-      REAL (rprec)                      :: start_time
+      INTEGER                            :: i_low
+      INTEGER                            :: i_high
+      REAL (rprec)                       :: w_low
+      REAL (rprec)                       :: w_high
+      INTEGER                            :: num_temp
+      REAL (rprec)                       :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()

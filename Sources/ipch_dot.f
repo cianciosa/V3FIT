@@ -152,8 +152,8 @@
 !  ipchd_keyword    character array - keywords for various ipch input types
       CHARACTER(len=data_name_length), DIMENSION(1:n_ipchd_keyword) ::         &
      &   ipchd_keyword
-      TYPE(signal_dot_file) :: ipch_dot_file_ref
-      REAL (rprec)          :: start_time
+      TYPE (signal_dot_file) :: ipch_dot_file_ref
+      REAL (rprec)           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -170,7 +170,7 @@
       ipchd_keyword(9) = 'end_of_file'
 
 !  Open up the 'ipch.' file
-      ipch_dot_file_ref = signal_dot_open(TRIM(ipch_file), 'ipch')
+      CALL ipch_dot_file_ref%open(TRIM(ipch_file), 'ipch')
 
       use_polarimetry = .false.
 
@@ -178,8 +178,7 @@
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(ipch_dot_file_ref,               &
-     &                                        ipchd_keyword))
+         SELECT CASE (ipch_dot_file_ref%read_keyword(ipchd_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -244,7 +243,7 @@
       END DO
 
 !  Close the 'ipch.' file
-      CALL signal_dot_close(ipch_dot_file_ref)
+      CALL ipch_dot_file_ref%close
 
       CALL profiler_set_stop_time('ipch_dot_read', start_time)
 
@@ -298,7 +297,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: ipch_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout)  :: ipch_dot_file_ref
       CHARACTER (len=*), INTENT(in)          :: coordinate_type
       CHARACTER (len=1), INTENT(in)          :: chord_type
       LOGICAL, INTENT(in)                    :: inDegrees

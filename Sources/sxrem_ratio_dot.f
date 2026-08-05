@@ -124,7 +124,7 @@
 !  sxrem_ratio_keyword   character array - keywords for various thscte input types
       CHARACTER(len=data_name_length),                                         &
      &   DIMENSION(1:n_sxrem_ratio_keyword) :: sxrem_ratio_keyword
-      TYPE(signal_dot_file)                 :: sxrem_ratio_dot_file_ref
+      TYPE (signal_dot_file)                :: sxrem_ratio_dot_file_ref
       REAL (rprec)                          :: start_time
 
 !  Start of executable code
@@ -136,15 +136,15 @@
       sxrem_ratio_keyword(3) = 'end_of_file'
 
 !  Open up the 'thscte.' file
-      sxrem_ratio_dot_file_ref = signal_dot_open(TRIM(sxrem_ratio_file),            &
-     &                                           'sxrem_ratio')
+      CALL sxrem_ratio_dot_file_ref%open(TRIM(sxrem_ratio_file),               &
+     &                                   'sxrem_ratio')
 
 !  Infinite Loop
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(sxrem_ratio_dot_file_ref,        &
-     &                                        sxrem_ratio_keyword))
+         SELECT CASE (sxrem_ratio_dot_file_ref%read_keyword(                   &
+     &                   sxrem_ratio_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -168,7 +168,7 @@
       END DO
 
 !  Close the 'thscte.' file
-      CALL signal_dot_close(sxrem_ratio_dot_file_ref)
+      CALL sxrem_ratio_dot_file_ref%close
 
       CALL profiler_set_stop_time('sxrem_ratio_dot_read', start_time)
 
@@ -211,7 +211,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE(signal_dot_file), INTENT(inout)   :: sxrem_ratio_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: sxrem_ratio_dot_file_ref
       CHARACTER (len=*)                      :: coordinate_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       INTEGER, INTENT(inout)                 :: signals_created
@@ -238,12 +238,10 @@
       END IF
 
 !  Get the position and name of the point.
-      CALL signal_dot_parse_chord(sxrem_ratio_dot_file_ref,                    &
-     &                            coordinate_type,                             &
-     &                            point_name,                                  &
-     &                            xcart)
+      CALL sxrem_ratio_dot_file_ref%parse_chord(coordinate_type,               &
+     &                                          point_name, xcart)
 
-      indices = signal_dot_parse_2_int(sxrem_ratio_dot_file_ref,               &
+      indices = sxrem_ratio_dot_file_ref%parse_2_int(                          &
      &             'Expected sxrem profile indices')
 
       ratio_obj => sxrem_ratio_class(xcart, indices)

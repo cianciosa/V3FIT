@@ -257,7 +257,7 @@
 
 !  Set the guassian processes
       DO i = 1, SIZE(context%gp)
-         CALL gaussp_set_profile(context%gp(i)%p, context%model)
+         CALL context%gp(i)%p%set_profile(context%model)
       END DO
 
 !  Calculate and display the signals.
@@ -528,8 +528,8 @@
             CASE (mpi_sync_task)
                CALL context%recon%sync_svd(context%reconstruction_comm)
                DO i = 1, SIZE(context%params)
-                  CALL param_sync_delta(context%params(i)%p,                   &
-     &                                  context%reconstruction_comm)
+                  CALL context%params(i)%p%sync_delta(                         &
+     &                    context%reconstruction_comm)
                END DO
 
             CASE (mpi_step_task)
@@ -1980,7 +1980,7 @@
      &                                       gp_cholesky_fact(i))
 
          DO j = 1, n_gp_signal(i)
-            CALL gaussp_set_signal(context%gp(i)%p,                            &
+            CALL context%gp(i)%p%set_signal(                                   &
      &              context%signals(gp_signal_indices(i,j))%p, j)
          END DO
       END DO

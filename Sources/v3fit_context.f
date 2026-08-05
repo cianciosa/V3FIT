@@ -56,9 +56,11 @@
      &      derived_params => null()
 !>  Arrays of reconstruction parameters.
 !>  @see param
-         TYPE (param_pointer), DIMENSION(:), POINTER :: params => null()
+         TYPE (param_recon_pointer), DIMENSION(:), POINTER ::                  &
+     &      params => null()
 !>  Array of locking parameters.
-         TYPE (param_pointer), DIMENSION(:), POINTER  :: locks => null()
+         TYPE (param_locking_pointer), DIMENSION(:), POINTER  ::               &
+     &      locks => null()
 !>  The reconstruction algorithm object.
          CLASS (reconstruction_class), POINTER        :: recon => null()
 
@@ -116,8 +118,12 @@
          PROCEDURE :: create_files => v3fit_context_create_files
          PROCEDURE :: close_files => v3fit_context_close_files
          PROCEDURE :: write => v3fit_context_write
-         PROCEDURE ::                                                          &
-     &      write_param_header => v3fit_context_write_param_header
+         PROCEDURE :: write_basic_param_header =>                              &
+     &      v3fit_context_write_basic_param_header
+         PROCEDURE :: write_param_recon_header =>                              &
+     &      v3fit_context_write_recon_param_header
+         GENERIC   :: write_param_header => write_basic_param_header,          &
+     &                                      write_param_recon_header
          PROCEDURE :: init_data => v3fit_context_init_data
          PROCEDURE :: write_step_data => v3fit_context_write_step_data
          PROCEDURE :: restart => v3fit_context_restart
@@ -200,7 +206,7 @@
       IF (ASSOCIATED(this%gp)) THEN
          DO i = 1, SIZE(this%gp)
             IF (ASSOCIATED(this%gp(i)%p)) THEN
-               CALL gaussp_destruct(this%gp(i)%p)
+               DEALLOCATE(this%gp(i)%p)
                this%gp(i)%p => null()
             END IF
          END DO
@@ -224,7 +230,7 @@
       IF (ASSOCIATED(this%derived_params)) THEN
          DO i = 1, SIZE(this%derived_params)
             IF (ASSOCIATED(this%derived_params(i)%p)) THEN
-               CALL param_destruct(this%derived_params(i)%p)
+               DEALLOCATE(this%derived_params(i)%p)
                this%derived_params(i)%p => null()
             END IF
          END DO
@@ -236,7 +242,7 @@
       IF (ASSOCIATED(this%params)) THEN
          DO i = 1, SIZE(this%params)
             IF (ASSOCIATED(this%params(i)%p)) THEN
-               CALL param_destruct(this%params(i)%p)
+               DEALLOCATE(this%params(i)%p)
                this%params(i)%p => null()
             END IF
          END DO
@@ -248,7 +254,7 @@
       IF (ASSOCIATED(this%params)) THEN
          DO i = 1, SIZE(this%locks)
             IF (ASSOCIATED(this%locks(i)%p)) THEN
-               CALL param_destruct(this%locks(i)%p)
+               DEALLOCATE(this%locks(i)%p)
                this%locks(i)%p => null()
             END IF
          END DO
@@ -507,21 +513,20 @@
       IF (ASSOCIATED(this%derived_params)) THEN
          CALL param_write_header_short(this%recout_iou)
          DO j = 1, SIZE(this%derived_params)
-            CALL param_write_short(this%derived_params(j)%p,                   &
-     &                             this%recout_iou, j, this%model)
+            CALL this%derived_params(j)%p%write_short(this%recout_iou,         &
+     &                                                j, this%model)
          END DO
 
 !  Write out the derived parameter correlation matrix.
          IF (SIZE(this%derived_params) .gt. 0) THEN
             IF (ASSOCIATED(this%derived_params(1)%p%correlation)) THEN
-               CALL v3fit_context_write_param_header(this,                     &
-     &                  this%derived_params, prefix,                           &
+               CALL this%write_param_header(this%derived_params,               &
+     &                  prefix,                                                &
      &                  ' *** Derived parameter covariance matrix')
 
                DO j = 1, SIZE(this%derived_params)
-                  CALL param_write_correlation(this%derived_params(j)%p,       &
-     &                                         this%recout_iou,                &
-     &                                         this%model)
+                  CALL this%derived_params(j)%p%write_correlation(             &
+     &                    this%recout_iou, this%model)
                END DO
             END IF
          END IF
@@ -531,23 +536,22 @@
       IF (ASSOCIATED(this%params)) THEN
          CALL param_write_header(this%recout_iou)
          DO j = 1, SIZE(this%params)
-            CALL param_write(this%params(j)%p, this%recout_iou, j,             &
-     &                       this%model)
+            CALL this%params(j)%p%write(this%recout_iou, j, this%model)
          END DO
 
 !  Write out the reconstruction parameter correlation matrix.
          IF (SIZE(this%params) .gt. 0 .and.                                    &
      &       ASSOCIATED(this%params(1)%p%correlation)) THEN
-            CALL v3fit_context_write_param_header(this, this%params,           &
-     &                                            prefix,                      &
-     &                                            ' *** Reconstruction '       &
-     &                                            // 'parameter ' //           &
-     &                                            'covariance ' //             &
-     &                                            'matrix')
+            CALL this%write_param_header(this%params,                          &
+     &                                   prefix,                               &
+     &                                   ' *** Reconstruction '                &
+     &                                    // 'parameter ' //                   &
+     &                                    'covariance ' //                     &
+     &                                    'matrix')
 
             DO j = 1, SIZE(this%params)
-               CALL param_write_correlation(this%params(j)%p,                  &
-     &                                      this%recout_iou, this%model)
+               CALL this%params(j)%p%write_correlation(this%recout_iou,        &
+     &                                                 this%model)
             END DO
          END IF
 
@@ -557,12 +561,12 @@
 !  Write out the signal effectiveness matrix. This matrix will be written out
 !  so that each parameter is one a column and each row is a a signal. Start by
 !  generating the header.
-            CALL v3fit_context_write_param_header(this, this%params,           &
-     &                                            '   #  s_name     ' //       &
-     &                                            '         ',                 &
-     &                                            ' *** Signal ' //            &
-     &                                            'Effectiveness ' //          &
-     &                                            'Matrix')
+            CALL this%write_param_header(this%params,                          &
+     &                                   '   #  s_name     ' //                &
+     &                                   '         ',                          &
+     &                                   ' *** Signal ' //                     &
+     &                                   'Effectiveness ' //                   &
+     &                                   'Matrix')
 
 !  Write out each row of the sem matrix.
 !  Reuse the sem_header string to generate the format string. The format string
@@ -577,7 +581,7 @@
                temp_signal => this%signals(i)%p
 
                DO j = 1, SIZE(this%params)
-                  sem_row(j) = this%params(j)%p%recon%sem(i)
+                  sem_row(j) = this%params(j)%p%sem(i)
                END DO
 
                WRITE (this%recout_iou, sem_header(1:26))                       &
@@ -588,7 +592,7 @@
 !  parameter. This should be 1.0.
             WRITE (sem_header, 1003) SIZE(this%params)
             DO j = 1, SIZE(this%params)
-               sem_row(j) = SUM(this%params(j)%p%recon%sem)
+               sem_row(j) = SUM(this%params(j)%p%sem)
             END DO
 
             WRITE (this%recout_iou, *)
@@ -600,8 +604,8 @@
             WRITE (sem_header, 1001) '    Most Effective Signal:'
             sem_offset = 26
             DO j = 1, SIZE(this%params)
-               indices(j) = MAXLOC(this%params(j)%p%recon%sem, 1)
-               sem_row(j) = this%params(j)%p%recon%sem(indices(j))
+               indices(j) = MAXLOC(this%params(j)%p%sem, 1)
+               sem_row(j) = this%params(j)%p%sem(indices(j))
 
                WRITE (sem_header, 1000)                                        &
      &            sem_header(1:sem_offset),                                    &
@@ -692,8 +696,9 @@
 !>  @node The 'prefix' parameter must be an exact length string with all white
 !>        space predefined.
 !-------------------------------------------------------------------------------
-      SUBROUTINE v3fit_context_write_param_header(this, params, prefix,        &
-     &                                            type_name)
+      SUBROUTINE v3fit_context_write_basic_param_header(this, params,          &
+     &                                                  prefix,                &
+     &                                                  type_name)
 
       IMPLICIT NONE
 
@@ -733,7 +738,7 @@
       offset = LEN(prefix)
       DO j = 1, SIZE(params)
          WRITE (header, 1001) header(1:offset),                                &
-     &                        param_get_name(params(j)%p, this%model)
+     &                        params(j)%p%get_name(this%model)
          offset = offset + 14
       END DO
 
@@ -743,6 +748,81 @@
 
       CALL profiler_set_stop_time('v3fit_context_write_param_header',          &
      &                            start_time)
+
+1000  FORMAT (a)
+1001  FORMAT (a,2x,a12)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Write the @ref param_class::correlation header out to disk.
+!>
+!>  Writes out the results of header for a correlation matric. This header is
+!>  formatted by a an inital col left blank followed by eack parameter name
+!>  spaced 14 spaced apart from each other.
+!>
+!>  @param[inout] this      A @ref v3fit_context_class instance.
+!>  @param[in]    params    Array of parameter objects.
+!>  @param[in]    prefix    Prefix string to format the header.
+!>  @param[in]    type_name Type name of the parameters.
+!>  @note The 'this' parameter is intent(inout) because
+!>        @ref signal::signal_write calls @ref signal::signal_get_g2 which needs
+!>        to be intent(inout).
+!>  @node The 'prefix' parameter must be an exact length string with all white
+!>        space predefined.
+!-------------------------------------------------------------------------------
+      SUBROUTINE v3fit_context_write_recon_param_header(this, params,          &
+     &                                                  prefix,                &
+     &                                                  type_name)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (v3fit_context_class), INTENT(inout) :: this
+      TYPE (param_recon_pointer), DIMENSION(:)   :: params
+      CHARACTER (len=*)                          :: prefix
+      CHARACTER (len=*)                          :: type_name
+
+!  local variables
+!  Fortran 95 doesn't allow allocatable strings. Need to allocate a string large
+!  enough to hold every possible parameter. Fortran 95 doesn't allow allocatable
+!  scalar types so make this a pointer. This large string needs to be allocated
+!  to avoid a stack overflow. The longest header generate will be the signal
+!  effectiveness matrix. Make the start of this string at least 26 characters.
+      CHARACTER (len=26 + 14*v3fit_max_parameters), POINTER :: header
+      INTEGER                                    :: offset, j
+      REAL (rprec)                               :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      WRITE (this%recout_iou, *)
+      WRITE (this%recout_iou, *) type_name
+
+! The header is formatted as
+!
+!  <prefix> (param_name[12]) ...
+!
+!  Start by allocating a string large enough to hold the entire header. The
+!  length of this string needs to be the size of the prefix plus an additional
+!  14 for each parameter. The prefix string must be an exact length.
+      header => null()
+      ALLOCATE(header)
+
+      WRITE (header, 1000) prefix
+      offset = LEN(prefix)
+      DO j = 1, SIZE(params)
+         WRITE (header, 1001) header(1:offset),                                &
+     &                        params(j)%p%get_name(this%model)
+         offset = offset + 14
+      END DO
+
+      WRITE (this%recout_iou, 1000) header(1:offset)
+
+      DEALLOCATE(header)
+
+      CALL profiler_set_stop_time(                                             &
+     &        'v3fit_context_write_recon_param_header', start_time)
 
 1000  FORMAT (a)
 1001  FORMAT (a,2x,a12)
@@ -1065,8 +1145,7 @@
          DO i = 1, SIZE(this%derived_params)
             status = nf90_put_var(this%result_ncid,                            &
      &                  derived_param_name_id,                                 &
-     &                  param_get_name(this%derived_params(i)%p,               &
-     &                                 this%model),                            &
+     &                  this%derived_params(i)%p%get_name(this%model),         &
      &                  start=(/ 1, i /),                                      &
      &                  count=(/ data_name_length, 1 /))
             CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
@@ -1130,7 +1209,7 @@
          CALL this%model%write_init_data(this%result_ncid)
       END IF
 
-      CALL v3fit_context_write_step_data(this, .true., eq_steps)
+      CALL this%write_step_data(.true., eq_steps)
 
       CALL profiler_set_stop_time('v3fit_context_init_data', start_time)
 
@@ -1237,12 +1316,10 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%derived_params)
-            CALL param_write_step_data(this%derived_params(i)%p,               &
-     &                                 this%model, this%result_ncid,           &
-     &                                 current_step, i,                        &
-     &                                 derived_param_value_id,                 &
-     &                                 derived_param_sigma_id,                 &
-     &                                 derived_param_corr_id)
+            CALL this%derived_params(i)%p%write_step_data(this%model,          &
+     &              this%result_ncid, current_step, i,                         &
+     &              derived_param_value_id, derived_param_sigma_id,            &
+     &              derived_param_corr_id)
          END DO
       END IF
 
@@ -1264,12 +1341,13 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%params)
-            CALL param_write_step_data(this%params(i)%p, this%model,           &
-     &                                 this%result_ncid, current_step,         &
-     &                                 i, param_value_id,                      &
-     &                                 param_sigma_id,                         &
-     &                                 param_corr_id,                          &
-     &                                 param_sem_id)
+            CALL this%params(i)%p%write_step_data(this%model,                  &
+     &                                            this%result_ncid,            &
+     &                                            current_step, i,             &
+     &                                            param_value_id,              &
+     &                                            param_sigma_id,              &
+     &                                            param_corr_id,               &
+     &                                            param_sem_id)
          END DO
       END IF
 
@@ -1356,12 +1434,14 @@
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
          DO i = 1, SIZE(this%params)
-            CALL param_restart(this%params(i)%p, this%model,                   &
-     &                         this%result_ncid,                               &
-     &                         current_step,                                   &
-     &                         i, param_value_id, param_sigma_id,              &
-     &                         param_corr_id, this%equilibrium_comm,           &
-     &                         this%recon%use_central)
+            CALL this%params(i)%p%restart(this%model,                          &
+     &                                    this%result_ncid,                    &
+     &                                    current_step, i,                     &
+     &                                    param_value_id,                      &
+     &                                    param_sigma_id,                      &
+     &                                    param_corr_id,                       &
+     &                                    this%equilibrium_comm,               &
+     &                                    this%recon%use_central)
          END DO
 
          CALL this%model%restart(this%result_ncid, current_step)
