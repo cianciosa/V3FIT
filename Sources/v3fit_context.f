@@ -943,7 +943,7 @@
 !  Define dimensions
       status = nf90_noerr
 
-      IF (ASSOCIATED(this%recon)) THEN
+      IF (ASSOCIATED(this%recon) .or. rp_scan_num .gt. 0) THEN
          status = nf90_def_dim(this%result_ncid, 'maxnsteps',                  &
      &                         nf90_unlimited, maxnsteps_dim_id)
       ELSE

@@ -102,6 +102,9 @@
          CASE ('reconstruct', 'reconstruct_a1')
             CALL task_reconstruct(context)
 
+         CASE ('multi_grid_v3post')
+            CALL task_multi_grid_v3post(context)
+
          CASE ('child_recon')
             CALL task_child_recon(context)
 
@@ -281,8 +284,8 @@
 !$OMP& PRIVATE(i)
 !$OMP& REDUCTION(+:g2)
       DO i = 1, last_para_signal
-         g2 = g2 + signal_get_g2(context%signals(i)%p,                         &
-     &                           context%model, .false., dummy_value)
+         g2 = g2 + context%signals(i)%p%get_g2(context%model, .false.,         &
+     &                                         dummy_value)
       END DO
 !$OMP END PARALLEL DO
 
@@ -396,7 +399,7 @@
             CALL context%model%equilibrium%write_input(0)
          END IF
 
-         CALL v3fit_context_init_data(context, eq_steps)
+         CALL context%init_data(eq_steps)
 
          restart_step = 1
       END IF
@@ -468,6 +471,119 @@
 1001  FORMAT('nrstep 'i4,' completed. May be reconstructed.')
 1002  FORMAT('  *** Reconstruction step ',i4)
 1003  FORMAT('Initial g^2 = ',es12.5)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Scans a grid equilibria and calculates the modeled signals.
+!>
+!>  This task scans through parameters to progressively solve equilibria and
+!>  compute modeled signals from an equilibrium. This task is choosen by setting
+!>  @ref v3fit_input::my_task to 'multi_grid_v3post'.
+!>
+!>  @param[inout] context An instance of a @ref v3fit_context object.
+!-------------------------------------------------------------------------------
+      SUBROUTINE task_multi_grid_v3post(context)
+      USE v3fit_context
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (v3fit_context_class), INTENT(inout) :: context
+
+!  local variables
+      INTEGER                                   :: eq_steps
+      REAL (rprec)                              :: start_time
+      INTEGER                                   :: i
+      INTEGER                                   :: j
+      LOGICAL                                   :: converged
+      REAL (rprec)                              :: g2
+      REAL (rprec)                              :: current_value
+      INTEGER                                   :: last_para_signal
+      INTEGER                                   :: error
+
+!  local parameters
+      REAL (rprec), DIMENSION(4), PARAMETER     :: dummy_value = 0.0
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      eq_steps = 1
+
+      WRITE (*,*) ' *** In task v3post'
+      WRITE (context%runlog_iou,*) ' *** In task multi grid v3post'
+
+!  Initialize v3post
+      CALL init_equilibrium(context)
+      CALL init_signals(context)
+      CALL init_gaussian_process(context)
+      CALL init_parameters(context)
+
+!  The combination signals cannot be computed in parallel since the depend on
+!  other signals previously computed. If combinations are used, the signals need
+!  to be split into two loops.
+      IF (context%combination_index .eq. -1) THEN
+         last_para_signal = SIZE(context%signals)
+      ELSE
+         last_para_signal = context%combination_index - 1
+      END IF
+
+      DO i = 1, rp_scan_num
+         DO j = 1, SIZE(context%params)
+            current_value = context%model%get_param_value(                     &
+     &                         context%params(j)%p%param_id,                   &
+     &                         context%params(j)%p%indices(1),                 &
+     &                         context%params(j)%p%indices(2))
+            IF (current_value .ne. rp_scan_array(j,i)) THEN
+               CALL context%model%set_param(                                   &
+     &                 context%params(j)%p%param_id,                           &
+     &                 context%params(j)%p%indices(1),                         &
+     &                 context%params(j)%p%indices(2),                         &
+     &                 rp_scan_array(j,i),                                     &
+     &                 context%equilibrium_comm)
+            END IF
+         END DO
+
+         converged = context%model%converge(eq_steps,                          &
+     &                                      context%runlog_iou,                &
+     &                                      context%get_eq_comm(),             &
+     &                                      'All')
+#if defined(MPI_OPT)
+         CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                      &
+     &                  context%equilibrium_comm, error)
+#endif
+
+!  Set the guassian processes
+         DO j = 1, SIZE(context%gp)
+            CALL context%gp(j)%p%set_profile(context%model)
+         END DO
+
+!$OMP PARALLEL DO
+!$OMP& SCHEDULE(DYNAMIC)
+!$OMP& DEFAULT(SHARED)
+!$OMP& PRIVATE(j)
+!$OMP& REDUCTION(+:g2)
+         DO j = 1, last_para_signal
+            g2 = g2 + context%signals(i)%p%get_g2(context%model,               &
+     &                                            .false.,                     &
+     &                                            dummy_value)
+         END DO
+!$OMP END PARALLEL DO
+
+         DO j = last_para_signal + 1, SIZE(context%signals)
+            g2 = g2 + context%signals(i)%p%get_g2(context%model,               &
+     &                                            .false.,                     &
+     &                                            dummy_value)
+         END DO
+
+         IF (i .eq. 1) THEN
+            CALL context%init_data(eq_steps)
+         ELSE
+            CALL context%write_step_data(.false., eq_steps)
+         END IF
+      END DO
+
+      CALL profiler_set_stop_time('task_multi_grid_v3post', start_time)
 
       END SUBROUTINE
 
