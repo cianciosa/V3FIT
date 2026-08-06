@@ -515,8 +515,8 @@
 
 !  Initialize v3post
       CALL init_equilibrium(context)
-      CALL init_signals(context)
-      CALL init_gaussian_process(context)
+!      CALL init_signals(context)
+!      CALL init_gaussian_process(context)
       CALL init_parameters(context)
 
 !  The combination signals cannot be computed in parallel since the depend on
@@ -548,15 +548,23 @@
      &                                      context%runlog_iou,                &
      &                                      context%get_eq_comm(),             &
      &                                      'All')
+
+         IF (.not.converged) THEN
+            WRITE (*,*) 'Step', i, 'failed to converge.'
+         END IF
+
 #if defined(MPI_OPT)
          CALL MPI_BCAST(mpi_quit_task, 1, MPI_INTEGER, 0,                      &
      &                  context%equilibrium_comm, error)
 #endif
 
+#if 0
 !  Set the guassian processes
          DO j = 1, SIZE(context%gp)
             CALL context%gp(j)%p%set_profile(context%model)
          END DO
+
+        g2 = 0.0
 
 !$OMP PARALLEL DO
 !$OMP& SCHEDULE(DYNAMIC)
@@ -581,6 +589,7 @@
          ELSE
             CALL context%write_step_data(.false., eq_steps)
          END IF
+#endif
       END DO
 
       CALL profiler_set_stop_time('task_multi_grid_v3post', start_time)
