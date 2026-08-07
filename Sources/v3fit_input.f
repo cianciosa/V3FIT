@@ -41,10 +41,12 @@
 !>  @table_section{work_sec, Task specification\, work variables}
 !>     @item{my_task, Character: to specify task in MAIN select case. Possible
 !>                    tasks are:
-!>                    -# @fixed_width{'equilibrium'} Solve the equilibrium.
-!>                    -# @fixed_width{'v3post'}      Solve the equilibrium and compute modeled signals.
-!>                    -# @fixed_width{'reconstruct'} Reconstruct the equilibirum.
-!>                    -# @fixed_width{'units_tests'} Run the internal unit tests., v3fit_input::my_task}
+!>                    -# @fixed_width{'equilibrium'}            Solve the equilibrium.
+!>                    -# @fixed_width{'v3post'}                 Solve the equilibrium and compute modeled signals.
+!>                    -# @fixed_width{'reconstruct'}            Reconstruct the equilibirum.
+!>                    -# @fixed_width{'multi_grid_equilibrium'} Solve the equilibrium using multiple grid steps.
+!>                    -# @fixed_width{'multi_grid_v3post'}      Solve the equilibrium and compute modeled signals using multiple grid steps.
+!>                    -# @fixed_width{'units_tests'}            Run the internal unit tests.,                                                v3fit_input::my_task}
 !>  @end_table
 !>
 !>  @table_section{model_profile_sec, Model profile specification}
