@@ -22,7 +22,7 @@
 !>  The theory behind V3FIT is outlined in
 !>     Hanson et. al. doi:10.1088/0029-5515/49/7/075031
 !>
-!>  Below is a brief discription of the major top level objects of the code. For
+!>  Below is a brief description of the major top level objects of the code. For
 !>  descriptions of lower level objects consult the referenced top level
 !>  objects.
 !>
@@ -673,6 +673,9 @@
      &                                            dummy_value)
          END DO
 
+         WRITE (*,1000) g2
+         WRITE (context%runlog_iou,1000) g2
+
          IF (i .eq. 1) THEN
             CALL context%init_data(eq_steps)
          ELSE
@@ -686,6 +689,8 @@
 #endif
 
       CALL profiler_set_stop_time('task_multi_grid_v3post', start_time)
+
+1000  FORMAT('g^2 = ',es12.5)
 
       END SUBROUTINE
 

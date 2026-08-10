@@ -1355,7 +1355,6 @@
          END DO
       END DO
 
-
 !-------------------------------------------------------------------------------
 !  All the coding between these boxes can be removed once the non _a sxrem
 !  values are removed. ***
@@ -1478,6 +1477,13 @@
 !  All the coding between these boxes can be removed once the non _a sxrem
 !  values are removed. ***
 !-------------------------------------------------------------------------------
+
+      IF (rp_scan_num .gt. data_max_scan) THEN
+         WRITE(*,1004) rp_scan_num, data_max_scan
+         rp_scan_num = data_max_scan
+      END IF
+
+1004  FORMAT('rp_scan_num = ',i4,' is greater than data_max_scan = ',i4)
 
       WRITE (*,*) ' *** V3FIT namelist input read from ' //                    &
      &            TRIM(namelist_file)
