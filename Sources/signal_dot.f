@@ -33,7 +33,7 @@
 !-------------------------------------------------------------------------------
 !>  Base class representing a diagnostic dot file. This is an opaqe class.
 !-------------------------------------------------------------------------------
-      TYPE signal_dot_file
+      TYPE :: signal_dot_file
          PRIVATE
 !>  Input/output unit of the file.
          INTEGER :: iou
@@ -41,15 +41,19 @@
          INTEGER :: i_line
 !>  Identify specifying the signal being parsed.
          CHARACTER (len=6) :: signal_id
+      CONTAINS
+         PROCEDURE :: open => signal_dot_open
+         PROCEDURE :: close => signal_dot_close
+         PROCEDURE :: parse_chord => signal_dot_parse_chord
+         PROCEDURE :: parse_real => signal_dot_parse_real
+         PROCEDURE :: parse_2_real => signal_dot_parse_2_real
+         PROCEDURE :: parse_3_real => signal_dot_parse_3_real
+         PROCEDURE :: parse_int => signal_dot_parse_int
+         PROCEDURE :: parse_2_int => signal_dot_parse_2_int
+         PROCEDURE :: read_keyword => signal_dot_read_keyword
+         PROCEDURE :: read_line => signal_dot_read_line
+         PROCEDURE :: check_status => signal_dot_check_status
       END TYPE
-
-!*******************************************************************************
-!  INTERFACE BLOCKS
-!*******************************************************************************
-      PUBLIC  :: signal_dot_open, signal_dot_close,                            &
-     &           signal_dot_parse_chord, signal_dot_read_keyword,              &
-     &           signal_dot_parse_real, signal_dot_read_line
-      PRIVATE :: signal_dot_check_status
 
       CONTAINS
 !*******************************************************************************
@@ -60,64 +64,62 @@
 !>
 !>  Opens a diagnostic dot file for reading.
 !>
-!>  @param[in] file      Filename of the diagnostic dot file.
-!>  @param[in] signal_id Description of the diagnostic dot file.
-!>  @returns A constructed @ref signal_dot_file instance.
+!>  @param[input] this      A @ref signal_dot_file instance.
+!>  @param[in]    file      Filename of the diagnostic dot file.
+!>  @param[in]    signal_id Description of the diagnostic dot file.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_open(file, signal_id)
+      SUBROUTINE signal_dot_open(this, file, signal_id)
       USE safe_open_mod
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE(signal_dot_file)         :: signal_dot_open
-      CHARACTER (len=*), INTENT(in) :: file
-      CHARACTER (len=*), INTENT(in) :: signal_id
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)          :: file
+      CHARACTER (len=*), INTENT(in)          :: signal_id
 
 !  local variables
-      INTEGER                       :: status
-      REAL (rprec)                  :: start_time
+      INTEGER                                :: status
+      REAL (rprec)                           :: start_time
 
 !  local parameters
-      INTEGER, PARAMETER            :: iou_0 = 32
+      INTEGER, PARAMETER                     :: iou_0 = 32
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Open up the file
-      signal_dot_open%iou       = iou_0
-      signal_dot_open%signal_id = signal_id
-      CALL safe_open(signal_dot_open%iou, status, file, 'old',                 &
-     &               'formatted')
-      CALL signal_dot_check_status(status, signal_dot_open,                    &
-     &                             'Error opening ', ' file.')
+      this%iou       = iou_0
+      this%signal_id = signal_id
+      CALL safe_open(this%iou, status, file, 'old', 'formatted')
+      CALL this%check_status(status, 'Error opening ', ' file.')
 
       CALL profiler_set_stop_time('signal_dot_open', start_time)
 
-      END FUNCTION
+      END SUBROUTINE
 
 !-------------------------------------------------------------------------------
 !>  @brief Close a diagnostic dot file.
 !>
 !>  Closes a diagnostic dot file.
 !>
-!>  @param[in] signal_dot_file_ref An instance of a @ref signal_dot_file object.
+!>  @param[in] this An instance of a @ref signal_dot_file object.
 !-------------------------------------------------------------------------------
-      SUBROUTINE signal_dot_close(signal_dot_file_ref)
+      SUBROUTINE signal_dot_close(this)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE(signal_dot_file), INTENT(in) :: signal_dot_file_ref
+      CLASS (signal_dot_file), INTENT(in) :: this
 
 !  local variables
-      REAL (rprec)                      :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Close the file
-      CLOSE(signal_dot_file_ref%iou)
+      CLOSE(this%iou)
 
       CALL profiler_set_stop_time('signal_dot_close', start_time)
 
@@ -149,16 +151,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE(signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)        :: coordinate_type
+      CLASS (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
+      CHARACTER (len=*), INTENT(in)          :: coordinate_type
       CHARACTER (len=data_short_name_length), INTENT(out) :: chord_name
       REAL(rprec), DIMENSION(3), INTENT(out)              :: xcart_i
       REAL(rprec), DIMENSION(3), OPTIONAL, INTENT(out)    :: xcart_f
 
 !  local variables
-      INTEGER                              :: status
-      CHARACTER (len=signal_dot_line_len)  :: line
-      REAL (rprec)                         :: start_time
+      INTEGER                                :: status
+      CHARACTER (len=signal_dot_line_len)    :: line
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -201,35 +203,31 @@
 !>  Reads a single real from the diagnostic dot file. This is used to be able to
 !>  get extra information about a diagnostic in the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    message             Error message to report back if there was
-!>                                    a problem.
+!>  @param[inout] this    An instance of a @ref signal_dot_file object.
+!>  @param[in]    message Error message to report back if there was a problem.
 !>  @returns The parsed real value.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_parse_real(signal_dot_file_ref, message)
+      FUNCTION signal_dot_parse_real(this, message)
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                          :: signal_dot_parse_real
-      TYPE (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)         :: message
+      REAL (rprec)                           :: signal_dot_parse_real
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)          :: message
 
 !  local variables
-      INTEGER                               :: status
-      CHARACTER (len=signal_dot_line_len)   :: line
-      REAL (rprec)                          :: start_time
+      INTEGER                                :: status
+      CHARACTER (len=signal_dot_line_len)    :: line
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Read the start position.
-      line = signal_dot_read_line(signal_dot_file_ref,                         &
-     &                            'Error ', message)
+      line = this%read_line('Error ', message)
 !  Reread the line, looking for a single real
       READ(line, *, iostat=status) signal_dot_parse_real
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             'Error ', message)
+      CALL this%check_status(status, 'Error ', message)
 
       CALL profiler_set_stop_time('signal_dot_parse_real', start_time)
 
@@ -241,36 +239,32 @@
 !>  Reads three reals from the diagnostic dot file. This is used to be able to
 !>  get extra information about a diagnostic in the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    message             Error message to report back if there was
-!>                                    a problem.
+!>  @param[inout] this    An instance of a @ref signal_dot_file object.
+!>  @param[in]    message Error message to report back if there was a problem.
 !>  @returns The parsed real values.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_parse_2_real(signal_dot_file_ref, message)
+      FUNCTION signal_dot_parse_2_real(this, message)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec), DIMENSION(2)            :: signal_dot_parse_2_real
-      TYPE (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)         :: message
+      REAL (rprec), DIMENSION(2)             :: signal_dot_parse_2_real
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)          :: message
 
 !  local variables
-      INTEGER                               :: status
-      CHARACTER (len=signal_dot_line_len)   :: line
-      REAL (rprec)                          :: start_time
+      INTEGER                                :: status
+      CHARACTER (len=signal_dot_line_len)    :: line
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Read the start position.
-      line = signal_dot_read_line(signal_dot_file_ref,                         &
-     &                            'Error ', message)
+      line = this%read_line('Error ', message)
 !  Reread the line, looking for three reals
       READ(line, *, iostat=status) signal_dot_parse_2_real
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             'Error ', message)
+      CALL this%check_status(status, 'Error ', message)
 
       CALL profiler_set_stop_time('signal_dot_parse_2_real', start_time)
 
@@ -282,19 +276,17 @@
 !>  Reads three reals from the diagnostic dot file. This is used to be able to
 !>  get extra information about a diagnostic in the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    message             Error message to report back if there was
-!>                                    a problem.
+!>  @param[inout] this    An instance of a @ref signal_dot_file object.
+!>  @param[in]    message Error message to report back if there was a problem.
 !>  @returns The parsed real values.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_parse_3_real(signal_dot_file_ref, message)
+      FUNCTION signal_dot_parse_3_real(this, message)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       REAL (rprec), DIMENSION(3)            :: signal_dot_parse_3_real
-      TYPE (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: this
       CHARACTER (len=*), INTENT(in)         :: message
 
 !  local variables
@@ -306,12 +298,10 @@
       start_time = profiler_get_start_time()
 
 !  Read the start position.
-      line = signal_dot_read_line(signal_dot_file_ref,                         &
-     &                            'Error ', message)
+      line = this%read_line('Error ', message)
 !  Reread the line, looking for three reals
       READ(line, *, iostat=status) signal_dot_parse_3_real
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             'Error ', message)
+      CALL this%check_status(status, 'Error ', message)
 
       CALL profiler_set_stop_time('signal_dot_parse_3_real', start_time)
 
@@ -323,35 +313,31 @@
 !>  Reads a single integer from the diagnostic dot file. This is used to be able
 !>  to get extra information about a diagnostic in the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    message             Error message to report back if there was
-!>                                    a problem.
+!>  @param[inout] this    An instance of a @ref signal_dot_file object.
+!>  @param[in]    message Error message to report back if there was a problem.
 !>  @returns The parsed integer value.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_parse_int(signal_dot_file_ref, message)
+      FUNCTION signal_dot_parse_int(this, message)
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER                               :: signal_dot_parse_int
-      TYPE (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)         :: message
+      INTEGER                                :: signal_dot_parse_int
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)          :: message
 
 !  local variables
-      INTEGER                               :: status
-      CHARACTER (len=signal_dot_line_len)   :: line
-      REAL (rprec)                          :: start_time
+      INTEGER                                :: status
+      CHARACTER (len=signal_dot_line_len)    :: line
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  Read the start position.
-      line = adjustl(signal_dot_read_line(signal_dot_file_ref,                 &
-     &                                    'Error ', message))
+      line = adjustl(this%read_line('Error ', message))
 !  Reread the line, looking for a single real
       READ(line, *, iostat=status) signal_dot_parse_int
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             'Error ', message)
+      CALL this%check_status(status, 'Error ', message)
 
       CALL profiler_set_stop_time('signal_dot_parse_int', start_time)
 
@@ -363,18 +349,16 @@
 !>  Reads two integers from the diagnostic dot file. This is used to be able to
 !>  get extra information about a diagnostic in the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    message             Error message to report back if there was
-!>                                    a problem.
+!>  @param[inout] this    An instance of a @ref signal_dot_file object.
+!>  @param[in]    message Error message to report back if there was a problem.
 !>  @returns The parsed real value.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_parse_2_int(signal_dot_file_ref, message)
+      FUNCTION signal_dot_parse_2_int(this, message)
       IMPLICIT NONE
 
 !  Declare Arguments
       INTEGER, DIMENSION(2)                 :: signal_dot_parse_2_int
-      TYPE (signal_dot_file), INTENT(inout) :: signal_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: this
       CHARACTER (len=*), INTENT(in)         :: message
 
 !  local variables
@@ -386,12 +370,10 @@
       start_time = profiler_get_start_time()
 
 !  Read the start position.
-      line = signal_dot_read_line(signal_dot_file_ref,                         &
-     &                            'Error ', message)
+      line = this%read_line('Error ', message)
 !  Reread the line, looking for a single real
       READ(line, *, iostat=status) signal_dot_parse_2_int
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             'Error ', message)
+      CALL this%check_status(status, 'Error ', message)
 
       CALL profiler_set_stop_time('signal_dot_parse_2_int', start_time)
 
@@ -403,18 +385,17 @@
 !>  Read lines until a valid keyword is reached ot the end of the file is
 !>  reached.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    keywords            List of keywords to search for.
+!>  @param[inout] this     An instance of a @ref signal_dot_file object.
+!>  @param[in]    keywords List of keywords to search for.
 !>  @returns The found keyword.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_read_keyword(signal_dot_file_ref, keywords)
+      FUNCTION signal_dot_read_keyword(this, keywords)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       CHARACTER (len=data_name_length)     :: signal_dot_read_keyword
-      TYPE(signal_dot_file), INTENT(inout) :: signal_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: this
       CHARACTER (len=*), DIMENSION(:), INTENT(in) :: keywords
 
 !  local variables
@@ -428,9 +409,8 @@
 !  Contine looping until a vaild keyword is read. If the end of the file is
 !  reached an error will kill the program.
       DO
-         line = signal_dot_read_line(signal_dot_file_ref,                      &
-     &                               'Failed to read ',                        &
-     &                               ' keyword before end of file.')
+         line = this%read_line('Failed to read ',                              &
+     &                         ' keyword before end of file.')
          DO i = 1, SIZE(keywords)
              IF (TRIM(ADJUSTL(line)) .eq. TRIM(keywords(i))) THEN
                 signal_dot_read_keyword = keywords(i)
@@ -455,35 +435,31 @@
 !>
 !>  Reads single line from the diagnostic dot file.
 !>
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    pre_message         Prefix message incase of error.
-!>  @param[in]    post_message        Post message incase of error.
+!>  @param[inout] this         An instance of a @ref signal_dot_file object.
+!>  @param[in]    pre_message  Prefix message incase of error.
+!>  @param[in]    post_message Post message incase of error.
 !>  @returns The line that was read.
 !-------------------------------------------------------------------------------
-      FUNCTION signal_dot_read_line(signal_dot_file_ref,                       &
-     &                              pre_message,                               &
-     &                              post_message)
+      FUNCTION signal_dot_read_line(this, pre_message, post_message)
       IMPLICIT NONE
 
 !  Declare Arguments
-      CHARACTER (len=signal_dot_line_len)  :: signal_dot_read_line
-      TYPE(signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)        :: pre_message
-      CHARACTER (len=*), INTENT(in)        :: post_message
+      CHARACTER (len=signal_dot_line_len)    :: signal_dot_read_line
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      CHARACTER (len=*), INTENT(in)          :: pre_message
+      CHARACTER (len=*), INTENT(in)          :: post_message
 
 !  local variables
-      INTEGER                              :: status
-      REAL (rprec)                         :: start_time
+      INTEGER                                :: status
+      REAL (rprec)                           :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      READ (signal_dot_file_ref%iou, '(a)', iostat=status)                     &
+      READ (this%iou, '(a)', iostat=status)                                     &
      &   signal_dot_read_line
-      signal_dot_file_ref%i_line = signal_dot_file_ref%i_line + 1
-      CALL signal_dot_check_status(status, signal_dot_file_ref,                &
-     &                             pre_message, post_message)
+      this%i_line = this%i_line + 1
+      CALL this%check_status(status, pre_message, post_message)
 
       CALL profiler_set_stop_time('signal_dot_read_line', start_time)
 
@@ -498,24 +474,20 @@
 !>  pre_message @ref signal_dot_file::signal_id post message
 !>  @ref signal_dot_file::i_line
 !>
-!>  @param[in]    status              The error code to check.
-!>  @param[inout] signal_dot_file_ref An instance of a @ref signal_dot_file
-!>                                    object.
-!>  @param[in]    pre_message         Prefix message incase of error.
-!>  @param[in]    post_message        Post message incase of error.
-!>  @returns The line that was read.
+!>  @param[inout] this         An instance of a @ref signal_dot_file object.
+!>  @param[in]    status       The error code to check.
+!>  @param[in]    pre_message  Prefix message incase of error.
+!>  @param[in]    post_message Post message incase of error.
 !-------------------------------------------------------------------------------
-      SUBROUTINE signal_dot_check_status(status,                               &
-     &                                   signal_dot_file_ref,                  &
-     &                                   pre_message,                          &
+      SUBROUTINE signal_dot_check_status(this, status, pre_message,            &
      &                                   post_message)
       IMPLICIT NONE
 
 !  Declare Arguments
-      INTEGER, INTENT(in)                  :: status
-      TYPE(signal_dot_file), INTENT(inout) :: signal_dot_file_ref
-      CHARACTER (len=*), INTENT(in)        :: pre_message
-      CHARACTER (len=*), INTENT(in)        :: post_message
+      CLASS (signal_dot_file), INTENT(inout) :: this
+      INTEGER, INTENT(in)                    :: status
+      CHARACTER (len=*), INTENT(in)          :: pre_message
+      CHARACTER (len=*), INTENT(in)          :: post_message
 
 !  local variables
       REAL (rprec)                         :: start_time
@@ -524,9 +496,8 @@
       start_time = profiler_get_start_time()
 
       IF (status .ne. 0) THEN
-         WRITE(*,*) pre_message // TRIM(signal_dot_file_ref%signal_id)         &
-     &              // post_message // ' line ',                               &
-     &              signal_dot_file_ref%i_line
+         WRITE(*,*) pre_message // TRIM(this%signal_id) //                     &
+     &              post_message // ' line ', this%i_line
          STOP
       END IF
 

@@ -122,7 +122,7 @@
 !  thscted_keyword   character array - keywords for various thscte input types
       CHARACTER(len=data_name_length),                                         &
      &   DIMENSION(1:n_thscted_keyword) :: thscted_keyword
-      TYPE(signal_dot_file)             :: thscte_dot_file_ref
+      TYPE (signal_dot_file)            :: thscte_dot_file_ref
       REAL (rprec)                      :: start_time
 
 !  Start of executable code
@@ -140,15 +140,14 @@
       thscted_keyword(9) = 'end_of_file'
 
 !  Open up the 'thscte.' file
-      thscte_dot_file_ref = signal_dot_open(TRIM(thscte_file),                 &
-     &                                      'thscte')
+      CALL thscte_dot_file_ref%open(TRIM(thscte_file), 'thscte')
 
 !  Infinite Loop
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(thscte_dot_file_ref,             &
-     &                                        thscted_keyword))
+         SELECT CASE (thscte_dot_file_ref%read_keyword(                        &
+     &                   thscted_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -203,7 +202,7 @@
       END DO
 
 !  Close the 'thscte.' file
-      CALL signal_dot_close(thscte_dot_file_ref)
+      CALL thscte_dot_file_ref%close
 
       CALL profiler_set_stop_time('thscte_dot_read', start_time)
 
@@ -251,7 +250,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: thscte_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: thscte_dot_file_ref
       CHARACTER (len=*)                      :: coordinate_type
       CHARACTER (len=1)                      :: point_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
@@ -278,10 +277,8 @@
       END IF
 
 !  Get the position and name of the point.
-      CALL signal_dot_parse_chord(thscte_dot_file_ref,                         &
-     &                            coordinate_type,                             &
-     &                            point_name,                                  &
-     &                            xcart)
+      CALL thscte_dot_file_ref%parse_chord(coordinate_type,                    &
+     &                                     point_name, xcart)
 
       SELECT CASE (point_type)
 

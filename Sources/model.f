@@ -163,7 +163,7 @@
          REAL (rprec), DIMENSION(:), POINTER :: coosig_wgts => null()
 
 !>  Soft X-Ray emission function.
-         TYPE (emission_class), POINTER        :: emission => null()
+         CLASS (emission_class), POINTER       :: emission => null()
 !>  Filter transmission functions.
          REAL (rprec), DIMENSION(:,:), POINTER :: transmission => null()
 
@@ -532,7 +532,7 @@
       END IF
 
       IF (ASSOCIATED(this%emission)) THEN
-         CALL emission_destruct(this%emission)
+         DEALLOCATE(this%emission)
          this%emission => null()
       END IF
 
@@ -2064,9 +2064,8 @@
 
          CASE (model_sxrem_te_ne_type)
             model_get_sxrem_cart =                                             &
-     &         emission_get_emission(this%emission,                            &
-     &                               this%get_te(x_cart),                      &
-     &                               this%get_ne(x_cart), index)
+     &         this%emission%get_emission(this%get_te(x_cart),                 &
+     &                                    this%get_ne(x_cart), index)
 
          CASE DEFAULT
             model_get_sxrem_cart = 0.0_rprec

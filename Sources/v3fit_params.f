@@ -39,10 +39,48 @@
 !
 !*******************************************************************************
 !-------------------------------------------------------------------------------
+!>  Base class representing a reconstructed parameter. An upper and lower bound
+!>  may be set for the parameter value.
+!-------------------------------------------------------------------------------
+      TYPE :: param_class
+!>  Id number of the parameter. Id's are provided by either the @ref model or
+!>  the @ref equilibrium.
+         INTEGER                              :: param_id = data_no_id
+!>  The i and j indices of the parameter. These are only used if the parameter
+!>  is the element of an array.
+         INTEGER, DIMENSION(data_max_indices) :: indices = 0
+!>  Stored value of the parameter uncertainty for the current reconstruction
+!>  step. This value is calculated by
+!>  @ref reconstruction::reconstruction_eval_sem.
+         REAL (rprec)                         :: sigma = 0.0
+!>  Stored row of the correlation matrix. When the parameter is interpreted as a
+!>  locking parameter, this array contains the parameter coefficents.
+         REAL (rprec), DIMENSION(:), POINTER  :: correlation => null()
+      CONTAINS
+         FINAL     :: param_destruct
+         PROCEDURE :: get_value => param_get_value
+         PROCEDURE :: get_name => param_get_name
+         PROCEDURE :: write_short => param_write_short
+         PROCEDURE :: write_correlation => param_write_correlation
+         PROCEDURE :: write_step_data_2 => param_write_step_data_2
+         GENERIC   :: write_step_data => write_step_data_2
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Pointer to a parameter object. Used for creating arrays of signal pointers.
+!>  This is needed because fortran does not allow arrays of pointers directly.
+!-------------------------------------------------------------------------------
+      TYPE param_pointer
+!>  Pointer to a @ref param_class. Used for building arrays of @ref param_class
+!>  objects.
+         CLASS (param_class), POINTER :: p => null()
+      END TYPE
+
+!-------------------------------------------------------------------------------
 !>  Class to hold variables needed when a parameter is a reconstruction
 !>  parameter.
 !-------------------------------------------------------------------------------
-      TYPE :: param_recon_class
+      TYPE, EXTENDS(param_class) :: param_recon_class
 !>  The maximum increment size of the parameter for calculating the jacobian.
 !>  @see param_increment
          REAL (rprec)                          :: vrnc = 0.0
@@ -75,6 +113,40 @@
 
 !>  Stored row of the signal effectiveness matrix.
          REAL (rprec), DIMENSION(:), POINTER   :: sem => null()
+      CONTAINS
+         FINAL     :: param_recon_destruct
+         PROCEDURE :: set_value => param_set_value
+         PROCEDURE :: get_lower_range_value =>                                 &
+     &                   param_get_lower_range_value
+         PROCEDURE :: get_upper_range_value =>                                 &
+     &                   param_get_upper_range_value
+         PROCEDURE :: get_lower_range_type =>                                  &
+     &                   param_get_lower_range_type
+         PROCEDURE :: get_upper_range_type =>                                  &
+     &                   param_get_upper_range_type
+         PROCEDURE :: is_in_lower_range => param_is_in_lower_range
+         PROCEDURE :: is_in_upper_range => param_is_in_upper_range
+         PROCEDURE :: increment => param_increment
+         PROCEDURE :: decrement => param_decrement
+         PROCEDURE :: write => param_write
+         PROCEDURE :: write_step_data_1 => param_write_step_data_1
+         GENERIC   :: write_step_data => write_step_data_1
+         PROCEDURE :: restart => param_restart
+         PROCEDURE :: sync_value => param_sync_value
+         PROCEDURE :: send_delta => param_send_delta
+         PROCEDURE :: recv_delta => param_recv_delta
+         PROCEDURE :: sync_delta => param_sync_delta
+         PROCEDURE :: sync_child => param_sync_child
+      END TYPE
+
+!-------------------------------------------------------------------------------
+!>  Pointer to a parameter object. Used for creating arrays of signal pointers.
+!>  This is needed because fortran does not allow arrays of pointers directly.
+!-------------------------------------------------------------------------------
+      TYPE param_recon_pointer
+!>  Pointer to a @ref param_recon_class. Used for building arrays of
+!>  @ref param_recon_class objects.
+         CLASS (param_recon_class), POINTER :: p => null()
       END TYPE
 
 !-------------------------------------------------------------------------------
@@ -82,47 +154,24 @@
 !>  locking parameter coefficents are stored in the correlation array of the
 !>  parent type.
 !-------------------------------------------------------------------------------
-      TYPE param_locking_class
+      TYPE, EXTENDS(param_class) :: param_locking_class
 !>  Parameter id's of the parameter to lock to.
          INTEGER, DIMENSION(:), POINTER   :: ids => null()
 !>  The i and j indices of the parameters to lock to.
-         INTEGER, DIMENSION(:,:), POINTER :: indices => null()
-      END TYPE
-
-!-------------------------------------------------------------------------------
-!>  Base class representing a reconstructed parameter. An upper and lower bound
-!>  may be set for the parameter value.
-!-------------------------------------------------------------------------------
-      TYPE param_class
-!>  Id number of the parameter. Id's are provided by either the @ref model or
-!>  the @ref equilibrium.
-         INTEGER                              :: param_id = data_no_id
-!>  The i and j indices of the parameter. These are only used if the parameter
-!>  is the element of an array.
-         INTEGER, DIMENSION(data_max_indices) :: indices = 0
-
-!>  Pointer to the extra variables needed for reconstruction parameters.
-         TYPE (param_recon_class), POINTER    :: recon => null()
-!>  Pointer to the extra variables needed for locking parameters.
-         TYPE (param_locking_class), POINTER  :: locks => null()
-
-!>  Stored value of the parameter uncertainty for the current reconstruction
-!>  step. This value is calculated by
-!>  @ref reconstruction::reconstruction_eval_sem.
-         REAL (rprec)                         :: sigma = 0.0
-!>  Stored row of the correlation matrix. When the parameter is interpreted as a
-!>  locking parameter, this array contains the parameter coefficents.
-         REAL (rprec), DIMENSION(:), POINTER  :: correlation => null()
+         INTEGER, DIMENSION(:,:), POINTER :: lock_indices => null()
+      CONTAINS
+         FINAL     :: param_locking_destruct
+         PROCEDURE :: set_lock_value => param_set_lock_value
       END TYPE
 
 !-------------------------------------------------------------------------------
 !>  Pointer to a parameter object. Used for creating arrays of signal pointers.
 !>  This is needed because fortran does not allow arrays of pointers directly.
 !-------------------------------------------------------------------------------
-      TYPE param_pointer
-!>  Pointer to a @ref param_class. Used for building arrays of @ref param_class
-!>  objects.
-         TYPE (param_class), POINTER :: p => null()
+      TYPE param_locking_pointer
+!>  Pointer to a @ref param_locking_class. Used for building arrays of
+!>  @ref param_locking_class objects.
+         CLASS (param_locking_class), POINTER :: p => null()
       END TYPE
 
 !*******************************************************************************
@@ -136,15 +185,6 @@
          MODULE PROCEDURE param_construct_basic,                               &
      &                    param_construct_recon,                               &
      &                    param_construct_locking
-      END INTERFACE
-
-!-------------------------------------------------------------------------------
-!>  Interface for the writting of @ref param_class data to the result file using
-!>  @ref param_write_step_data_1 or @ref param_write_step_data_2
-!-------------------------------------------------------------------------------
-      INTERFACE param_write_step_data
-         MODULE PROCEDURE param_write_step_data_1,                             &
-     &                    param_write_step_data_2
       END INTERFACE
 
       CONTAINS
@@ -172,7 +212,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), POINTER       :: param_construct_basic
+      CLASS (param_class), POINTER      :: param_construct_basic
       CLASS (model_class), INTENT(in)   :: a_model
       CHARACTER (len=*), INTENT(in)     :: param_name
       INTEGER, DIMENSION(2), INTENT(in) :: indices
@@ -199,7 +239,7 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Construct a @ref param_class object.
+!>  @brief Construct a @ref param_recon_class object.
 !>
 !>  Allocates memory and initializes a @ref param_class object. Parameters are
 !>  converted from strings to an internal id representation by either the
@@ -224,7 +264,7 @@
 !>                            the @ref param_recon_class::sem arrays.
 !>  @param[in] num_params     Number of parameters. Used to determine the size
 !>                            of the @ref param_class::correlation arrays.
-!>  @returns A pointer to a constructed @ref param_class object.
+!>  @returns A pointer to a constructed @ref param_recon_class object.
 !-------------------------------------------------------------------------------
       FUNCTION param_construct_recon(a_model, param_name, indices,             &
      &                               vrnc, range_type, range_indices,          &
@@ -235,7 +275,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), POINTER :: param_construct_recon
+      CLASS (param_recon_class), POINTER :: param_construct_recon
       CLASS (model_class), INTENT(in)             :: a_model
       CHARACTER (len=*), INTENT(in)               :: param_name
       INTEGER, DIMENSION(2), INTENT(in)           :: indices
@@ -253,8 +293,15 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      param_construct_recon => param_construct(a_model, param_name,            &
-     &                                         indices, num_params)
+      ALLOCATE(param_construct_recon)
+
+      param_construct_recon%param_id =                                         &
+     &   a_model%get_param_id(TRIM(param_name))
+
+      ALLOCATE(param_construct_recon%correlation(num_params))
+      param_construct_recon%correlation = 0.0
+
+      param_construct_recon%indices = indices
 
       IF (.not.a_model%is_recon_param(                                         &
      &            param_construct_recon%param_id)) THEN
@@ -263,27 +310,26 @@
      &                  'parameter')
       END IF
 
-      ALLOCATE(param_construct_recon%recon)
-      param_construct_recon%recon%vrnc = vrnc
+      param_construct_recon%vrnc = vrnc
 
       SELECT CASE (TRIM(range_type(1)))
 
          CASE ('value')
-            param_construct_recon%recon%range_type(1) =                        &
+            param_construct_recon%range_type(1) =                              &
      &         param_range_value_type
-            param_construct_recon%recon%range_value(1) =                       &
+            param_construct_recon%range_value(1) =                             &
      &         range_value(1)
         
          CASE ('infinity')
-            param_construct_recon%recon%range_type(1) =                        &
+            param_construct_recon%range_type(1) =                              &
      &         param_range_infinity_type
 
          CASE DEFAULT
-            param_construct_recon%recon%range_type(1) =                        &
+            param_construct_recon%range_type(1) =                              &
      &         param_range_parameter_type
-            param_construct_recon%recon%range_id(1) =                          &
+            param_construct_recon%range_id(1) =                                &
      &         a_model%get_param_id(TRIM(range_type(1)))
-            param_construct_recon%recon%range_indices(1,:) =                   &
+            param_construct_recon%range_indices(1,:) =                         &
      &         range_indices(1,:)
 
       END SELECT
@@ -291,39 +337,39 @@
       SELECT CASE (TRIM(range_type(2)))
 
          CASE ('value')
-            param_construct_recon%recon%range_type(2) =                        &
+            param_construct_recon%range_type(2) =                              &
      &         param_range_value_type
-            param_construct_recon%recon%range_value(2) =                       &
+            param_construct_recon%range_value(2) =                             &
      &         range_value(2)
 
          CASE ('infinity')
-            param_construct_recon%recon%range_type(2) =                        &
+            param_construct_recon%range_type(2) =                              &
      &         param_range_infinity_type
 
          CASE DEFAULT
-            param_construct_recon%recon%range_type(2) =                        &
+            param_construct_recon%range_type(2) =                              &
      &         param_range_parameter_type
-            param_construct_recon%recon%range_id(2) =                          &
+            param_construct_recon%range_id(2) =                                &
      &         a_model%get_param_id(TRIM(range_type(2)))
-            param_construct_recon%recon%range_indices(2,:) =                   &
+            param_construct_recon%range_indices(2,:) =                         &
      &         range_indices(2,:)
 
       END SELECT
 
-      ALLOCATE(param_construct_recon%recon%sem(num_signals))
-      param_construct_recon%recon%sem = 0.0
+      ALLOCATE(param_construct_recon%sem(num_signals))
+      param_construct_recon%sem = 0.0
 
 !  Check if the inital parameter value is in range.
-      value = param_get_value(param_construct_recon, a_model)
-      CALL assert(param_is_in_lower_range(param_construct_recon,               &
-     &                                    a_model, value),                     &
-     &            TRIM(param_get_name(param_construct_recon, a_model))         &
+      value = param_construct_recon%get_value(a_model)
+      CALL assert(param_construct_recon%is_in_lower_range(a_model,             &
+     &                                                    value),              &
+     &            TRIM(param_construct_recon%get_name(a_model))                &
      &            // ' inital value is outside reconstruction parameter'       &
      &            //' lower bound.')
 
-      CALL assert(param_is_in_upper_range(param_construct_recon,               &
-     &                                    a_model, value),                     &
-     &            TRIM(param_get_name(param_construct_recon, a_model))         &
+      CALL assert(param_construct_recon%is_in_upper_range(a_model,             &
+     &                                                    value),              &
+     &            TRIM(param_construct_recon%get_name(a_model))                &
      &            // ' inital value is outside reconstruction parameter'       &
      &            // ' upper bound.')
 
@@ -332,7 +378,7 @@
       END FUNCTION
 
 !-------------------------------------------------------------------------------
-!>  @brief Construct a @ref param_class object.
+!>  @brief Construct a @ref param_locking_class object.
 !>
 !>  Allocates memory and initializes a @ref param_class object. Parameters are
 !>  converted from strings to an internal id representation by either the
@@ -347,7 +393,7 @@
 !>                         to.
 !>  @param[in] set_coeff   Coefficients for the parameters to lock to.
 !>  @param[in] eq_comm MPI communicator for the child equilibrium processes.
-!>  @returns A pointer to a constructed @ref param_class object.
+!>  @returns A pointer to a constructed @ref param_locking_class object.
 !-------------------------------------------------------------------------------
       FUNCTION param_construct_locking(a_model, param_name, indices,           &
      &                                 set, set_indices, set_coeff,            &
@@ -357,7 +403,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), POINTER            :: param_construct_locking
+      CLASS (param_locking_class), POINTER   :: param_construct_locking
       CLASS (model_class), INTENT(inout)     :: a_model
       CHARACTER (len=*), INTENT(in)          :: param_name
       INTEGER, DIMENSION(2), INTENT(in)      :: indices
@@ -373,8 +419,15 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      param_construct_locking => param_construct(a_model, param_name,          &
-     &                                           indices, SIZE(set))
+      ALLOCATE(param_construct_locking)
+
+      param_construct_locking%param_id =                                       &
+     &   a_model%get_param_id(TRIM(param_name))
+
+      ALLOCATE(param_construct_locking%correlation(SIZE(set)))
+      param_construct_locking%correlation = 0.0
+
+      param_construct_locking%indices = indices
 
       IF (.not.a_model%is_recon_param(                                         &
      &            param_construct_locking%param_id)) THEN
@@ -382,17 +435,15 @@
      &                  ' is an invalid locking parameter')
       END IF
 
-      ALLOCATE(param_construct_locking%locks)
-
-      ALLOCATE(param_construct_locking%locks%ids(SIZE(set)))
+      ALLOCATE(param_construct_locking%ids(SIZE(set)))
       DO i = 1, SIZE(set)
-         param_construct_locking%locks%ids(i) =                                &
+         param_construct_locking%ids(i) =                                      &
      &      a_model%get_param_id(TRIM(set(i)))
       END DO
 
-      ALLOCATE(param_construct_locking%locks%indices(SIZE(set),                &
-     &                                               data_max_indices))
-      param_construct_locking%locks%indices = set_indices
+      ALLOCATE(param_construct_locking%lock_indices(SIZE(set),                 &
+     &                                              data_max_indices))
+      param_construct_locking%lock_indices = set_indices
 
 !  Use the correlation array as the array to hold the set coefficients. This
 !  array was allocated by param_construct.
@@ -421,45 +472,62 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), POINTER :: this
+      TYPE (param_class), INTENT(inout) :: this
 
 !  Start of executable code
-      this%param_id = data_no_id
-      this%indices = 0
-
-      IF (ASSOCIATED(this%recon)) THEN
-
-         IF (ASSOCIATED(this%recon%sem)) THEN
-            DEALLOCATE(this%recon%sem)
-            this%recon%sem => null()
-         END IF
-
-         DEALLOCATE(this%recon)
-         this%recon => null()
-      END IF
-
-      IF (ASSOCIATED(this%locks)) THEN
-
-         IF (ASSOCIATED(this%locks%ids)) THEN
-            DEALLOCATE(this%locks%ids)
-            this%locks%ids => null()
-         END IF
-
-         IF (ASSOCIATED(this%locks%indices)) THEN
-            DEALLOCATE(this%locks%indices)
-            this%locks%indices => null()
-         END IF
-
-         DEALLOCATE(this%locks)
-         this%locks => null()
-      END IF
-
       IF (ASSOCIATED(this%correlation)) THEN
          DEALLOCATE(this%correlation)
          this%correlation => null()
       END IF
 
-      DEALLOCATE(this)
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Deconstruct a @ref param_recon_class object.
+!>
+!>  Deallocates memory and uninitializes a @ref param_recon_class object.
+!>
+!>  @param[inout] this A @ref param_recon_class object.
+!-------------------------------------------------------------------------------
+      SUBROUTINE param_recon_destruct(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (param_recon_class), INTENT(inout) :: this
+
+!  Start of executable code
+      IF (ASSOCIATED(this%sem)) THEN
+         DEALLOCATE(this%sem)
+         this%sem => null()
+      END IF
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Deconstruct a @ref param_locking_class object.
+!>
+!>  Deallocates memory and uninitializes a @ref param_locking_class object.
+!>
+!>  @param[inout] this A @ref param_locking_class object.
+!-------------------------------------------------------------------------------
+      SUBROUTINE param_locking_destruct(this)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (param_locking_class), INTENT(inout) :: this
+
+!  Start of executable code
+      IF (ASSOCIATED(this%ids)) THEN
+         DEALLOCATE(this%ids)
+         this%ids => null()
+      END IF
+
+      IF (ASSOCIATED(this%lock_indices)) THEN
+         DEALLOCATE(this%lock_indices)
+         this%lock_indices => null()
+      END IF
 
       END SUBROUTINE
 
@@ -471,7 +539,7 @@
 !>
 !>  Sets the value of a reconstruction parameter. If the parameter is outside
 !>  one of the bounding parameters, the value is clamped to the bounding value.
-!>  The resulting bounded parameter value is set by ethier the @ref model or
+!>  The resulting bounded parameter value is set by ether the @ref model or
 !>  the @ref equilibrium.
 !>
 !>  If central differencing is used, both the upper and lower bounds must be
@@ -481,7 +549,7 @@
 !>  plus/minus half the vrnc is out of range of both bounds, then split the
 !>  difference.
 !>
-!>  @param[in]    this       A @ref param_class instance.
+!>  @param[in]    this       A @ref param_recon_class instance.
 !>  @param[inout] a_model    A @ref model instance.
 !>  @param[in]    value      The value to set the parameter to.
 !>  @param[in]    eq_comm    MPI communicator for the child equilibrium
@@ -494,18 +562,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)     :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      REAL (rprec), INTENT(in)           :: value
-      INTEGER, INTENT(in)                :: eq_comm
-      LOGICAL, INTENT(in)                :: is_central
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(inout)    :: a_model
+      REAL (rprec), INTENT(in)              :: value
+      INTEGER, INTENT(in)                   :: eq_comm
+      LOGICAL, INTENT(in)                   :: is_central
 
 !  Local variables
-      REAL (rprec)                       :: set_value
-      REAL (rprec)                       :: off_set_value
-      REAL (rprec)                       :: upper_value
-      REAL (rprec)                       :: lower_value
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                          :: set_value
+      REAL (rprec)                          :: off_set_value
+      REAL (rprec)                          :: upper_value
+      REAL (rprec)                          :: lower_value
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -513,15 +581,15 @@
       set_value = value
 
       IF (is_central) THEN
-         off_set_value = this%recon%vrnc/2.0
+         off_set_value = this%vrnc/2.0
       ELSE
          off_set_value = 0.0
       END IF
 
 !  Check if the value is within the lower range. If the value is outside,
 !  truncate the value to the lower range.
-      IF (this%recon%range_type(1) .ne. param_range_infinity_type) THEN
-         lower_value = param_get_lower_range_value(this, a_model)
+      IF (this%range_type(1) .ne. param_range_infinity_type) THEN
+         lower_value = this%get_lower_range_value(a_model)
 
          IF (set_value - off_set_value .lt. lower_value) THEN
 
@@ -530,10 +598,10 @@
             set_value = lower_value + off_set_value
 
 !  Need to check the upper range if using central differencing.
-            IF (is_central .and. (this%recon%range_type(2) .ne.                &
+            IF (is_central .and. (this%range_type(2) .ne.                      &
      &                            param_range_infinity_type)) THEN
 
-               upper_value = param_get_upper_range_value(this, a_model)
+               upper_value = this%get_upper_range_value(a_model)
 
                IF (set_value + off_set_value .gt. upper_value) THEN
 !  Both bounds are two narrow to fit the new value. Split the difference.
@@ -545,16 +613,15 @@
      &                             this%indices(2), set_value,                 &
      &                             eq_comm)
 
-            CALL profiler_set_stop_time('profiler_get_start_time',             &
-     &                                  start_time)
+            CALL profiler_set_stop_time('param_set_value', start_time)
             RETURN
          END IF
       END IF
 
 !  The value is in the lower range. Check upper range. If the value is outside,
 !  truncate the value to the upper range.
-      IF (this%recon%range_type(2) .ne. param_range_infinity_type) THEN
-         upper_value = param_get_upper_range_value(this, a_model)
+      IF (this%range_type(2) .ne. param_range_infinity_type) THEN
+         upper_value = this%get_upper_range_value(a_model)
 
          IF (set_value + off_set_value .gt. upper_value) THEN
 
@@ -568,8 +635,7 @@
      &                             this%indices(2), set_value,                 &
      &                             eq_comm)
 
-            CALL profiler_set_stop_time('profiler_get_start_time',             &
-     &                                  start_time)
+            CALL profiler_set_stop_time('param_set_value', start_time)
             RETURN
          END IF
       END IF
@@ -578,7 +644,7 @@
       CALL a_model%set_param(this%param_id, this%indices(1),                   &
      &                       this%indices(2), set_value, eq_comm)
 
-      CALL profiler_set_stop_time('profiler_get_start_time', start_time)
+      CALL profiler_set_stop_time('param_set_value', start_time)
 
       END SUBROUTINE
 
@@ -588,7 +654,7 @@
 !>  Sets the value of a locking parameter. These parameters are locked to a
 !>  linear combination of other set parameters.
 !>
-!>  @param[in]    this    A @ref param_class instance.
+!>  @param[in]    this    A @ref param_locking_class instance.
 !>  @param[inout] a_model A @ref model instance.
 !>  @param[in]    eq_comm MPI communicator for the child equilibrium processes.
 !-------------------------------------------------------------------------------
@@ -597,15 +663,15 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)     :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)                :: eq_comm
+      CLASS (param_locking_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(inout)      :: a_model
+      INTEGER, INTENT(in)                     :: eq_comm
 
 !  Local variables
-      INTEGER                            :: i
-      REAL (rprec)                       :: temp
-      REAL (rprec)                       :: inital_value
-      REAL (rprec)                       :: start_time
+      INTEGER                                 :: i
+      REAL (rprec)                            :: temp
+      REAL (rprec)                            :: inital_value
+      REAL (rprec)                            :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -615,11 +681,11 @@
      &                                       this%indices(2))
 
       temp = 0.0
-      DO i = 0, SIZE(this%locks%ids)
+      DO i = 0, SIZE(this%ids)
          temp = temp + this%correlation(i)                                     &
-     &               * a_model%get_param_value(this%locks%ids(i),              &
-     &                                         this%locks%indices(i,1),        &
-     &                                         this%locks%indices(i,2))
+     &               * a_model%get_param_value(this%ids(i),                    &
+     &                                         this%lock_indices(i,1),         &
+     &                                         this%lock_indices(i,2))
       END DO
 
 !  Only update the lock value if that value changed.
@@ -651,7 +717,7 @@
 
 !  Declare Arguments
       REAL (rprec)                    :: param_get_value
-      TYPE (param_class), INTENT(in)  :: this
+      CLASS (param_class), INTENT(in) :: this
       CLASS (model_class), INTENT(in) :: a_model
 
 !  local variables
@@ -684,7 +750,7 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_name
-      TYPE (param_class), INTENT(in)   :: this
+      CLASS (param_class), INTENT(in)  :: this
       CLASS (model_class), INTENT(in)  :: a_model
 
 !  local variables
@@ -705,7 +771,7 @@
 !>  Gets lower boundary value. The results of this function are invalid if the
 !>  bounding type is @ref param_range_infinity_type or @ref param_range_no_type.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @returns The lower bounding value.
 !-------------------------------------------------------------------------------
@@ -714,26 +780,26 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: param_get_lower_range_value
-      TYPE (param_class), INTENT(in)  :: this
-      CLASS (model_class), INTENT(in) :: a_model
+      REAL (rprec) :: param_get_lower_range_value
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%recon%range_type(1))
+      SELECT CASE (this%range_type(1))
 
          CASE DEFAULT
-            param_get_lower_range_value = this%recon%range_value(1)
+            param_get_lower_range_value = this%range_value(1)
 
          CASE (param_range_parameter_type)
             param_get_lower_range_value =                                      &
-     &         a_model%get_param_value(this%recon%range_id(1),                 &
-     &                                 this%recon%range_indices(1,1),          &
-     &                                 this%recon%range_indices(1,2))
+     &         a_model%get_param_value(this%range_id(1),                       &
+     &                                 this%range_indices(1,1),                &
+     &                                 this%range_indices(1,2))
 
       END SELECT
 
@@ -748,7 +814,7 @@
 !>  Gets upper boundary value. The results of this function are invalid if the
 !>  bounding type is @ref param_range_infinity_type or @ref param_range_no_type.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @returns The upper bounding value.
 !-------------------------------------------------------------------------------
@@ -757,26 +823,26 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      REAL (rprec)                    :: param_get_upper_range_value
-      TYPE (param_class), INTENT(in)  :: this
-      CLASS (model_class), INTENT(in) :: a_model
+      REAL (rprec) :: param_get_upper_range_value
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%recon%range_type(2))
+      SELECT CASE (this%range_type(2))
 
          CASE DEFAULT
-            param_get_upper_range_value = this%recon%range_value(2)
+            param_get_upper_range_value = this%range_value(2)
 
          CASE (param_range_parameter_type)
             param_get_upper_range_value =                                      &
-     &         a_model%get_param_value(this%recon%range_id(2),                 &
-     &                                 this%recon%range_indices(2,1),          &
-     &                                 this%recon%range_indices(2,2))
+     &         a_model%get_param_value(this%range_id(2),                       &
+     &                                 this%range_indices(2,1),                &
+     &                                 this%range_indices(2,2))
 
       END SELECT
 
@@ -790,7 +856,7 @@
 !>
 !>  Gets lower boundary type description.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @returns A string description of the lower boundary type.
 !-------------------------------------------------------------------------------
@@ -800,16 +866,16 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_lower_range_type
-      TYPE (param_class), INTENT(in)   :: this
-      CLASS (model_class), INTENT(in)  :: a_model
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
-      REAL (rprec)                     :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%recon%range_type(1))
+      SELECT CASE (this%range_type(1))
 
          CASE DEFAULT
             param_get_lower_range_type = 'No Type'
@@ -822,7 +888,7 @@
 
          CASE (param_range_parameter_type)
             param_get_lower_range_type =                                       &
-     &         a_model%get_param_name(this%recon%range_id(1))
+     &         a_model%get_param_name(this%range_id(1))
 
       END SELECT
 
@@ -836,7 +902,7 @@
 !>
 !>  Gets upper boundary type description.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @returns A string description of the upper boundary type.
 !-------------------------------------------------------------------------------
@@ -846,16 +912,16 @@
 
 !  Declare Arguments
       CHARACTER (len=data_name_length) :: param_get_upper_range_type
-      TYPE (param_class), INTENT(in)   :: this
-      CLASS (model_class), INTENT(in)  :: a_model
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
-      REAL (rprec)                     :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      SELECT CASE (this%recon%range_type(2))
+      SELECT CASE (this%range_type(2))
 
          CASE DEFAULT
             param_get_upper_range_type = 'No Type'
@@ -868,7 +934,7 @@
 
          CASE (param_range_parameter_type)
             param_get_upper_range_type =                                       &
-     &         a_model%get_param_name(this%recon%range_id(2))
+     &         a_model%get_param_name(this%range_id(2))
 
       END SELECT
 
@@ -886,7 +952,7 @@
 !>  If the value is less than the bounding value, the parameter value is out of
 !>  range.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @param[in] value   A parameter value to check.
 !>  @returns True for in range and false for out of range.
@@ -896,21 +962,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: param_is_in_lower_range
-      TYPE (param_class), INTENT(in)  :: this
-      CLASS (model_class), INTENT(in) :: a_model
-      REAL (rprec), INTENT(in)        :: value
+      LOGICAL :: param_is_in_lower_range
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
+      REAL (rprec), INTENT(in)              :: value
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       param_is_in_lower_range = .true.
-      IF (this%recon%range_type(1) .ne. param_range_infinity_type) THEN
+      IF (this%range_type(1) .ne. param_range_infinity_type) THEN
          param_is_in_lower_range =                                             &
-     &      value .ge. param_get_lower_range_value(this, a_model)
+     &      value .ge. this%get_lower_range_value(a_model)
       END IF
 
       CALL profiler_set_stop_time('param_is_in_lower_range', start_time)
@@ -923,7 +989,7 @@
 !>  If the value is greater than the bounding value, the parameter value is out
 !>  of range.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] a_model A @ref model instance.
 !>  @param[in] value   A parameter value to check.
 !>  @returns True for in range and false for out of range.
@@ -933,21 +999,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      LOGICAL                         :: param_is_in_upper_range
-      TYPE (param_class), INTENT(in)  :: this
-      CLASS (model_class), INTENT(in) :: a_model
-      REAL (rprec), INTENT(in)        :: value
+      LOGICAL :: param_is_in_upper_range
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
+      REAL (rprec), INTENT(in)              :: value
 
 !  local variables
-      REAL (rprec)                   :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       param_is_in_upper_range = .true.
-      IF (this%recon%range_type(2) .ne. param_range_infinity_type) THEN
+      IF (this%range_type(2) .ne. param_range_infinity_type) THEN
          param_is_in_upper_range =                                             &
-     &      value .le. param_get_upper_range_value(this, a_model)
+     &      value .le. this%get_upper_range_value(a_model)
       END IF
 
       CALL profiler_set_stop_time('param_is_in_upper_range', start_time)
@@ -973,7 +1039,7 @@
 !>  divided until the change in parameter fits into both the upper and lower
 !>  bounds.
 !>
-!>  @param[in] this       A @ref param_class instance.
+!>  @param[in] this       A @ref param_recon_class instance.
 !>  @param[in] a_model    A @ref model instance.
 !>  @param[in] eq_comm    MPI communicator for the child equilibrium processes.
 !>  @param[in] is_central Central differencing is being used.
@@ -984,28 +1050,28 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout)  :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)                :: eq_comm
-      LOGICAL, INTENT(in)                :: is_central
+      CLASS (param_recon_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout)       :: a_model
+      INTEGER, INTENT(in)                      :: eq_comm
+      LOGICAL, INTENT(in)                      :: is_central
 
 !  local variables
-      REAL (rprec)                       :: new_value
-      REAL (rprec)                       :: value
-      REAL (rprec)                       :: step
-      INTEGER                            :: itry
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                             :: new_value
+      REAL (rprec)                             :: value
+      REAL (rprec)                             :: step
+      INTEGER                                  :: itry
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      value = param_get_value(this, a_model)
+      value = this%get_value(a_model)
 
 !  Take the absolute value here to control the direction of the step.
       IF (is_central) THEN
-         step = ABS(this%recon%vrnc)/2.0
+         step = ABS(this%vrnc)/2.0
       ELSE
-         step = ABS(this%recon%vrnc)
+         step = ABS(this%vrnc)
       END IF
 
       DO itry = 1, param_max_increment_steps
@@ -1018,14 +1084,12 @@
 
          IF (is_central) THEN
 !  Test both upper and lower range.
-            IF (param_is_in_upper_range(this, a_model,                         &
-     &                                  value + step) .and.                    &
-     &          param_is_in_lower_range(this, a_model,                         &
-     &                                  value - step)) THEN
+            IF (this%is_in_upper_range(a_model, value + step) .and.            &
+     &          this%is_in_lower_range(a_model, value - step)) THEN
                new_value = value + step
 
 !  Store the actual change in value.
-               this%recon%delta = step
+               this%delta = step
                EXIT
             END IF
 
@@ -1034,17 +1098,17 @@
 !  Try a step in the positive direction. If the parameter is still in range set
 !  otherwise.
             new_value = value + step
-            IF (param_is_in_upper_range(this, a_model, new_value)) THEN
+            IF (this%is_in_upper_range(a_model, new_value)) THEN
 !  Store the actual change in value.
-               this%recon%delta = step
+               this%delta = step
                EXIT
             END IF
 
 !  Try a step in the negative direction.
             new_value = value - step
-            IF (param_is_in_lower_range(this, a_model, new_value)) THEN
+            IF (this%is_in_lower_range(a_model, new_value)) THEN
 !  Store the actual change in value.
-               this%recon%delta = -step
+               this%delta = -step
                EXIT
             END IF
          END IF
@@ -1072,28 +1136,27 @@
 !>  The value is decremented by the delta. The incrementing function has already
 !>  performed the bounds checking so there is no need to do that here.
 !>
-!>  @param[in] this       A @ref param_class instance.
-!>  @param[in] a_model    A @ref model instance.
-!>  @param[in] eq_comm    MPI communicator for the child equilibrium processes.
+!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] a_model A @ref model instance.
+!>  @param[in] eq_comm MPI communicator for the child equilibrium processes.
 !-------------------------------------------------------------------------------
       SUBROUTINE param_decrement(this, a_model, eq_comm)
 
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout)  :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)                :: eq_comm
+      CLASS (param_recon_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout)       :: a_model
+      INTEGER, INTENT(in)                      :: eq_comm
 
 !  local variables
-      REAL (rprec)                       :: value
-      REAL (rprec)                       :: start_time
+      REAL (rprec)                             :: value
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      value = param_get_value(this, a_model)
-      value = value - this%recon%delta
+      value = this%get_value(a_model) - this%delta
 
       CALL a_model%set_param(this%param_id, this%indices(1),                   &
      &                       this%indices(2), value, eq_comm)
@@ -1108,7 +1171,7 @@
 !>  Parameter information is formated as the index, name, index 1, index2,
 !>  value, sigma, vrnc, upper and lower range types, values, and range indices.
 !>
-!>  @param[in] this    A @ref param_class instance.
+!>  @param[in] this    A @ref param_recon_class instance.
 !>  @param[in] iou     Input/output unit representing the file to write to.
 !>  @param[in] index   The index of a parameter.
 !>  @param[in] a_model A @ref model instance.
@@ -1119,28 +1182,28 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)  :: this
-      INTEGER, INTENT(in)             :: iou
-      INTEGER, INTENT(in)             :: index
-      CLASS (model_class), INTENT(in) :: a_model
+      CLASS (param_recon_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: iou
+      INTEGER, INTENT(in)                   :: index
+      CLASS (model_class), INTENT(in)       :: a_model
 
 !  local variables
-      REAL (rprec)                    :: start_time
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
       WRITE (iou,1000) index,                                                  &
-     &                 param_get_name(this, a_model),                          &
+     &                 this%get_name(a_model),                                 &
      &                 this%indices(1), this%indices(2),                       &
-     &                 param_get_value(this, a_model),                         &
-     &                 this%sigma, this%recon%vrnc,                            &
-     &                 param_get_upper_range_type(this, a_model),              &
-     &                 param_get_lower_range_type(this, a_model),              &
-     &                 param_get_upper_range_value(this, a_model),             &
-     &                 param_get_lower_range_value(this, a_model),             &
-     &                 this%recon%range_indices(2,:),                          &
-     &                 this%recon%range_indices(1,:)
+     &                 this%get_value(a_model),                                &
+     &                 this%sigma, this%vrnc,                                  &
+     &                 this%get_upper_range_type(a_model),                     &
+     &                 this%get_lower_range_type(a_model),                     &
+     &                 this%get_upper_range_value(a_model),                    &
+     &                 this%get_lower_range_value(a_model),                    &
+     &                 this%range_indices(2,:),                                &
+     &                 this%range_indices(1,:)
 1000  FORMAT(i3,2x,a18,2(1x,i4),3(2x,es12.5),2(2x,a13),2(2x,es12.5),           &
      &       2(2x,i8,1x,i8))
 
@@ -1164,7 +1227,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)  :: this
+      CLASS (param_class), INTENT(in) :: this
       INTEGER, INTENT(in)             :: iou
       INTEGER, INTENT(in)             :: index
       CLASS (model_class), INTENT(in) :: a_model
@@ -1176,9 +1239,9 @@
       start_time = profiler_get_start_time()
 
       WRITE (iou,1000) index,                                                  &
-     &                 param_get_name(this, a_model),                          &
+     &                 this%get_name(a_model),                                 &
      &                 this%indices(1), this%indices(2),                       &
-     &                 param_get_value(this, a_model), this%sigma
+     &                 this%get_value(a_model), this%sigma
 1000  FORMAT(i3,2x,a18,2(1x,i4),2(2x,es12.5))
 
       CALL profiler_set_stop_time('param_write_short', start_time)
@@ -1272,7 +1335,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)  :: this
+      CLASS (param_class), INTENT(in) :: this
       INTEGER, INTENT(in)             :: iou
       CLASS (model_class), INTENT(in) :: a_model
 
@@ -1284,8 +1347,7 @@
       start_time = profiler_get_start_time()
 
       WRITE (row_format,1000) SIZE(this%correlation)
-      WRITE (iou,row_format) param_get_name(this, a_model),                    &
-     &                       this%correlation
+      WRITE (iou,row_format) this%get_name(a_model), this%correlation
 
       CALL profiler_set_stop_time('param_write_correlation', start_time)
 
@@ -1302,7 +1364,7 @@
 !>  Writes out the parameter value, sigma and signal effectiveness matrix to the
 !>  result file.
 !>
-!>  @param[in] this           A @ref param_class instance.
+!>  @param[in] this           A @ref param_recon_class instance.
 !>  @param[in] a_model        The equilibrium model.
 !>  @param[in] result_ncid    A NetCDF id of the result file.
 !>  @param[in] current_step   The surrent reconstruction step.
@@ -1328,32 +1390,32 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)  :: this
-      CLASS (model_class), INTENT(in) :: a_model
-      INTEGER, INTENT(in)             :: result_ncid
-      INTEGER, INTENT(in)             :: current_step
-      INTEGER, INTENT(in)             :: index
-      INTEGER, INTENT(in)             :: param_value_id
-      INTEGER, INTENT(in)             :: param_sigma_id
-      INTEGER, INTENT(in)             :: param_corr_id
-      INTEGER, INTENT(in)             :: param_sem_id
+      CLASS (param_recon_class), INTENT(in) :: this
+      CLASS (model_class), INTENT(in)       :: a_model
+      INTEGER, INTENT(in)                   :: result_ncid
+      INTEGER, INTENT(in)                   :: current_step
+      INTEGER, INTENT(in)                   :: index
+      INTEGER, INTENT(in)                   :: param_value_id
+      INTEGER, INTENT(in)                   :: param_sigma_id
+      INTEGER, INTENT(in)                   :: param_corr_id
+      INTEGER, INTENT(in)                   :: param_sem_id
 
 !  local variables
-      INTEGER                         :: status
-      REAL (rprec)                    :: start_time
+      INTEGER                               :: status
+      REAL (rprec)                          :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL param_write_step_data(this, a_model, result_ncid,                   &
-     &                           current_step, index,                          &
-     &                           param_value_id, param_sigma_id,               &
-     &                           param_corr_id)
+      CALL this%write_step_data(a_model, result_ncid,                          &
+     &                          current_step, index,                           &
+     &                          param_value_id, param_sigma_id,                &
+     &                          param_corr_id)
 
       status = nf90_put_var(result_ncid, param_sem_id,                         &
-     &                      this%recon%sem,                                    &
+     &                      this%sem,                                          &
      &                      start=(/ 1, index, current_step /),                &
-     &                      count=(/ SIZE(this%recon%sem), 1, 1 /))
+     &                      count=(/ SIZE(this%sem), 1, 1 /))
 
       CALL profiler_set_stop_time('param_write_step_data_1', start_time)
 
@@ -1388,7 +1450,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(in)  :: this
+      CLASS (param_class), INTENT(in) :: this
       CLASS (model_class), INTENT(in) :: a_model
       INTEGER, INTENT(in)             :: result_ncid
       INTEGER, INTENT(in)             :: current_step
@@ -1405,7 +1467,7 @@
       start_time = profiler_get_start_time()
 
       status = nf90_put_var(result_ncid, param_value_id,                       &
-     &                      param_get_value(this, a_model),                    &
+     &                      this%get_value(a_model),                           &
      &                      start=(/ index, current_step /))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
@@ -1430,7 +1492,7 @@
 !>  sigma and correlation. All other values are set when the namelist input file
 !>  was read.
 !>
-!>  @param[inout] this           A @ref param_class instance.
+!>  @param[inout] this           A @ref param_recon_class instance.
 !>  @param[in]    a_model        The equilibrium model.
 !>  @param[in]    result_ncid    Netcdf if for the result file.
 !>  @param[in]    current_step   Step number to restart from.
@@ -1453,21 +1515,21 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)                :: result_ncid
-      INTEGER, INTENT(in)                :: current_step
-      INTEGER, INTENT(in)                :: index
-      INTEGER, INTENT(in)                :: param_value_id
-      INTEGER, INTENT(in)                :: param_sigma_id
-      INTEGER, INTENT(in)                :: param_corr_id
-      INTEGER, INTENT(in)                :: eq_comm
-      LOGICAL, INTENT(in)                :: is_central
+      CLASS (param_recon_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout)       :: a_model
+      INTEGER, INTENT(in)                      :: result_ncid
+      INTEGER, INTENT(in)                      :: current_step
+      INTEGER, INTENT(in)                      :: index
+      INTEGER, INTENT(in)                      :: param_value_id
+      INTEGER, INTENT(in)                      :: param_sigma_id
+      INTEGER, INTENT(in)                      :: param_corr_id
+      INTEGER, INTENT(in)                      :: eq_comm
+      LOGICAL, INTENT(in)                      :: is_central
 
 !  local variables
-      INTEGER                            :: status
-      REAL (rprec)                       :: temp_value
-      REAL (rprec)                       :: start_time
+      INTEGER                                  :: status
+      REAL (rprec)                             :: temp_value
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1475,8 +1537,7 @@
       status = nf90_get_var(result_ncid, param_value_id, temp_value,           &
      &                      start=(/ index, current_step /))
       CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
-      CALL param_set_value(this, a_model, temp_value, eq_comm,                 &
-     &                     is_central)
+      CALL this%set_value(a_model, temp_value, eq_comm, is_central)
 
       status = nf90_put_var(result_ncid, param_sigma_id, this%sigma,           &
      &                      start=(/ index, current_step /))
@@ -1501,7 +1562,7 @@
 !>  Syncs data between the parent and child processes. If MPI support is not
 !>  compiled in this subroutine reduces to a no op.
 !>
-!>  @param[inout] this       A @ref param_class instance.
+!>  @param[inout] this       A @ref param_recon_class instance.
 !>  @param[inout] a_model    A @ref model instance.
 !>  @param[in]    recon_comm A MPI intra_comm handle.
 !>  @param[in]    eq_comm    MPI communicator for the child equilibrium
@@ -1514,7 +1575,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout)  :: this
+      CLASS (param_recon_class), INTENT(inout) :: this
       CLASS (model_class), INTENT(inout) :: a_model
       INTEGER, INTENT(in)                :: recon_comm
       INTEGER, INTENT(in)                :: eq_comm
@@ -1533,13 +1594,13 @@
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
 
       IF (mpi_rank .eq. 0) THEN
-         value = param_get_value(this, a_model)
+         value = this%get_value(a_model)
       END IF
 
       CALL MPI_BCAST(value, 1, MPI_REAL8, 0, recon_comm, error)
 
       IF (mpi_rank .gt. 0) THEN
-         CALL param_set_value(this, a_model, value, eq_comm, is_central)
+         CALL this%set_value(a_model, value, eq_comm, is_central)
       END IF
 
       CALL profiler_set_stop_time('param_sync_value', start_time)
@@ -1554,7 +1615,7 @@
 !>  Sends the value of delta used in the child process to the parent process. If
 !>  MPI support is not compiled in this subroutine reduces to a no op.
 !>
-!>  @param[inout] this       A @ref param_class instance.
+!>  @param[inout] this       A @ref param_recon_class instance.
 !>  @param[in]    index      Index of the reconstruction parameter.
 !>  @param[in]    recon_comm A MPI intra_comm handle.
 !-------------------------------------------------------------------------------
@@ -1563,16 +1624,16 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: index
-      INTEGER, INTENT(in)               :: recon_comm
+      CLASS (param_recon_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: index
+      INTEGER, INTENT(in)                      :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      INTEGER                           :: mpi_size
-      INTEGER                           :: request
-      REAL (rprec)                      :: start_time
+      INTEGER                                  :: error
+      INTEGER                                  :: mpi_size
+      INTEGER                                  :: request
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1582,7 +1643,7 @@
 !  Must use a non blocking send here because we are sending messages from the
 !  main process to itself or need to send multiple sends before the first
 !  recieve. Other wise it could block until a recieve request is called.
-      CALL MPI_ISEND(this%recon%delta, 1, MPI_REAL8, 0, index,                 &
+      CALL MPI_ISEND(this%delta, 1, MPI_REAL8, 0, index,                       &
      &               recon_comm, request, error)
 
       CALL profiler_set_stop_time('param_send_delta', start_time)
@@ -1596,7 +1657,7 @@
 !>  Receives the value of delta used in the child process. If MPI support is not
 !>  compiled in this subroutine reduces to a no op.
 !>
-!>  @param[inout] this       A @ref param_class instance.
+!>  @param[inout] this       A @ref param_recon_class instance.
 !>  @param[in]    index      Index of the reconstruction parameter.
 !>  @param[in]    recon_comm A MPI recon_comm handle.
 !-------------------------------------------------------------------------------
@@ -1605,19 +1666,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: index
-      INTEGER, INTENT(in)               :: recon_comm
+      CLASS (param_recon_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: index
+      INTEGER, INTENT(in)                      :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      REAL (rprec)                      :: start_time
+      INTEGER                                  :: error
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL MPI_RECV(this%recon%delta, 1, MPI_REAL8, MPI_ANY_SOURCE,            &
+      CALL MPI_RECV(this%delta, 1, MPI_REAL8, MPI_ANY_SOURCE,                  &
      &              index, recon_comm, MPI_STATUS_IGNORE, error)
 
       CALL profiler_set_stop_time('param_recv_delta', start_time)
@@ -1632,7 +1693,7 @@
 !>  Syncs the value of delta from the parent process to the child. If MPI
 !>  support is not compiled in this subroutine reduces to a no op.
 !>
-!>  @param[inout] this       A @ref param_class instance.
+!>  @param[inout] this       A @ref param_recon_class instance.
 !>  @param[in]    recon_comm A MPI recon_comm handle.
 !-------------------------------------------------------------------------------
       SUBROUTINE param_sync_delta(this, recon_comm)
@@ -1640,18 +1701,18 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout) :: this
-      INTEGER, INTENT(in)               :: recon_comm
+      CLASS (param_recon_class), INTENT(inout) :: this
+      INTEGER, INTENT(in)                      :: recon_comm
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                           :: error
-      REAL (rprec)                      :: start_time
+      INTEGER                                  :: error
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      CALL MPI_BCAST(this%recon%delta, 1, MPI_REAL8, 0, recon_comm,            &
+      CALL MPI_BCAST(this%delta, 1, MPI_REAL8, 0, recon_comm,                  &
      &               error)
 
       CALL profiler_set_stop_time('param_sync_delta', start_time)
@@ -1666,7 +1727,7 @@
 !>  Syncs the value of delta from a child process to the parent. If MPI
 !>  support is not compiled in this subroutine reduces to a no op.
 !>
-!>  @param[inout] this       A @ref param_class instance.
+!>  @param[inout] this       A @ref param_recon_class instance.
 !>  @param[inout] a_model    A @ref model instance.
 !>  @param[in]    index      Index of the reconstruction parameter.
 !>  @param[in]    recon_comm A MPI intra_comm handle.
@@ -1680,19 +1741,19 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (param_class), INTENT(inout)  :: this
-      CLASS (model_class), INTENT(inout) :: a_model
-      INTEGER, INTENT(in)                :: index
-      INTEGER, INTENT(in)                :: recon_comm
-      INTEGER, INTENT(in)                :: eq_comm
-      LOGICAL, INTENT(in)                :: is_central
+      CLASS (param_recon_class), INTENT(inout) :: this
+      CLASS (model_class), INTENT(inout)       :: a_model
+      INTEGER, INTENT(in)                      :: index
+      INTEGER, INTENT(in)                      :: recon_comm
+      INTEGER, INTENT(in)                      :: eq_comm
+      LOGICAL, INTENT(in)                      :: is_central
 
 #if defined(MPI_OPT)
 !  local variables
-      INTEGER                            :: error
-      REAL (rprec)                       :: value
-      INTEGER                            :: mpi_rank
-      REAL (rprec)                       :: start_time
+      INTEGER                                  :: error
+      REAL (rprec)                             :: value
+      INTEGER                                  :: mpi_rank
+      REAL (rprec)                             :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
@@ -1700,13 +1761,13 @@
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
 
       IF (mpi_rank .eq. index) THEN
-         value = param_get_value(this, a_model)
+         value = this%get_value(a_model)
          CALL MPI_SSEND(value, 1, MPI_REAL8, 0, mpi_rank, recon_comm,          &
      &                  error)
       ELSE IF (mpi_rank .eq. 0) THEN
          CALL MPI_RECV(value, 1, MPI_REAL8, index, index, recon_comm,          &
      &                 MPI_STATUS_IGNORE, error)
-         CALL param_set_value(this, a_model, value, eq_comm, is_central)
+         CALL this%set_value(a_model, value, eq_comm, is_central)
       END IF
 
       CALL profiler_set_stop_time('param_sync_child', start_time)
