@@ -434,7 +434,7 @@
             END IF
 
 !  Test for convergence.
-            IF ((context%recon%get_dg2() .le. context%recon_stop) .or.                                      &
+            IF ((context%recon%get_dg2() .le. context%recon_stop) .or.         &
      &          (context%recon%get_g2() .eq. 0.0)) THEN
                WRITE (*,*)
                WRITE (*,*) ' *** Equilibrium reconstructed'
@@ -1253,7 +1253,7 @@
 
       CALL init_combination_signals(context, signals_created)
 
-      CALL v3fit_context_resize(context)
+      CALL context%resize
 
       CALL profiler_set_stop_time('init_signals', start_time)
 
@@ -1790,7 +1790,7 @@
      &                        lif_phi_degree(i,1:num_phi)*degree,              &
      &                        lif_on_edge(i))
 
-         CALL signal_construct(limiter_obj, s_name, l_name, 'm',              &
+         CALL signal_construct(limiter_obj, s_name, l_name, 'm',               &
      &           sdo_data_a(signals_created + 1),                              &
      &           sdo_sigma_a(signals_created + 1),                             &
      &           sdo_weight_a(signals_created + 1),                            &
