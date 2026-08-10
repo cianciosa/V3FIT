@@ -141,6 +141,7 @@
 !>                           parameters are defined by the @ref model or the @ref equilibirum.
 !>                           * @ref model_recon_param_sec
 !>                           * @ref vmec_equilibrium_recon_param_sec
+!>                           * @ref siesta_equilibrium_recon_param_sec
 !>                           * @ref vacuum_equilibrium_recon_param_sec,                          v3fit_input::rp_type}
 !>     @item{rp_index,       Array of reconstruction parameter indices,                          v3fit_input::rp_index}
 !>     @item{rp_index2,      Array of reconstruction parameter 2nd indices,                      v3fit_input::rp_index2}
@@ -153,8 +154,8 @@
 !>                           Any parameter maybe used as a constraint.
 !>                           * @ref model_sec
 !>                           * @ref vmec_equilibrium_sec
-!>                           * @ref vacuum_equilibrium_sec
 !>                           * @ref siesta_equilibrium_sec
+!>                           * @ref vacuum_equilibrium_sec
 !>
 !>                           The second index contains the low and high range types
 !>                           respectively.,                                                      v3fit_input::rp_range_type}
@@ -177,6 +178,7 @@
 !>                           defined by the @ref model or the @ref equilibrium.
 !>                           * @ref model_recon_param_sec
 !>                           * @ref vmec_equilibrium_recon_param_sec
+!>                           * @ref siesta_equilibrium_recon_param_sec
 !>                           * @ref vacuum_equilibrium_recon_param_sec,                      v3fit_input::lp_type}
 !>     @item{lp_index,       Array of locking parameter indices,                             v3fit_input::lp_index}
 !>     @item{lp_index2,      Array of locking parameter 2nd indices,                         v3fit_input::lp_index2}
@@ -184,6 +186,7 @@
 !>                           parameter maybe locked to.
 !>                           * @ref model_sec
 !>                           * @ref vmec_equilibrium_sec
+!>                           * @ref siesta_equilibrium_sec
 !>                           * @ref vacuum_equilibrium_sec,                                  v3fit_input::lp_sets}
 !>     @item{lp_sets_index,  Array of locking parameter sets indices,                        v3fit_input::lp_sets_index}
 !>     @item{lp_sets_index2, Array of locking parameter sets 2nd indices,                    v3fit_input::lp_sets_index2}
@@ -260,10 +263,11 @@
 !>     @item{n_prior,          Number of specified priors.,             v3fit_input::n_prior}
 !>     @item{prior_name,       Name of the specified priors.,           v3fit_input::prior_name}
 !>     @item{prior_param_name, Name of the prior parameter. Any model
-!>                             or equilirbium parameter maybe used as
+!>                             or equilibrium parameter maybe used as
 !>                             a prior.
 !>                             * @ref model_sec
 !>                             * @ref vmec_equilibrium_sec
+!>                             * @ref siesta_equilibrium_sec
 !>                             * @ref vacuum_equilibrium_sec,           v3fit_input::prior_param_name}
 !>     @item{prior_indices,    2D array of the ith and jth index of
 !>                             the parameter. The second index
