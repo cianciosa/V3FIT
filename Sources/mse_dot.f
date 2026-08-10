@@ -206,14 +206,13 @@
       mse_keyword(19) = 'end_of_file'
 
 !  Open up the 'mse.' file
-      mse_dot_file_ref = signal_dot_open(TRIM(mse_file), 'mse')
+      CALL mse_dot_file_ref%open(TRIM(mse_file), 'mse')
 
 !  Infinite Loop
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(mse_dot_file_ref,                &
-     &                                        mse_keyword))
+         SELECT CASE (mse_dot_file_ref%read_keyword(mse_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -340,7 +339,7 @@
       END DO
 
 !  Close the 'mse.' file
-      CALL signal_dot_close(mse_dot_file_ref)
+      CALL mse_dot_file_ref%close
 
       CALL profiler_set_stop_time('mse_dot_read', start_time)
 
@@ -389,7 +388,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: mse_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: mse_dot_file_ref
       CHARACTER (len=*), INTENT(in)          :: coordinate_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       INTEGER, INTENT(inout)                 :: signals_created
@@ -415,24 +414,20 @@
       start_time = profiler_get_start_time()
 
 !  Get the position and name of the point.
-      CALL signal_dot_parse_chord(mse_dot_file_ref, coordinate_type,           &
-     &                            point_name, xcart)
+      CALL mse_dot_file_ref%parse_chord(coordinate_type,                       &
+     &                                  point_name, xcart)
 
 !  Get the start and end positons of the viewing chord.
-      view_start = signal_dot_parse_3_real(mse_dot_file_ref,                   &
-     &                                     'Failed to parse view ' //          &
-     &                                     'start position.')
-      view_end = signal_dot_parse_3_real(mse_dot_file_ref,                     &
-     &                                   'Failed to parse view ' //            &
-     &                                   'end position.')
+      view_start = mse_dot_file_ref%parse_3_real(                              &
+     &                'Failed to parse view start position.')
+      view_end = mse_dot_file_ref%parse_3_real(                                &
+     &                'Failed to parse view end position.')
 
 !  Get the start and end positons of the beam chord.
-      view_start = signal_dot_parse_3_real(mse_dot_file_ref,                   &
-     &                                     'Failed to parse beam ' //          &
-     &                                     'start position.')
-      view_end = signal_dot_parse_3_real(mse_dot_file_ref,                     &
-     &                                   'Failed to parse beam ' //            &
-     &                                   'end position.')
+      view_start = mse_dot_file_ref%parse_3_real(                              &
+     &                'Failed to parse beam start position.')
+      view_end = mse_dot_file_ref%parse_3_real(                                &
+     &                'Failed to parse beam end position.')
 
 !  Convert Coordinates if necessay.
       IF (TRIM(coordinate_type) .eq. 'RPhiDegZ') THEN
@@ -510,7 +505,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: mse_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: mse_dot_file_ref
       CHARACTER (len=*), INTENT(in)          :: coordinate_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       INTEGER, INTENT(inout)                 :: signals_created
@@ -535,18 +530,16 @@
       start_time = profiler_get_start_time()
 
 !  Get the position and name of the point.
-      CALL signal_dot_parse_chord(mse_dot_file_ref, coordinate_type,           &
-     &                            point_name, xcart)
+      CALL mse_dot_file_ref%parse_chord(coordinate_type,                       &
+     &                                  point_name, xcart)
 
 !  Get the alpha and omega.
-      t_angles = signal_dot_parse_2_real(mse_dot_file_ref,                     &
-     &                                   'Failed to parse angles ' //          &
-     &                                   'to toroidal')
+      t_angles = mse_dot_file_ref%parse_2_real(                                &
+     &              'Failed to parse angles to toroidal')
 
 !  Get the delta and theta.
-      h_angles = signal_dot_parse_2_real(mse_dot_file_ref,                     &
-     &                                   'Failed to parse angles ' //          &
-     &                                   'to horizontal')
+      h_angles = mse_dot_file_ref%parse_2_real(                                &
+     &              'Failed to parse angles to horizontal')
 
 !  Convert Coordinates if necessay.
       IF (in_degrees1) THEN

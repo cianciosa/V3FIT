@@ -158,7 +158,7 @@
 !  sxrchd_keyword    character array - keywords for various sxrch input types
       CHARACTER(len=data_name_length), DIMENSION(1:n_sxrchd_keyword) ::        &
      &   sxrchd_keyword
-      TYPE(signal_dot_file)                 :: sxrch_dot_file_ref
+      TYPE (signal_dot_file)                :: sxrch_dot_file_ref
       INTEGER                               :: current_profile
       REAL (rprec)                          :: start_time
 
@@ -178,7 +178,7 @@
       sxrchd_keyword(10) = 'end_of_file'
 
 !  Open up the 'sxrch.' file
-      sxrch_dot_file_ref = signal_dot_open(TRIM(sxrch_file), 'sxrch')
+      CALL sxrch_dot_file_ref%open(TRIM(sxrch_file), 'sxrch')
 
 !  Start with the first profile
       current_profile = 1
@@ -187,8 +187,7 @@
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(sxrch_dot_file_ref,              &
-     &                                        sxrchd_keyword))
+         SELECT CASE (sxrch_dot_file_ref%read_keyword(sxrchd_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -252,7 +251,7 @@
       END DO
 
 !  Close the 'sxrch.' file
-      CALL signal_dot_close(sxrch_dot_file_ref)
+      CALL sxrch_dot_file_ref%close
 
       CALL profiler_set_stop_time('sxrch_dot_read', start_time)
 
@@ -301,7 +300,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: sxrch_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: sxrch_dot_file_ref
       CHARACTER (len=*), INTENT(in)          :: coordinate_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       INTEGER, INTENT(inout)                 :: signals_created
@@ -330,15 +329,13 @@
       END IF
 
 !  Get the start, end and name of chord.
-      CALL signal_dot_parse_chord(sxrch_dot_file_ref,                          &
-     &                            coordinate_type,                             &
-     &                            chord_name,                                  &
-     &                            xcart_i, xcart_f)
+      CALL sxrch_dot_file_ref%parse_chord(coordinate_type,                     &
+     &                                    chord_name, xcart_i, xcart_f)
 
 !  Default the geometric factor to 1.
       geo = 1.0
       IF (use_geo) THEN
-         geo = signal_dot_parse_real(sxrch_dot_file_ref,                       &
+         geo = sxrch_dot_file_ref%parse_real(                                  &
      &            'Expected geometric factor for sxrem chord')
       END IF
 

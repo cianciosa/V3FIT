@@ -130,7 +130,7 @@
 !  ece_keyword    character array - keywords for various ece input types
       CHARACTER(len=data_name_length), DIMENSION(1:n_ece_keyword) ::           &
      &   ece_keyword
-      TYPE(signal_dot_file)                 :: ece_dot_file_ref
+      TYPE (signal_dot_file)                :: ece_dot_file_ref
       INTEGER                               :: current_profile
       REAL (rprec)                          :: start_time
 
@@ -143,14 +143,13 @@
       ece_keyword(3) = 'end_of_file'
 
 !  Open up the 'ece.' file
-      ece_dot_file_ref = signal_dot_open(TRIM(ece_file), 'ece')
+      CALL ece_dot_file_ref%open(TRIM(ece_file), 'ece')
 
 !  Infinite Loop
 !  Character variable line should be defined on entry
       DO
 !  Branch on the keyword
-         SELECT CASE (signal_dot_read_keyword(ece_dot_file_ref,                &
-     &                                        ece_keyword))
+         SELECT CASE (ece_dot_file_ref%read_keyword(ece_keyword))
 
             CASE DEFAULT ! This case should never fire.
                EXIT ! Exit out of infinte loop.
@@ -175,7 +174,7 @@
       END DO
 
 !  Close the 'ece.' file
-      CALL signal_dot_close(ece_dot_file_ref)
+      CALL ece_dot_file_ref%close
 
       CALL profiler_set_stop_time('ece_dot_read', start_time)
 
@@ -218,7 +217,7 @@
       IMPLICIT NONE
 
 !  Declare Arguments
-      TYPE (signal_dot_file), INTENT(inout)  :: ece_dot_file_ref
+      CLASS (signal_dot_file), INTENT(inout) :: ece_dot_file_ref
       CHARACTER (len=*), INTENT(in)          :: coordinate_type
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       INTEGER, INTENT(inout)                 :: signals_created
@@ -245,11 +244,11 @@
       END IF
 
 !  Get the start, end and name of chord.
-      CALL signal_dot_parse_chord(ece_dot_file_ref, coordinate_type,           &
-     &                            chord_name, xcart_i, xcart_f)
+      CALL ece_dot_file_ref%parse_chord(coordinate_type, chord_name,           &
+     &                                  xcart_i, xcart_f)
 
 !  Default the geometric factor to 1.
-      resonance = signal_dot_parse_real(ece_dot_file_ref,                      &
+      resonance = ece_dot_file_ref%parse_real(                                 &
      &               'Expected resonance for ECE chord')
 
       ece_obj => ece_class(xcart_i, xcart_f, resonance)

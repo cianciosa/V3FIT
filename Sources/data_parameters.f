@@ -28,6 +28,9 @@
 !>  Max number of parameter indicies.
       INTEGER, PARAMETER           :: data_max_indices = 2
 
+!>  Max number of scan values.
+      INTEGER, PARAMETER           :: data_max_scan = 1000
+
 !  MPI task parameters.
 !>  Compute the jacobian task.
       INTEGER, PARAMETER           :: mpi_jacobian_task    = 0

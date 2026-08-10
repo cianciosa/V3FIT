@@ -41,10 +41,12 @@
 !>  @table_section{work_sec, Task specification\, work variables}
 !>     @item{my_task, Character: to specify task in MAIN select case. Possible
 !>                    tasks are:
-!>                    -# @fixed_width{'equilibrium'} Solve the equilibrium.
-!>                    -# @fixed_width{'v3post'}      Solve the equilibrium and compute modeled signals.
-!>                    -# @fixed_width{'reconstruct'} Reconstruct the equilibirum.
-!>                    -# @fixed_width{'units_tests'} Run the internal unit tests., v3fit_input::my_task}
+!>                    -# @fixed_width{'equilibrium'}            Solve the equilibrium.
+!>                    -# @fixed_width{'v3post'}                 Solve the equilibrium and compute modeled signals.
+!>                    -# @fixed_width{'reconstruct'}            Reconstruct the equilibirum.
+!>                    -# @fixed_width{'multi_grid_equilibrium'} Solve the equilibrium using multiple grid steps.
+!>                    -# @fixed_width{'multi_grid_v3post'}      Solve the equilibrium and compute modeled signals using multiple grid steps.
+!>                    -# @fixed_width{'units_tests'}            Run the internal unit tests.,                                                v3fit_input::my_task}
 !>  @end_table
 !>
 !>  @table_section{model_profile_sec, Model profile specification}
@@ -163,6 +165,9 @@
 !>                           The second index specifies the low and high ranges repectively.
 !>                           The third index contains the first and second index of the
 !>                           inequality constraint parameter.,                                   v3fit_input::rp_range_index}
+!>     @item{rp_scan_num,    The number of scan iterations.,                                     v3fit_input::rp_scan_num}
+!>     @item{rp_scan_array,  2D Array of can values. The first index corresponds to the
+!>                           reconstruction parameters in @fixed_width{'rp_type'}.,              v3fit_input::rp_scan_array}
 !>  @end_table
 !>
 !>  @table_section{lock_param_sec, Locking parameter specification}
@@ -857,6 +862,12 @@
 !>  the upper range.
       INTEGER, DIMENSION(v3fit_max_parameters,2,data_max_indices) ::           &
      &   rp_range_index = 0
+!>  Number of iterations in the scan.
+      INTEGER                              :: rp_scan_num = 0
+!>  Scan values.
+      REAL (rprec),                                                            &
+     &   DIMENSION(v3fit_max_parameters, data_max_scan) ::                     &
+     &      rp_scan_array = 0
 
 !  Reconstruction parameters
 !>  Number of locking parameters
@@ -1170,7 +1181,7 @@
      &   n_dp, dp_type, dp_index,                                              &
 !  Reconstruction parameters
      &   n_rp, rp_type, rp_index, rp_index2, rp_vrnc, rp_range_type,           &
-     &   rp_range_value, rp_range_index,                                       &
+     &   rp_range_value, rp_range_index, rp_scan_num, rp_scan_array,           &
 !  Locking parameters
      &   n_lp, lp_type, lp_index, lp_index2, lp_sets, lp_sets_index,           &
      &   lp_sets_index2, lp_sets_coeff,
@@ -1344,7 +1355,6 @@
          END DO
       END DO
 
-
 !-------------------------------------------------------------------------------
 !  All the coding between these boxes can be removed once the non _a sxrem
 !  values are removed. ***
@@ -1467,6 +1477,13 @@
 !  All the coding between these boxes can be removed once the non _a sxrem
 !  values are removed. ***
 !-------------------------------------------------------------------------------
+
+      IF (rp_scan_num .gt. data_max_scan) THEN
+         WRITE(*,1004) rp_scan_num, data_max_scan
+         rp_scan_num = data_max_scan
+      END IF
+
+1004  FORMAT('rp_scan_num = ',i4,' is greater than data_max_scan = ',i4)
 
       WRITE (*,*) ' *** V3FIT namelist input read from ' //                    &
      &            TRIM(namelist_file)

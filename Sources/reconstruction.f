@@ -704,7 +704,7 @@
 !  Converge the equilibrium. this%e is initialized to zero in the constructor.
       IF (a_model%converge(eq_steps, iou, eq_comm, 'All')) THEN
          DO i = 1, SIZE(gaussp)
-            CALL gaussp_set_profile(gaussp(i)%p, a_model)
+            CALL gaussp(i)%p%set_profile(a_model)
          END DO
 
 !$OMP PARALLEL DO
@@ -765,7 +765,7 @@
 
       DO i = 1, SIZE(derived_params)
          this%f(i,this%current_step) =                                         &
-     &      param_get_value(derived_params(i)%p, a_model)
+     &      derived_params(i)%p%get_value(a_model)
       END DO
 
       CALL profiler_set_stop_time('reconstruction_eval_f', start_time)
@@ -804,11 +804,11 @@
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
-      TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
+      TYPE (param_locking_pointer), DIMENSION(:), INTENT(in) :: locks
       CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       INTEGER, INTENT(inout)                             :: eq_steps
       INTEGER, INTENT(in)                                :: iou
       INTEGER, INTENT(in)                                :: recon_comm
@@ -836,15 +836,15 @@
 !  variable. Syning the model afterwards will bring the internal state up to
 !  sync.
       DO i = 1, SIZE(params)
-         CALL param_sync_value(params(i)%p, a_model, recon_comm,               &
-     &                         eq_comm, this%use_central)
+         CALL params(i)%p%sync_value(a_model, recon_comm,                      &
+     &                               eq_comm, this%use_central)
       END DO
       CALL a_model%sync_state(recon_comm)
       CALL this%sync_state(recon_comm)
 
 !  Set the locked values.
       DO i = 1, SIZE(locks)
-         CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+         CALL locks(i)%p%set_lock_value(a_model, eq_comm)
       END DO
 
       CALL MPI_COMM_RANK(recon_comm, mpi_rank, error)
@@ -882,25 +882,23 @@
      &                                 stride(mpi_rank + 1)
 
 !  Save the initial parameter value and the equilirbium state.
-         param_value = param_get_value(params(j)%p, a_model)
+         param_value = params(j)%p%get_value(a_model)
 
 !  Increment the parameter. param_increment checks the bounds and adjust the
 !  step size to keep the parameter in range.
-         CALL param_increment(params(j)%p, a_model, eq_comm,                   &
-     &                        this%use_central)
+         CALL params(j)%p%increment(a_model, eq_comm, this%use_central)
 !  Set the locked values.
          DO i = 1, SIZE(locks)
-            CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+            CALL locks(i)%p%set_lock_value(a_model, eq_comm)
          END DO
 
 !  Check that model was able to converge. If the model converged proceed as
 !  normal otherwise set the jth index of the jacobian to zero to avoid a step
 !  in that parameter direction.
          IF (a_model%converge(eq_steps, iou, eq_comm,                          &
-     &                        param_get_name(params(j)%p,                      &
-     &                                       a_model))) THEN
+     &                        params(j)%p%get_name(a_model))) THEN
             DO i = 1, SIZE(gaussp)
-               CALL gaussp_set_profile(gaussp(i)%p, a_model)
+               CALL gaussp(i)%p%set_profile(a_model)
             END DO
 
 !  Compute the normalized jacobian. d e_i/d a_j . Equation 12 in Hanson et. al.
@@ -956,27 +954,25 @@
 !  Derived Jacobian.
                DO i = 1, SIZE(derived_params)
                   this%derived_jacobian(i,j) =                                 &
-     &               param_get_value(derived_params(i)%p, a_model)
+     &               derived_params(i)%p%get_value(a_model)
                END DO
 
 !  Reset the parameters and equilibrium to prepare for the backward step.
-               CALL param_set_value(params(j)%p, a_model, param_value,         &
-     &                              eq_comm, this%use_central)
+               CALL params(j)%p%set_value(a_model, param_value,                &
+     &                                    eq_comm, this%use_central)
                CALL a_model%reset_state
 !  Set the locked values.
                DO i = 1, SIZE(locks)
-                  CALL param_set_lock_value(locks(i)%p, a_model,               &
-     &                                      eq_comm)
+                  CALL locks(i)%p%set_lock_value(a_model, eq_comm)
                END DO
 
 !  Decrement the parameter.
-               CALL param_decrement(params(j)%p, a_model, eq_comm)
+               CALL params(j)%p%decrement(a_model, eq_comm)
 
                IF (a_model%converge(eq_steps, iou, eq_comm,                    &
-     &                              param_get_name(params(j)%p,                &
-     &                                             a_model))) THEN
+     &                params(j)%p%get_name(a_model))) THEN
                   DO i = 1, SIZE(gaussp)
-                     CALL gaussp_set_profile(gaussp(i)%p, a_model)
+                     CALL gaussp(i)%p%set_profile(a_model)
                   END DO
 
 !  Find other half of the finite difference. Negate the jacobian to obtain a
@@ -1003,7 +999,7 @@
                   DO i = 1, SIZE(derived_params)
                      this%derived_jacobian(i,j) =                              &
      &                  -this%derived_jacobian(i,j) +                          &
-     &                   param_get_value(derived_params(i)%p, a_model)
+     &                  derived_params(i)%p%get_value(a_model)
                   END DO
 
                ELSE
@@ -1038,17 +1034,17 @@
                END DO
                this%jacobian(:,j) = this%jacobian(:,j)                         &
      &                            * SIGN(1.0_rprec,                            &
-     &                                   params(j)%p%recon%delta)
+     &                                   params(j)%p%delta)
 
 !  Derived Jacobian.
                DO i = 1, SIZE(derived_params)
                   this%derived_jacobian(i,j) =                                 &
-     &               -(param_get_value(derived_params(i)%p, a_model)           &
+     &               -(derived_params(i)%p%get_value(a_model)                  &
      &               - this%f(i,this%current_step))
                END DO
                this%derived_jacobian(:,j) =                                    &
      &            this%derived_jacobian(:,j) *                                 &
-     &            SIGN(1.0_rprec, params(j)%p%recon%delta)
+     &            SIGN(1.0_rprec, params(j)%p%delta)
             END IF
          ELSE
 !  Warn the user that the model failed to converge on the jth parameter.
@@ -1060,12 +1056,12 @@
 
 !  Restore the parameter and the equilibrium to it's initial value. Need to sync
 !  the value of param delta back to the parent process.
-         CALL param_set_value(params(j)%p, a_model, param_value,               &
-     &                        eq_comm, this%use_central)
+         CALL params(j)%p%set_value(a_model, param_value, eq_comm,             &
+     &                              this%use_central)
          CALL a_model%reset_state
 !  Set the locked values.
          DO i = 1, SIZE(locks)
-            CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+            CALL locks(i)%p%set_lock_value(a_model, eq_comm)
          END DO
       END DO
 !  At this point, the computed jacobian rows should be returned to the parent
@@ -1118,11 +1114,11 @@
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
-      TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
+      TYPE (param_locking_pointer), DIMENSION(:), INTENT(in) :: locks
       CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       INTEGER, INTENT(inout)                             :: eq_steps
       INTEGER, INTENT(in)                                :: iou
       INTEGER, INTENT(in)                                :: recon_comm
@@ -1656,11 +1652,11 @@
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
-      TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
+      TYPE (param_locking_pointer), DIMENSION(:), INTENT(in) :: locks
       CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       INTEGER, INTENT(inout)                             :: eq_steps
       INTEGER, INTENT(in)                                :: iou
       INTEGER, INTENT(in)                                :: recon_comm
@@ -1693,7 +1689,7 @@
      &               error)
       CALL this%sync_svd(recon_comm)
       DO i = 1, SIZE(params)
-         CALL param_sync_delta(params(i)%p, recon_comm)
+         CALL params(i)%p%sync_delta(recon_comm)
       END DO
 #endif
 
@@ -1787,9 +1783,9 @@
 !>
 !>  @param[inout] this        A @ref reconstruction_class instance.
 !>  @param[inout] signals     Array of @ref signal objects.
-!>  @param[inout] locks       Array of @ref lock objects.
+!>  @param[inout] locks       Array of @ref param_locking_class objects.
 !>  @param[inout] a_model     A @ref model instance.
-!>  @param[inout] params      Array of @ref parameter objects.
+!>  @param[inout] params      Array of @ref param_recon_class objects.
 !>  @param[inout] eq_steps    Number of steps for the equilibrium to take.
 !>  @param[in]    max_step    Upper limit of the step size to attemp.
 !>  @param[in]    iou         Input/output file to write log messages to.
@@ -1813,11 +1809,11 @@
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(in)     ::                    &
      &   derived_params
-      TYPE (param_pointer), DIMENSION(:), INTENT(in)     :: locks
+      TYPE (param_locking_pointer), DIMENSION(:), INTENT(in) :: locks
       CLASS (model_class), POINTER                       :: a_model
       TYPE (gaussp_class_pointer), DIMENSION(:), INTENT(inout) ::              &
      &   gaussp
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       INTEGER, INTENT(inout)                             :: eq_steps
       REAL (rprec), INTENT(inout)                        :: max_step
       INTEGER, INTENT(in)                                :: iou
@@ -1887,7 +1883,7 @@
 
 !  Save the parameter values.
       DO i = 1, SIZE(params)
-         param_value(i) = param_get_value(params(i)%p, a_model)
+         param_value(i) = params(i)%p%get_value(a_model)
       END DO
 
 !  Step the parameters using the specified step method.
@@ -1934,14 +1930,13 @@
 !  step size.
       WRITE (iou,1000)
       DO i = 1, SIZE(params)
-         CALL param_set_value(params(i)%p, a_model, param_value(i) +           &
-     &           delta_a(i)*delta_norm*ABS(params(i)%p%recon%delta),           &
+         CALL params(i)%p%set_value(a_model, param_value(i) +                  &
+     &           delta_a(i)*delta_norm*ABS(params(i)%p%delta),                 &
      &           eq_comm, this%use_central)
-         WRITE (iou,1001) delta_a(i), param_get_name(params(i)%p,              &
-     &                                               a_model)
+         WRITE (iou,1001) delta_a(i), params(i)%p%get_name(a_model)
       END DO
       DO i = 1, SIZE(locks)
-         CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+         CALL locks(i)%p%set_lock_value(a_model, eq_comm)
       END DO
 
 !  Reconverge the equilibrium. Increment the current step so
@@ -2002,9 +1997,9 @@
 !  these into param_value. For the zeroth rank, the old parameters were saved in
 !  reconstruction_step.
             DO i = 1, SIZE(params)
-               CALL param_sync_child(params(i)%p, a_model, best_index,         &
-     &                               recon_comm, eq_comm,                      &
-     &                               this%use_central)
+               CALL params(i)%p%sync_child(a_model, best_index,                &
+     &                                     recon_comm, eq_comm,                &
+     &                                     this%use_central)
             END DO
             CALL MPI_RECV(this%e(:,this%current_step), SIZE(this%e, 1),        &
      &                    MPI_REAL8, best_index, best_index, recon_comm,       &
@@ -2022,7 +2017,7 @@
 !  FIXME: Not sure if the model needs to be updated before the lock values are
 !         are set.
             DO i = 1, SIZE(locks)
-               CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+               CALL locks(i)%p%set_lock_value(a_model, eq_comm)
             END DO
 
 !  Sync the model from the best index.
@@ -2040,12 +2035,11 @@
 !  The step failed, reset the param values so that they remain in sync with the
 !  step.
              DO i = 1, SIZE(params)
-                CALL param_set_value(params(i)%p, a_model,                     &
-     &                               param_value(i), eq_comm,                  &
-     &                               this%use_central)
+                CALL params(i)%p%set_value(a_model, param_value(i),            &
+     &                                     eq_comm, this%use_central)
              END DO
              DO i = 1, SIZE(locks)
-                CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+                CALL locks(i)%p%set_lock_value(a_model, eq_comm)
              END DO
 
 !  Reset the model state back to the last step. The state of the last step was
@@ -2060,9 +2054,9 @@
          IF (mpi_rank .eq. best_index) THEN
 !  Send the best result back to the parent process.
             DO i = 1, SIZE(params)
-               CALL param_sync_child(params(i)%p, a_model, best_index,         &
-     &                               recon_comm, eq_comm,                      &
-     &                               this%use_central)
+               CALL params(i)%p%sync_child(a_model, best_index,                &
+     &                                     recon_comm, eq_comm,                &
+     &                                     this%use_central)
             END DO
             CALL MPI_SSEND(this%e(:,this%current_step), SIZE(this%e, 1),       &
      &                     MPI_REAL8, 0, mpi_rank, recon_comm, error)
@@ -2083,11 +2077,11 @@
 !  Reset everything in case this step failed. When the next jacobian is
 !  computed, this will be resynced.
          DO i = 1, SIZE(params)
-            CALL param_set_value(params(i)%p, a_model, param_value(i),         &
-     &                           eq_comm, this%use_central)
+            CALL params(i)%p%set_value(a_model, param_value(i),                &
+     &                                 eq_comm, this%use_central)
          END DO
          DO i = 1, SIZE(locks)
-            CALL param_set_lock_value(locks(i)%p, a_model, eq_comm)
+            CALL locks(i)%p%set_lock_value(a_model, eq_comm)
          END DO
 
 !  Ensure that parent had a chance to sync the child equilibrium before it gets
@@ -2133,7 +2127,7 @@
 
 !  Declare Arguments
       CLASS (reconstruction_class), INTENT(inout)        :: this
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout)  :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       TYPE (signal_pointer), DIMENSION(:), INTENT(inout) :: signals
       TYPE (param_pointer), DIMENSION(:), INTENT(inout)  ::                    &
      &   derived_params
@@ -2198,16 +2192,16 @@
 !  was used, the parameter covariance needs to be denormalized.
       DO j = 1, SIZE(params)
          params(j)%p%sigma =                                                   &
-     &      SQRT(cp(j,j)*(delta_norm*params(j)%p%recon%delta)**2.0)
+     &      SQRT(cp(j,j)*(delta_norm*params(j)%p%delta)**2.0)
          DO i = 1, SIZE(params)
             params(j)%p%correlation(i) =                                       &
-     &         cp(j,i)*delta_norm*params(j)%p%recon%delta *                    &
-     &                 delta_norm*params(i)%p%recon%delta
+     &         cp(j,i)*delta_norm*params(j)%p%delta *                          &
+     &                 delta_norm*params(i)%p%delta
          END DO
       END DO
 
 !  Normalize reconstruction parameter correlation matrix.
-      CALL reconstruction_normalize_correlations(params)
+      CALL reconstruction_normalize_recon_correlations(params)
 
 !  Compute signal effectiveness.
       ALLOCATE(j_dot_cp(SIZE(signals),SIZE(params)))
@@ -2224,8 +2218,8 @@
 !
 !    (A * cp_n)^2 * pi^2 / sigma_p^2                                         (4)
       DO j = 1, SIZE(params)
-         params(j)%p%recon%sem = (j_dot_cp(:,j)**2.0) *                        &
-     &      (delta_norm*params(j)%p%recon%delta)**2.0 /                        &
+         params(j)%p%sem = (j_dot_cp(:,j)**2.0) *                              &
+     &      (delta_norm*params(j)%p%delta)**2.0 /                              &
      &      params(j)%p%sigma**2.0
       END DO
 
@@ -2333,7 +2327,8 @@
       TYPE (param_pointer), DIMENSION(:), INTENT(inout) :: params
 
 !  local variables
-      INTEGER                                           :: j, i
+      INTEGER                                           :: j
+      INTEGER                                           :: i
       REAL (rprec)                                      :: start_time
 
 !  Start of executable code
@@ -2350,6 +2345,45 @@
 
       CALL profiler_set_stop_time(                                             &
      &        'reconstruction_normalize_correlations', start_time)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Normalize a recon correlation matrix.
+!>
+!>  Normalizes a correlation matrix by dividing by the sigmas for that element.
+!>  This method is static so it doesn't require a this parameter.
+!>
+!>  @param[inout] params Array of parameter to normalize the correlations of.
+!-------------------------------------------------------------------------------
+      SUBROUTINE reconstruction_normalize_recon_correlations(params)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) ::               &
+     &   params
+
+!  local variables
+      INTEGER                                           :: j
+      INTEGER                                           :: i
+      REAL (rprec)                                      :: start_time
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      DO j = 1, SIZE(params)
+         params(j)%p%correlation = params(j)%p%correlation                     &
+     &                           / params(j)%p%sigma
+         DO i = 1, SIZE(params)
+            params(j)%p%correlation(i)                                         &
+     &         = params(j)%p%correlation(i)/params(i)%p%sigma
+         END DO
+      END DO
+
+      CALL profiler_set_stop_time(                                             &
+     &        'reconstruction_normalize_recon_correlations',                   &
+     &        start_time)
 
       END SUBROUTINE
 
@@ -2700,6 +2734,7 @@
 !>  compiled in this subroutine reduces to a no op.
 !>
 !>  @param[inout] this               A @ref reconstruction_class instance.
+!>  @param[inout] params             Array of @ref param_recon_class objects.
 !>  @param[in]    num_params         Number of reconstruction parameters.
 !>  @param[in]    num_signal         Number of signals.
 !>  @param[in]    num_derived_params Number of derived parameters.
@@ -2715,7 +2750,7 @@
 
 !  Declare Arguments
       CLASS (reconstruction_class), INTENT(inout) :: this
-      TYPE (param_pointer), DIMENSION(:), INTENT(inout) :: params
+      TYPE (param_recon_pointer), DIMENSION(:), INTENT(inout) :: params
       INTEGER, INTENT(in)                         :: num_signal
       INTEGER, INTENT(in)                         :: num_derived_params
       INTEGER, DIMENSION(:), INTENT(in)           :: stride
@@ -2779,13 +2814,13 @@
       IF (mpi_rank .ne. 0) THEN
          DO i = offset(mpi_rank + 1) + 1, offset(mpi_rank + 1) +               &
      &                                    stride(mpi_rank + 1)
-            CALL param_send_delta(params(i)%p, i, recon_comm)
+            CALL params(i)%p%send_delta(i, recon_comm)
          END DO
       END IF
 
       IF (mpi_rank .eq. 0) THEN
          DO i = offset(1) + stride(1) + 1, SIZE(params)
-            CALL param_recv_delta(params(i)%p, i, recon_comm)
+            CALL params(i)%p%recv_delta(i, recon_comm)
          END DO
       END IF
 
