@@ -172,6 +172,7 @@
 
          PROCEDURE :: write => siesta_write
          PROCEDURE :: write_input => siesta_write_input
+         PROCEDURE :: save_file => siesta_save_file
 
          PROCEDURE :: sync_state => siesta_sync_state
          PROCEDURE :: sync_child => siesta_sync_child
@@ -2960,13 +2961,53 @@
       WRITE (filename,1000) TRIM(this%restart_file_name), current_step
 
       CALL copy_file(this%restart_file_name, TRIM(filename), status)
-      CALL assert_eq(status, 0, 'Error copying wout file.')
+      CALL assert_eq(status, 0, 'Error copying restart file.')
 
       CALL vmec_write_input(this, current_step)
 
-      CALL profiler_set_stop_time('vmec_write_input', start_time)
+      CALL profiler_set_stop_time('siesta_write_input', start_time)
 
 1000  FORMAT(a,'_',i0.3)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Save the equilibrium file.
+!>
+!>  @param[in] this         A @ref siesta_class instance.
+!>  @param[in] current_grid Grid index to append to the file names.
+!-------------------------------------------------------------------------------
+      SUBROUTINE siesta_save_file(this, current_grid)
+      USE file_opts
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (siesta_class), INTENT(in) :: this
+      INTEGER, INTENT(in)              :: current_grid
+
+!  local variables
+      REAL (rprec)                     :: start_time
+      INTEGER                          :: index
+      INTEGER                          :: status
+      CHARACTER(len=path_length)       :: filename
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      CALL vmec_save_file(this, current_grid)
+
+      index = SCAN(this%restart_file_name, '.', .TRUE.)
+
+      WRITE (filename, 1000) this%restart_file_name(:index - 1),               &
+     &                       current_grid
+
+      CALL copy_file(this%restart_file_name, TRIM(filename), status)
+      CALL assert_eq(status, 0, 'Error copying restart file.')
+
+      CALL profiler_set_stop_time('siesta_save_file', start_time)
+
+1000  FORMAT(a,'_',i0.4,'.nc')
 
       END SUBROUTINE
 
