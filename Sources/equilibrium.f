@@ -235,6 +235,8 @@
      &      write => equilibrium_write
          PROCEDURE                                           ::                &
      &      write_input => equilibrium_write_input
+         PROCEDURE                                           ::                &
+     &      save_file => equilibrium_save_file
 
          PROCEDURE                                           ::                &
      &      def_result => equilibrium_def_result
@@ -248,6 +250,7 @@
      &      sync_state => equilibrium_sync_state
          PROCEDURE                                           ::                &
      &      sync_child => equilibrium_sync_child
+
          FINAL                                               ::                &
      &      equilibrium_destruct
       END TYPE
@@ -2703,6 +2706,26 @@
 
 !  Start of executable code
       CALL assert(.false., 'equilibrium_write_input not over ' //              &
+     &                     'written for ' // this%get_type())
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Save the equilibrium file.
+!>
+!>  @param[in] this         A @ref equilibrium_class instance.
+!>  @param[in] current_grid Grid index to append to the file names.
+!-------------------------------------------------------------------------------
+      SUBROUTINE equilibrium_save_file(this, current_grid)
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (equilibrium_class), INTENT(in) :: this
+      INTEGER, INTENT(in)                   :: current_grid
+
+!  Start of executable code
+      CALL assert(.false., 'equilibrium_save_file not over ' //                &
      &                     'written for ' // this%get_type())
 
       END SUBROUTINE

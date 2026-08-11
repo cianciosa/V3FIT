@@ -1082,13 +1082,15 @@
      &                         varid=param_corr_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf90_def_var(this%result_ncid, 'signal_eff_matrix',          &
-     &                         nf90_double,                                    &
-     &                         dimids=(/ nsignal_dim_id,                       &
-     &                                   nparam_dim_id,                        &
-     &                                   maxnsteps_dim_id /),                  &
-     &                         varid=param_sem_id)
-         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         IF (ASSOCIATED(this%signals)) THEN
+            status = nf90_def_var(this%result_ncid, 'signal_eff_matrix',       &
+     &                            nf90_double,                                 &
+     &                            dimids=(/ nsignal_dim_id,                    &
+     &                                      nparam_dim_id,                     &
+     &                                      maxnsteps_dim_id /),               &
+     &                            varid=param_sem_id)
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         END IF
       END IF
 
 !  Define signal variables.
@@ -1336,9 +1338,12 @@
      &                           param_corr_id)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
 
-         status = nf90_inq_varid(this%result_ncid, 'signal_eff_matrix',        &
-     &                           param_sem_id)
-         CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         IF (ASSOCIATED(this%signals)) THEN
+            status = nf90_inq_varid(this%result_ncid,                          &
+     &                              'signal_eff_matrix',                       &
+     &                              param_sem_id)
+            CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
+         END IF
 
          DO i = 1, SIZE(this%params)
             CALL this%params(i)%p%write_step_data(this%model,                  &
