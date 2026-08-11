@@ -538,6 +538,7 @@
 
          PROCEDURE :: write => vmec_write
          PROCEDURE :: write_input => vmec_write_input
+         PROCEDURE :: save_file => vmec_save_file
 
          PROCEDURE :: def_result => vmec_def_result
          PROCEDURE :: write_init_data => vmec_write_init_data
@@ -6039,6 +6040,44 @@
       CALL profiler_set_stop_time('vmec_write_input', start_time)
 
 1000  FORMAT(a,'_',i0.3)
+
+      END SUBROUTINE
+
+!-------------------------------------------------------------------------------
+!>  @brief Save the equilibrium file.
+!>
+!>  @param[in] this         A @ref vmec_class instance.
+!>  @param[in] current_grid Grid index to append to the file names.
+!-------------------------------------------------------------------------------
+      SUBROUTINE vmec_save_file(this, current_grid)
+      USE file_opts
+
+      IMPLICIT NONE
+
+!  Declare Arguments
+      CLASS (vmec_class), INTENT(in) :: this
+      INTEGER, INTENT(in)            :: current_grid
+
+!  local variables
+      REAL (rprec)                   :: start_time
+      INTEGER                        :: index
+      INTEGER                        :: status
+      CHARACTER(len=path_length)     :: filename
+
+!  Start of executable code
+      start_time = profiler_get_start_time()
+
+      index = SCAN(this%wout_file_name, '.', .TRUE.)
+
+      WRITE (filename, 1000) this%wout_file_name(:index - 1),                  &
+     &                       current_grid
+
+      CALL copy_file(this%wout_file_name, TRIM(filename), status)
+      CALL assert_eq(status, 0, 'Error copying wout file.')
+
+      CALL profiler_set_stop_time('vmec_save_file', start_time)
+
+1000  FORMAT(a,'_',i0.4,'.nc')
 
       END SUBROUTINE
 

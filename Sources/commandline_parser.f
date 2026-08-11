@@ -41,6 +41,7 @@
 !>     @item3{@fixed_width{-serial},  N, Run the reconstruction serially and with parallel equilibria.}
 !>     @item3{@fixed_width{-restart}, Y, Specify v3fit to restart from the provided result file. Must have
 !>                                       the last valid wout and/or siesta restart file.}
+!>     @item3{@fixed_width{-save},    N, Save the equilibrium files for each step.}
 !>
 !>  @end_table
 !>
@@ -497,6 +498,9 @@
       WRITE(*,*) '  -restart Y Specify v3fit to restart from the       '
       WRITE(*,*) '             provided result file. Must have the last'
       WRITE(*,*) '             valid wout and/or siesta restart file.  '
+      WRITE(*,*) '                                                     '
+      WRITE(*,*) '  -save    N Save the equilibrium files for each     '
+      WRITE(*,*) '             step.                                   '
       WRITE(*,*) '                                                     '
       WRITE(*,*) 'Notes:                                               '
       WRITE(*,*) '  If no -arg is found -file is implicitly implied.   '

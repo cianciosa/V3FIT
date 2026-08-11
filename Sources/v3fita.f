@@ -129,7 +129,7 @@
          IF (recon_rank .eq. 0) THEN
             CALL second0(time_end)
 
-            CALL v3fit_context_write(context)
+            CALL context%write
 
             WRITE (context%runlog_iou,1000) time_end - time_start
             WRITE (context%recout_iou,1000) time_end - time_start
@@ -139,7 +139,7 @@
 
          END IF
 
-         CALL v3fit_context_close_files(context)
+         CALL context%close_files
       END IF
       CALL profiler_destruct
 
@@ -203,7 +203,7 @@
      &               context%equilibrium_comm, error)
 #endif
 
-      CALL v3fit_context_init_data(context, eq_steps)
+      CALL context%init_data(eq_steps)
 
       CALL profiler_set_stop_time('task_equilibrium', start_time)
 
@@ -406,6 +406,9 @@
 
          restart_step = 1
       END IF
+      IF (context%cl_parser%is_flag_set('-save')) THEN
+         CALL context%model%equilibrium%save_file(restart_step)
+      END IF
 
       DO i = restart_step, SIZE(context%recon%e, 2) - 1
          WRITE (*,*)
@@ -455,6 +458,10 @@
 
               WRITE (context%runlog_iou,*)
               WRITE (context%runlog_iou,1001) i
+            END IF
+
+            IF (context%cl_parser%is_flag_set('-save')) THEN
+               CALL context%model%equilibrium%save_file(i)
             END IF
          ELSE
             EXIT
@@ -556,6 +563,15 @@
             EXIT
          END IF
 
+         IF (i .eq. 1) THEN
+            CALL context%init_data(eq_steps)
+         ELSE
+            CALL context%write_step_data(.false., eq_steps)
+         END IF
+
+         IF (context%cl_parser%is_flag_set('-save')) THEN
+            CALL context%model%equilibrium%save_file(i)
+         END IF
       END DO
 
 #if defined(MPI_OPT)
@@ -680,6 +696,10 @@
             CALL context%init_data(eq_steps)
          ELSE
             CALL context%write_step_data(.false., eq_steps)
+         END IF
+
+         IF (context%cl_parser%is_flag_set('-save')) THEN
+            CALL context%model%equilibrium%save_file(i)
          END IF
       END DO
 
