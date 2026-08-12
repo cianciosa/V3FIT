@@ -2,7 +2,7 @@
 !>  @file v3fit_params.f
 !>  @brief Contains module @ref v3fit_params.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref param_class
@@ -54,7 +54,7 @@
 !>  @ref reconstruction::reconstruction_eval_sem.
          REAL (rprec)                         :: sigma = 0.0
 !>  Stored row of the correlation matrix. When the parameter is interpreted as a
-!>  locking parameter, this array contains the parameter coefficents.
+!>  locking parameter, this array contains the parameter coefficients.
          REAL (rprec), DIMENSION(:), POINTER  :: correlation => null()
       CONTAINS
          FINAL     :: param_destruct
@@ -151,7 +151,7 @@
 
 !-------------------------------------------------------------------------------
 !>  Class to hold variables needed when a parameter is a locking parameter. The
-!>  locking parameter coefficents are stored in the correlation array of the
+!>  locking parameter coefficients are stored in the correlation array of the
 !>  parent type.
 !-------------------------------------------------------------------------------
       TYPE, EXTENDS(param_class) :: param_locking_class

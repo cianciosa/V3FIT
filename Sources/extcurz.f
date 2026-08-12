@@ -2,7 +2,7 @@
 !>  @file extcurz.f
 !>  Contains module @ref extcurz.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Represents a signal obtained by integrating around the magnetic field to get

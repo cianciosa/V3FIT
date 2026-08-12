@@ -98,7 +98,7 @@
 !>  @file sxrch_dot.f
 !>  @brief Contains module @ref sxrch_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'sxrch.' file. The file format for these
@@ -120,7 +120,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read a soft x-ray diagnostic dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a @ref sxrem
+!>  Parses the structure of a diagnostic dot file and constructs a @ref sxrem
 !>  object. Each chord is parsed by @ref sxrch_dot_parse_chord.
 !>
 !>  @param[in]    sxrch_file      Name of the sxrch. file.

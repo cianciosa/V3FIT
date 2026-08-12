@@ -64,7 +64,7 @@
 !>  @file sxrem_ratio_dot.f
 !>  @brief Contains module @ref sxrem_ratio_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'sxrem_ratio.' file. The file format for these
@@ -85,7 +85,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read an sxrem ratio dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a
+!>  Parses the structure of a diagnostic dot file and constructs a
 !>  @ref sxrem_ratio object. Each chord is parsed by
 !>  @ref sxrem_ratio_dot_parse_chord.
 !>
@@ -180,7 +180,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Parse soft x-ray ratio point.
 !>
-!>  Parses a signle chord. Chords are laid out as,
+!>  Parses a single chord. Chords are laid out as,
 !>
 !>  * chord_name
 !>  * Starting point as three reals.

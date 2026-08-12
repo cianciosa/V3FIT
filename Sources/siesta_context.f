@@ -2,7 +2,7 @@
 !>  @file siesta_context.f
 !>  @brief Contains module @ref siesta_context.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref siesta_context_class. This contains

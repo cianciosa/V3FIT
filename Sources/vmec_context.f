@@ -2,7 +2,7 @@
 !>  @file vmec_context.f
 !>  @brief Contains module @ref vmec_context.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref vmec_context_class. This contains
@@ -35,22 +35,22 @@
 !>  Cache of the vmec internal state xc array.
          REAL (rprec), DIMENSION(:), POINTER :: xc => null()
 
-!>  Cache of the magnetic axis R cosine coefficents.
+!>  Cache of the magnetic axis R cosine coefficients.
          REAL (rprec), DIMENSION(:), POINTER   :: raxis_cc => null()
-!>  Cache of the magnetic axis R sine coefficents.
+!>  Cache of the magnetic axis R sine coefficients.
          REAL (rprec), DIMENSION(:), POINTER   :: raxis_cs => null()
-!>  Cache of the magnetic axis Z cosine coefficents.
+!>  Cache of the magnetic axis Z cosine coefficients.
          REAL (rprec), DIMENSION(:), POINTER   :: zaxis_cc => null()
-!>  Cache of the magnetic axis Z sine coefficents.
+!>  Cache of the magnetic axis Z sine coefficients.
          REAL (rprec), DIMENSION(:), POINTER   :: zaxis_cs => null()
 
-!>  Cache of the equilibrium boundary R cosine coefficents.
+!>  Cache of the equilibrium boundary R cosine coefficients.
          REAL (rprec), DIMENSION(:,:), POINTER :: rbc => null()
-!>  Cache of the equilibrium boundary R sine coefficents.
+!>  Cache of the equilibrium boundary R sine coefficients.
          REAL (rprec), DIMENSION(:,:), POINTER :: rbs => null()
-!>  Cache of the equilibrium boundary Z cosine coefficents.
+!>  Cache of the equilibrium boundary Z cosine coefficients.
          REAL (rprec), DIMENSION(:,:), POINTER :: zbc => null()
-!>  Cache of the equilibrium boundary Z sine coefficents.
+!>  Cache of the equilibrium boundary Z sine coefficients.
          REAL (rprec), DIMENSION(:,:), POINTER :: zbs => null()
 
 !  threed1 file variables.

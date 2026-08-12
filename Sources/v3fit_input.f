@@ -552,7 +552,7 @@
 !>  @file v3fit_input.f
 !>  @brief Contains module @ref v3fit_input.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  This file contains all the variables and maximum sizes of the inputs for a

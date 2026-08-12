@@ -90,7 +90,7 @@
 !>  @file ipch_dot.f
 !>  @brief Contains module @ref ipch_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'ipch.' file. The file format for these
@@ -112,7 +112,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read an interferometry/polarimetry diagnostic dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a @ref intpol
+!>  Parses the structure of a diagnostic dot file and constructs a @ref intpol
 !>  object. Each chord is parsed by @ref ipch_dot_parse_chord.
 !>
 !>  @param[in]    ipch_file       Name of the ipch. file.

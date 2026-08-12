@@ -2,7 +2,7 @@
 !>  @file intpol.f
 !>  @brief Contains module @ref intpol.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Implements interferometry/polarimetry diagnostic. Defines the base class of

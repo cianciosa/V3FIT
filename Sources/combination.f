@@ -2,7 +2,7 @@
 !>  @file combination.f
 !>  @brief Contains module @ref combination.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref combination_class.

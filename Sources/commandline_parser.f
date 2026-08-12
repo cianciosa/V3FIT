@@ -24,7 +24,7 @@
 !>  @fixed_width{xv3fit -file=input.file}
 !>
 !>  @section cl_parsing_arg_sec Command Line Arguments
-!>  @header2{Argument, Takes Value, Discription}
+!>  @header2{Argument, Takes Value, Description}
 !>  @begin_table
 !>     @item3{@fixed_width{-h},       N, Displays the help text and exits the program.}
 !>     @item3{@fixed_width{-d},       N, Use the default namelist input file. The default input filename is
@@ -57,7 +57,7 @@
 !>  @file commandline_parser.f
 !>  @brief Contains module @ref commandline_parser
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref commandline_parser_class.

@@ -47,7 +47,7 @@
 !>  @file model.f
 !>  @brief Contains module @ref model.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines the base class of the type @ref model_class. The model contains
@@ -2113,9 +2113,8 @@
 
          CASE (model_sxrem_te_ne_type)
             model_get_sxrem_radial =                                           &
-     &         emission_get_emission(this%emission,                            &
-     &                               this%get_te(s),                           &
-     &                               this%get_ne(s), index)
+     &         this%emission%get_emission(this%get_te(s),                      &
+     &                                    this%get_ne(s), index)
 
          CASE DEFAULT
             model_get_sxrem_radial = 0.0_rprec

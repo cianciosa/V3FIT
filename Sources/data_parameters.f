@@ -2,7 +2,7 @@
 !>  @file data_parameters.f
 !>  @brief Contains module @ref data_parameters.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  This modules contains parameters used by equilibrium models.

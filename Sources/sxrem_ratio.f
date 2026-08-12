@@ -2,7 +2,7 @@
 !>  @file sxrem_ratio.f
 !>  @brief Contains module sxrem_ratio
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines a feedback signal based on the temperature based on the ration of

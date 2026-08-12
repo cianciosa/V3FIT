@@ -2,7 +2,7 @@
 !>  @file v3fit_context.f
 !>  @brief Contains module @ref v3fit_context.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Defines a @ref v3fit_context_class object to contain all the memory for
@@ -378,7 +378,7 @@
       recon_rank = 0
 #endif
 
-      filename = commandline_parser_get_string(this%cl_parser, '-file')
+      filename = this%cl_parser%get_string('-file')
 
 !  Setup the runlog file.
 !  Initalize a default value of the I\O unit. V3FIT increments from there.
@@ -400,11 +400,9 @@
      &               'Safe_open of recout. ' //                                &
      &               TRIM(filename_base(filename)) // 'failed')
 
-      IF (commandline_parser_is_flag_set(this%cl_parser,                       &
-     &                                   '-restart') .and.                     &
+      IF (this%cl_parser%is_flag_set('-restart') .and.                     &
      &    recon_rank .eq. 0) THEN
-         filename = commandline_parser_get_string(this%cl_parser,              &
-     &                                            '-restart')
+         filename = this%cl_parser%get_string('-restart')
          status = nf90_open(filename, NF90_WRITE, this%result_ncid)
          CALL assert_eq(status, nf90_noerr, nf90_strerror(status))
       ELSE

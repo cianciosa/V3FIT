@@ -119,7 +119,7 @@
 !>  @file mse_dot.f
 !>  @brief Contains module @ref mse_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'mse.' file. The file format for these
@@ -141,7 +141,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read an motional stark effect diagnostic dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a @ref mse
+!>  Parses the structure of a diagnostic dot file and constructs a @ref mse
 !>  object. Each point is parsed by @ref mse_dot_parse_point.
 !>
 !>  @param[in]    mse_file       Name of the mse. file.

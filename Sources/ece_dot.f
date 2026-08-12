@@ -70,7 +70,7 @@
 !>  @file ece_dot.f
 !>  @brief Contains module @ref ece_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'ece.' file. The file format for these
@@ -92,7 +92,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read an ECE diagnostic dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a @ref ece
+!>  Parses the structure of a diagnostic dot file and constructs a @ref ece
 !>  object. Each chord is parsed by @ref ece_dot_parse_chord.
 !>
 !>  @param[in]    ece_file        Name of the ece. file.

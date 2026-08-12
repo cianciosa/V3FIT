@@ -2,7 +2,7 @@
 !>  @file model_state.f
 !>  @brief Contains module @ref model_state.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Contains parameters defining the bit positions for flags that mark changes

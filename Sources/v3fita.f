@@ -2,7 +2,7 @@
 !>  @file v3fita.f
 !>  @brief Contains the main routines for V3FIT.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  V3FIT is a code for reconstructing 3D equilibria. V3FIT determined the
@@ -478,7 +478,7 @@
       CALL profiler_set_stop_time('task_reconstruct', start_time)
 
 1000  FORMAT('dg2_stop = ',es12.5,' change in g^2 = ',es12.5)
-1001  FORMAT('nrstep 'i4,' completed. May be reconstructed.')
+1001  FORMAT('nrstep ',i4,' completed. May be reconstructed.')
 1002  FORMAT('  *** Reconstruction step ',i4)
 1003  FORMAT('Initial g^2 = ',es12.5)
 
@@ -1022,9 +1022,9 @@
       ALLOCATE(sxr(num_sxrem_p))
       DO i = 1, num_sxrem_p
          sxr(i)%p => pprofile_class(TRIM(pp_sxrem_ptype_a(i)),                 &
-     &                                   pp_sxrem_b_a(i,:),                    &
-     &                                   pp_sxrem_as_a(i,:),                   &
-     &                                   pp_sxrem_af_a(i,:))
+     &                              pp_sxrem_b_a(i,:),                         &
+     &                              pp_sxrem_as_a(i,:),                        &
+     &                              pp_sxrem_af_a(i,:))
       END DO
 
 !  Create an emission object if an emission file was provided.
@@ -1516,8 +1516,7 @@
      &                   use_polarimetry)
 
       IF (use_polarimetry .and.                                                &
-     &    .not.equilibrium_is_using_point(                                     &
-     &            context%model%equilibrium)) THEN
+     &    .not.context%model%equilibrium%is_using_point()) THEN
          CALL context%model%equilibrium%set_magnetic_cache(                    &
      &           .false., context%model%state_flags)
       END IF
@@ -2038,7 +2037,7 @@
      &                        'uninitalized signal')
             END IF
 
-            CALL combination_set_signal(combination_signal,                    &
+            CALL combination_signal%set_signal(                                &
      &              context%signals(coosig_indices(i,j))%p,                    &
      &              coosig_coeff(i,j), j)
          END DO

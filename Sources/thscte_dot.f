@@ -14,7 +14,7 @@
 !>  keyword. All lines before a valid keyword is reached are ignored allowing
 !>  for comments and other information to be inserted in the file. Once a
 !>  keyword is reached, the parsing becomes strict. The diagnostic description
-!>  format is dependant on the specific keyword. All diagnostic dot files must
+!>  format is dependent on the specific keyword. All diagnostic dot files must
 !>  end with an @fixed_width{end_of_file} keyword.
 !>
 !>  This document contains information about the thomson scattering point
@@ -64,7 +64,7 @@
 !>  @file thscte_dot.f
 !>  @brief Contains module @ref thscte_dot
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Module for opening and reading a 'thscte.' file. The file format for these
@@ -85,7 +85,7 @@
 !-------------------------------------------------------------------------------
 !>  @brief Read an thomson scattering diagnostic dot file.
 !>
-!>  Parses the structure of a dignostic dot file and constructs a @ref thomson
+!>  Parses the structure of a diagnostic dot file and constructs a @ref thomson
 !>  object. Each chord is parsed by @ref thscte_dot_parse_chord.
 !>
 !>  @param[in]    thscte_file     Name of the thscte. file.

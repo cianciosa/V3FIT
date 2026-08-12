@@ -2,7 +2,7 @@
 !>  @file mse.f
 !>  @brief Contains module @ref mse.
 !
-!  Note separating the Doxygen comment block here so detailed decription is
+!  Note separating the Doxygen comment block here so detailed description is
 !  found in the Module not the file.
 !
 !>  Implements motional stark effect diagnostic. Defines the base class of the
