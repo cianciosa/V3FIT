@@ -1117,6 +1117,7 @@
       USE xstuff, only: xc, xcdot
       USE vmec_main, only: irzloff, currv, ivac
       USE stel_constants, only: mu0
+      USE INIT_GEOMETRY, only: reset_boundary
 
       IMPLICIT NONE
 
@@ -1143,7 +1144,7 @@
             state_flags = IBSET(state_flags, model_state_vmec_flag)
             rbc(i_index, j_index) = value
             IF (.not.lfreeb) THEN
-               CALL vmec_reset_boundary(this)
+               CALL reset_boundary
                CALL profil3d(xc(1), xc(1 + irzloff), .true., .false.)
             ELSE
                CALL profil3d(xc(1), xc(1 + irzloff), .false., .false.)
@@ -1153,7 +1154,7 @@
             state_flags = IBSET(state_flags, model_state_vmec_flag)
             zbs(i_index, j_index) = value
             IF (.not.lfreeb) THEN
-               CALL vmec_reset_boundary(this)
+               CALL reset_boundary
                CALL profil3d(xc(1), xc(1 + irzloff), .true., .false.)
             ELSE
                CALL profil3d(xc(1), xc(1 + irzloff), .false., .false.)
@@ -1163,7 +1164,7 @@
             state_flags = IBSET(state_flags, model_state_vmec_flag)
             rbs(i_index, j_index) = value
             IF (.not.lfreeb) THEN
-               CALL vmec_reset_boundary(this)
+               CALL reset_boundary
                CALL profil3d(xc(1), xc(1 + irzloff), .true., .false.)
             ELSE
                CALL profil3d(xc(1), xc(1 + irzloff), .false., .false.)
@@ -1173,7 +1174,7 @@
             state_flags = IBSET(state_flags, model_state_vmec_flag)
             zbc(i_index, j_index) = value
             IF (.not.lfreeb) THEN
-               CALL vmec_reset_boundary(this)
+               CALL reset_boundary
                CALL profil3d(xc(1), xc(1 + irzloff), .true., .false.)
             ELSE
                CALL profil3d(xc(1), xc(1 + irzloff), .false., .false.)
@@ -6532,179 +6533,6 @@
       CALL this%vmec_context_save%sync_child(index, recon_comm)
 
 #endif
-      END SUBROUTINE
-
-!*******************************************************************************
-!  PRIVATE
-!*******************************************************************************
-!-------------------------------------------------------------------------------
-!>  @brief Reset the fixed boundary coefficients.
-!>
-!>  When changing the boundary coefficients, there is extra work that must be
-!>  performed to set the VMEC state.
-!>
-!>  @param[in] this A @ref vmec_class instance.
-!-------------------------------------------------------------------------------
-      SUBROUTINE vmec_reset_boundary(this)
-      USE vmec_input, only: lasym, rbc, zbs, rbs, zbc, ntor,                   &
-     &                      mfilter_fbdy, nfilter_fbdy, lfreeb
-      USE vmec_dim, only: mpol1, ntor1
-      USE vmec_main, only: rmn_bdy, zmn_bdy, lthreed, lconm1
-      USE vmec_params, only: rcc, rss, rsc, rcs,                               &
-     &                       zsc, zcs, zcc, zss, signgs
-      USE vparams, only: cp5
-
-      IMPLICIT NONE
-
-!  Declare Arguments
-      CLASS (vmec_class), INTENT(in)          :: this
-
-!  local variables
-      REAL (rprec)                            :: delta
-      REAL (rprec)                            :: sgn
-      INTEGER                                 :: m
-      INTEGER                                 :: n
-      INTEGER                                 :: mj
-      INTEGER                                 :: ni
-      REAL (rprec)                            :: temp
-      REAL (rprec), DIMENSION(:,:), POINTER   :: rbcc
-      REAL (rprec), DIMENSION(:,:), POINTER   :: rbss
-      REAL (rprec), DIMENSION(:,:), POINTER   :: rbcs
-      REAL (rprec), DIMENSION(:,:), POINTER   :: rbsc
-      REAL (rprec), DIMENSION(:,:), POINTER   :: zbcc
-      REAL (rprec), DIMENSION(:,:), POINTER   :: zbss
-      REAL (rprec), DIMENSION(:,:), POINTER   :: zbcs
-      REAL (rprec), DIMENSION(:,:), POINTER   :: zbsc
-      REAL (rprec), DIMENSION(:), ALLOCATABLE :: temp_array
-      REAL (rprec)                            :: start_time
-
-!  Start of executable code
-      start_time = profiler_get_start_time()
-
-      IF (lasym) THEN
-!  Convert to representation with rbs(m=1) = zbc(m=1)
-         delta = ATAN((rbs(0,1) - zbc(0,1))/                                   &
-     &                (ABS(rbc(0,1) + ABS(zbs(0,1)))))
-         IF (delta .ne. 0.0) THEN
-            DO m = 0, mpol1
-               DO n = -ntor, ntor
-                  temp = rbc(n,m)*COS(m*delta) + rbs(n,m)*SIN(m*delta)
-                  rbs(n,m) = rbs(n,m)*COS(m*delta)                             &
-     &                     - rbc(n,m)*SIN(m*delta)
-                  rbc(n,m) = temp
-                  temp = zbc(n,m)*COS(m*delta) + zbs(n,m)*SIN(m*delta)
-                  zbs(n,m) = zbs(n,m)*COS(m*delta)                             &
-     &                     - zbc(n,m)*SIN(m*delta)
-                  zbc(n,m) = temp
-               END DO
-            END DO
-         END IF
-      END IF
-
-!  Convert to internal representation of modes
-!
-!  r = rbcc*cos(m*u)*cos(n*v) + rbss*sin(m*u)*sin(n*v)
-!    + rbcs*cos(m*u)*sin(n*v) + rbsc*sin(m*u)*cos(n*v)
-!  z = zbcs*cos(m*u)*sin(n*v) + zbsc*sin(m*u)*cos(n*v)
-!    + zbcc*cos(m*u)*cos(n*v) + zbsz*sin(m*u)*sin(n*v)
-
-      rbcc => rmn_bdy(:,:,rcc)
-      zbsc => zmn_bdy(:,:,zsc)
-      IF (lthreed) THEN
-         rbss => rmn_bdy(:,:,rss)
-         zbcs => zmn_bdy(:,:,zcs)
-      END IF
-
-      IF (lasym) THEN
-         rbsc => rmn_bdy(:,:,rsc)
-         zbcc => zmn_bdy(:,:,zcc)
-         IF (lthreed) THEN
-            rbcs => rmn_bdy(:,:,rcs)
-            zbss => zmn_bdy(:,:,zss)
-         END IF
-      END IF
-
-      rmn_bdy = 0.0
-      zmn_bdy = 0.0
-
-      IF (.not.lfreeb) THEN
-         DO m = 0, mpol1
-            IF ((mfilter_fbdy .gt. 1) .and. (m .gt. mfilter_fbdy)) THEN
-               EXIT
-            END IF
-
-            mj = m + LBOUND(rbcc, 2)
-            DO n = -ntor, ntor
-               IF ((nfilter_fbdy .gt. 0) .and.                                 &
-     &             (ABS(n) .gt. nfilter_fbdy)) THEN
-                  CYCLE
-               END IF
-
-               ni = ABS(n) + LBOUND(rbcc, 1)
-
-               IF (n .eq. 0) THEN
-                  sgn = 0.0
-               ELSE IF (n .gt. 0) THEN
-                  sgn = 1.0
-               ELSE
-                  sgn = -1.0
-               END IF
-
-               rbcc(ni,mj) = rbcc(ni,mj) + rbc(n,m)
-               IF (m .gt. 0) THEN
-                  zbsc(ni,mj) = zbsc(ni,mj) + zbs(n,m)
-               END IF
-
-               IF (lthreed) THEN
-                  zbcs(ni,mj) = zbcs(ni,mj) - sgn*zbs(n,m)
-                  IF (m .gt. 0) THEN
-                     rbss(ni,mj) = rbss(ni,mj) + sgn*rbc(n,m)
-                  END IF
-               END IF
-
-               IF (lasym) THEN
-                  zbcc(ni,mj) = zbcc(ni,mj) + zbc(n,m)
-                  IF (m .gt. 0) THEN
-                     rbsc(ni,mj) = rbsc(ni,mj) + rbs(n,m)
-                  END IF
-
-                  IF (lthreed) THEN
-                     rbcs(ni,mj) = rbcs(ni,mj) - sgn*rbs(n,m)
-                     IF (m .gt. 0) THEN
-                        zbss(ni,mj) = zbss(ni,mj) + sgn*zbc(n,m)
-                     END IF
-                  END IF
-               END IF
-            END DO
-         END DO
-      END IF
-
-!  Check sign of jacobian (should be same as signgs)
-      mj = 1 + LBOUND(rbcc, 2)
-      signgs = 1.0
-      IF (SUM(rbcc(1:ntor1,mj))*SUM(zbsc(1:ntor1,mj)) .gt. 0.0) THEN
-         signgs = -1.0
-      END IF
-
-!  Convert to internal form for (constrained) m=1 modes
-      IF (lconm1 .and. (lthreed .or. lasym)) THEN
-         ALLOCATE(temp_array(SIZE(rbcc, 1)))
-         IF (lthreed) THEN
-            temp_array = rbss(:,mj)
-            rbss(:,mj) = cp5*(temp_array + zbcs(:,mj))
-            zbcs(:,mj) = cp5*(temp_array - zbcs(:,mj))
-         END IF
-
-         IF (lasym) THEN
-            temp_array = rbsc(:,mj)
-            rbsc(:,mj) = cp5*(temp_array + zbcc(:,mj))
-            zbcc(:,mj) = cp5*(temp_array - zbcc(:,mj))
-         END IF
-         DEALLOCATE(temp_array)
-      END IF
-
-      CALL profiler_set_stop_time('vmec_reset_boundary', start_time)
-
       END SUBROUTINE
 
       END MODULE
