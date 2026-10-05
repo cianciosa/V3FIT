@@ -496,6 +496,9 @@
 !-------------------------------------------------------------------------------
       FUNCTION gaussp_get_evidence(this, a_model)
       USE stel_constants, ONLY: twopi
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_lapack_lp64
+#endif
 
       IMPLICIT NONE
 
@@ -553,8 +556,13 @@
 !$OMP END PARALLEL
 
 !  CALL LAPACK to do Cholesky factorization of the A=(K_LL + Sigma_y)
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL DPOTRF('L', SIZE(this%signals), this%kll(1,1),                      &
+     &            SIZE(this%signals), ierr)
+#else
       CALL DPOTRF('L', SIZE(this%signals), this%kll,                           &
      &            SIZE(this%signals), ierr)
+#endif
 
 !  The elements in the cholesky matrix for j > i are meaning less.
       IF (ierr .lt. 0) THEN
@@ -570,9 +578,15 @@
 
 !  CALL LAPACK to solve A^-1y and A^-1 K_LS simultaneously. The work matrix
 !  stores the RHS on input, and returns the solution matrix.
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL DPOTRS('L', SIZE(this%signals), SIZE(this%fpoints) + 1,             &
+     &            this%kll(1,1), SIZE(this%signals), this%work(1,1),           &
+     &            SIZE(this%signals), ierr)
+#else
       CALL DPOTRS('L', SIZE(this%signals), SIZE(this%fpoints) + 1,             &
      &            this%kll, SIZE(this%signals), this%work,                     &
      &            SIZE(this%signals), ierr)
+#endif
       IF (ierr .lt. 0) THEN
          CALL err_fatal('gaussp_get_modeled_signal: DROTRS ' //                &
      &                  'failed to solve the equation')

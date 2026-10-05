@@ -1105,6 +1105,9 @@
      &                                  locks, a_model, gaussp, params,        &
      &                                  eq_steps, iou, recon_comm,             &
      &                                  eq_comm)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_lapack_lp64
+#endif
 
       IMPLICIT NONE
 
@@ -1184,10 +1187,18 @@
       ALLOCATE(temp_work(5*MAX(SIZE(signals), SIZE(params))))
       temp_work = 0.0
 
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL dgesvd('All', 'All', SIZE(signals), SIZE(params),                   &
+     &            temp_jacobian(1,1), SIZE(signals), this%j_svd_w(1),          &
+     &            this%j_svd_u(1,1), SIZE(signals), this%j_svd_vt(1,1),        &
+     &            SIZE(params), temp_work(1), SIZE(temp_work),                 &
+     &            svd_status)
+#else
       CALL dgesvd('All', 'All', SIZE(signals), SIZE(params),                   &
      &            temp_jacobian, SIZE(signals), this%j_svd_w,                  &
      &            this%j_svd_u, SIZE(signals), this%j_svd_vt,                  &
      &            SIZE(params), temp_work, SIZE(temp_work), svd_status)
+#endif
       CALL assert_eq(0, svd_status, 'reconstruction_eval_step: ' //            &
      &               'dgesvd problem')
 
@@ -2241,6 +2252,9 @@
 !>  @param[in]    name   The name of the matrix to be inverted.
 !-------------------------------------------------------------------------------
       SUBROUTINE reconstruction_invert_matrix(this, matrix, sub, name)
+#ifdef ACCELERATE_NEW_LAPACK
+      USE accelerate_lapack_lp64
+#endif
 
       IMPLICIT NONE
 
@@ -2276,15 +2290,27 @@
       svd_work = 0.0
 
 !  Find the optimal work size.
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL dgesvd('All', 'All', m, n, matrix(1,1), m, this%svd_w(1),           &
+     &            svd_u(1,1), m, svd_vt(1,1), n, svd_work(1), -1,              &
+     &            status)
+#else
       CALL dgesvd('All', 'All', m, n, matrix, m, this%svd_w, svd_u, m,         &
      &            svd_vt, n, svd_work, -1, status)
+#endif
       work_size = INT(svd_work(1))
       DEALLOCATE(svd_work)
       ALLOCATE(svd_work(work_size))
 
 !  Factor the matrix to M = U * W * V^T
+#ifdef ACCELERATE_NEW_LAPACK
+      CALL dgesvd('All', 'All', m, n, matrix(1,1), m, this%svd_w(1),           &
+     &            svd_u(1,1), m, svd_vt(1,1), n, svd_work(1), work_size,       &
+     &            status)
+#else
       CALL dgesvd('All', 'All', m, n, matrix, m, this%svd_w, svd_u, m,         &
      &            svd_vt, n, svd_work, work_size, status)
+#endif
       CALL assert_eq(0, status, sub // ': dgesvd problem when ' //             &
      &               'inverting ' // name)
 
