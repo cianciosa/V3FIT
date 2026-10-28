@@ -615,7 +615,7 @@
 !$OMP& DEFAULT(SHARED)
 !$OMP& PRIVATE(j)
 !$OMP DO
-!$OMP& REDUCTION(-:gaussp_get_evidence)
+!$OMP& REDUCTION(+:gaussp_get_evidence)
       DO j = 1, SIZE(this%signals)
          gaussp_get_evidence = gaussp_get_evidence                             &
      &                       - LOG(this%kll(j,j))                              &
