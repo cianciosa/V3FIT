@@ -478,7 +478,7 @@
       CALL profiler_set_stop_time('task_reconstruct', start_time)
 
 1000  FORMAT('dg2_stop = ',es12.5,' change in g^2 = ',es12.5)
-1001  FORMAT('nrstep 'i4,' completed. May be reconstructed.')
+1001  FORMAT('nrstep ',i4,' completed. May be reconstructed.')
 1002  FORMAT('  *** Reconstruction step ',i4)
 1003  FORMAT('Initial g^2 = ',es12.5)
 
