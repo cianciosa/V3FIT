@@ -257,6 +257,10 @@
 !>        @item{lif_on_edge,    array of logical values (:)
 !>                              - true  - edge of plasma is on limiter
 !>                              - false - edge of plasma is within limiter,         v3fit_input::lif_on_edge}
+!>        @item{lif_num_theta,  Number of poloidal test points for the limuet
+!>                              surface. By default it uses a value defined by
+!>                              equilibrium object. This value will only be used
+!>                              if it is greater than the default.,                 v3fit_input::lif_on_edge}
 !>  @end_table
 !>
 !>  @table_section{prior_sec, Prior information}
@@ -1026,6 +1030,8 @@
 !>  is inside the limiter.
       LOGICAL, DIMENSION(v3fit_max_limiters)      ::                           &
      &   lif_on_edge = .false.
+!>  Override value for the number of poloidal angles for the testing limiters.
+      INTEGER :: lif_num_theta = -1
 
 !  Prior signal specification.
 !>  Number of specified priors.
@@ -1214,7 +1220,7 @@
      &   r_major_radius, a_minor_radius,                                       &
 !  Limiter iso function specification.
      &   n_lif, n_phi_lif, lif_arz, lif_rc, lif_zc, lif_sigma,                 &
-     &   lif_phi_degree, lif_on_edge,                                          &
+     &   lif_phi_degree, lif_on_edge, lif_num_theta,                           &
 !  Prior signal specification.
      &   n_prior, prior_name, prior_param_name, prior_indices,                 &
      &   prior_units,                                                          &
