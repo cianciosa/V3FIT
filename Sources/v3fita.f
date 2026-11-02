@@ -1808,7 +1808,7 @@
          limiter_obj =>                                                        &
      &      limiter_iso_class(lif_arz(i,:,:), lif_rc(i), lif_zc(i), 20,        &
      &                        lif_phi_degree(i,1:num_phi)*degree,              &
-     &                        lif_on_edge(i))
+     &                        lif_on_edge(i), lif_num_theta)
 
          CALL signal_construct(limiter_obj, s_name, l_name, 'm',               &
      &           sdo_data_a(signals_created + 1),                              &
@@ -1835,7 +1835,8 @@
          WRITE (l_name,'(a,i4)') 'edge limiter polygon ', i
 
          limiter_obj => limiter_grid_class(limiter_grid_file,                  &
-     &                                     lif_on_edge(n_lif + 1))
+     &                                     lif_on_edge(n_lif + 1),             &
+     &                                     lif_num_theta)
 
          CALL signal_construct(limiter_obj, s_name, l_name, 'm',               &
      &           sdo_data_a(signals_created + 1),                              &

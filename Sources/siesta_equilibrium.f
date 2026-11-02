@@ -2262,34 +2262,37 @@
 !>
 !>  @todo FIXME: The vmec boundary won't be the case for Free boundary siesta.
 !>
-!>  @param[in]    this A @ref siesta_class instance.
-!>  @param[in]    phi  Toroidal angle to determine the outer surface at.
-!>  @param[inout] r    The radial postions of the other surface in a single
-!>                     toroidal angle.
-!>  @param[inout] z    The Z postions of the other surface in a single toroidal
-!>                     angle.
+!>  @param[in]    this      A @ref siesta_class instance.
+!>  @param[in]    phi       Toroidal angle to determine the outer surface at.
+!>  @param[in]    num_theta Number of poloidal test points.
+!>  @param[inout] r         The radial postions of the other surface in a single
+!>                          toroidal angle.
+!>  @param[inout] z         The Z postions of the other surface in a single
+!>                          toroidal angle.
 !>  @returns The number of elements in the r and z arrays.
 !-------------------------------------------------------------------------------
-      FUNCTION siesta_get_plasma_edge(this, phi, r, z)
+      FUNCTION siesta_get_plasma_edge(this, phi, num_theta, r, z)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       INTEGER :: siesta_get_plasma_edge
-      CLASS (siesta_class), INTENT(in)     :: this
-      REAL (rprec), INTENT (in)            :: phi
-      REAL (rprec), DIMENSION(:), POINTER  :: r
-      REAL (rprec), DIMENSION(:), POINTER  :: z
+      CLASS (siesta_class), INTENT(in)    :: this
+      REAL (rprec), INTENT(in)            :: phi
+      INTEGER, INTENT(in)                 :: num_theta
+      REAL (rprec), DIMENSION(:), POINTER :: r
+      REAL (rprec), DIMENSION(:), POINTER :: z
 
 !  local variables
-      REAL (rprec)                         :: start_time
+      REAL (rprec)                        :: start_time
 
 !  Start of executable code
       start_time = profiler_get_start_time()
 
 !  The inital VMEC defines the boundary.
 !  FIXME: Won't be the case for free boundary siesta.
-      siesta_get_plasma_edge = vmec_get_plasma_edge(this, phi, r, z)
+      siesta_get_plasma_edge =                                                 &
+     &   vmec_get_plasma_edge(this, phi, num_theta, r, z)
 
       CALL profiler_set_stop_time('siesta_get_plasma_edge', start_time)
 
