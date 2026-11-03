@@ -78,18 +78,21 @@
 !>
 !>  Allocates memory and initializes a @ref limiter_iso object.
 !>
-!>  @param[in] arz   Coefficients for the iso function.
-!>  @param[in] rc    R offset for function.
-!>  @param[in] zc    Z offset for function.
-!>  @param[in] numin Minimum number of poloidal angles for s=1 surface.
-!>  @param[in] vgrid Values of toroidal angle at which to compute s=1 surface.
-!>  @param[in] on_edge     Specifies if the edge should touch the limiter or
-!>                         not. If true, the reconstruction tries to have the
-!>                         limiter touch the limiter. If false, the edge will
-!>                         only just fall inside the limiter.
+!>  @param[in] arz       Coefficients for the iso function.
+!>  @param[in] rc        R offset for function.
+!>  @param[in] zc        Z offset for function.
+!>  @param[in] numin     Minimum number of poloidal angles for s=1 surface.
+!>  @param[in] vgrid     Values of toroidal angle at which to compute s=1
+!>                       surface.
+!>  @param[in] on_edge   Specifies if the edge should touch the limiter or not.
+!>                       If true, the reconstruction tries to have the limiter
+!>                       touch the limiter. If false, the edge will only just
+!>                       fall inside the limiter.
+!>  @param[in] num_theta Number of poloidal test points.
 !>  @returns A pointer to a constructed @ref limiter_iso object.
 !-------------------------------------------------------------------------------
-      FUNCTION limiter_iso_construct(arz, rc, zc, numin, vgrid, on_edge)
+      FUNCTION limiter_iso_construct(arz, rc, zc, numin, vgrid, on_edge,       &
+     &                               num_theta)
 
       IMPLICIT NONE
 
@@ -101,6 +104,7 @@
       INTEGER, INTENT(in)                          :: numin
       REAL (rprec), DIMENSION(:), INTENT(in)       :: vgrid
       LOGICAL, INTENT(in)                          :: on_edge
+      INTEGER, INTENT(in)                          :: num_theta
 
 !  local variables
       REAL (rprec)                                 :: start_time
@@ -116,6 +120,7 @@
       limiter_iso_construct%zc = zc
       limiter_iso_construct%numin = numin
       limiter_iso_construct%on_edge = on_edge
+      limiter_iso_construct%num_theta = num_theta
 
       ALLOCATE(limiter_iso_construct%phi(SIZE(vgrid)))
       limiter_iso_construct%phi = vgrid

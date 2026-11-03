@@ -38,6 +38,8 @@
          LOGICAL                             :: on_edge = .false.
 !>  Limiter phi planes the limiters are defined at.
          REAL (rprec), DIMENSION(:), POINTER :: phi => null()
+!>  Number of test points in the poloidal direction.
+         INTEGER                            :: num_theta
       CONTAINS
          PROCEDURE                           ::                                &
      &      get_modeled_signal_last => limiter_get_modeled_signal
@@ -143,7 +145,7 @@
          DO phi_index = 1, SIZE(this%phi)
             num_theta =                                                        &
      &         a_model%equilibrium%get_plasma_edge(this%phi(phi_index),        &
-     &                                             r, z)
+     &                                             this%num_theta, r, z)
 
             fval = this%get_max_fval(num_theta, phi_index, r, z, rphiz)
 

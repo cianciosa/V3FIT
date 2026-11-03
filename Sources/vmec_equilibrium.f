@@ -4277,15 +4277,16 @@
 !>
 !>  This method overrides @ref equilibrium::equilibrium_get_plasma_edge.
 !>
-!>  @param[in]    this A @ref vmec_class instance.
-!>  @param[in]    phi  Toroidal angle to determine the outer surface at.
-!>  @param[inout] r    The radial postions of the other surface in a single
-!>                     toroidal angle.
-!>  @param[inout] z    The Z postions of the other surface in a single toroidal
-!>                     angle.
+!>  @param[in]    this      A @ref vmec_class instance.
+!>  @param[in]    phi       Toroidal angle to determine the outer surface at.
+!>  @param[in]    num_theta Number of poloidal test points.
+!>  @param[inout] r         The radial postions of the other surface in a single
+!>                          toroidal angle.
+!>  @param[inout] z         The Z postions of the other surface in a single
+!>                          toroidal angle.
 !>  @returns The number of elements in the r and z arrays.
 !-------------------------------------------------------------------------------
-      FUNCTION vmec_get_plasma_edge(this, phi, r, z)
+      FUNCTION vmec_get_plasma_edge(this, phi, num_theta, r, z)
       USE read_wout_mod, only: xm, xn, rmnc, zmns, rmns, zmnc, lasym,          &
      &                         ns, mpol
       USE stel_constants, only: twopi
@@ -4296,6 +4297,7 @@
       INTEGER :: vmec_get_plasma_edge
       CLASS (vmec_class), INTENT(in)          :: this
       REAL (rprec), INTENT (in)               :: phi
+      INTEGER, INTENT(in)                     :: num_theta
       REAL (rprec), DIMENSION(:), POINTER     :: r
       REAL (rprec), DIMENSION(:), POINTER     :: z
 
@@ -4310,7 +4312,7 @@
 !  Start of executable code
       start_time = profiler_get_start_time()
 
-      vmec_get_plasma_edge = MAX(ns, 2*mpol + 6)
+      vmec_get_plasma_edge = MAX(MAX(ns, 2*mpol + 6), num_theta)
 
       ALLOCATE(r(vmec_get_plasma_edge), z(vmec_get_plasma_edge))
 

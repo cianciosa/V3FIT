@@ -1752,12 +1752,13 @@
 !>  @see vmec_equilibrium::vmec_get_plasma_edge
 !>  @see siesta_equilibrium::siesta_get_plasma_edge
 !>
-!>  @param[in]  this A @ref equilibrium_class instance.
-!>  @param[in]  phi  Toroidal angle to determine the outer surface at.
-!>  @param[out] r    The radial postions of the other surface in a single
-!>                   toroidal angle.
-!>  @param[out] z    The Z postions of the other surface in a single toroidal
-!>                   angle.
+!>  @param[in]  this      A @ref equilibrium_class instance.
+!>  @param[in]  phi       Toroidal angle to determine the outer surface at.
+!>  @param[in]  num_theta Number of poloidal test points.
+!>  @param[out] r         The radial postions of the other surface in a single
+!>                        toroidal angle.
+!>  @param[out] z         The Z postions of the other surface in a single toroidal
+!>                        angle.
 !>  @returns The number of elements in the r and z arrays.
 !>
 !>  @todo An "edge" could be defined as a the last field line that intersects a
@@ -1766,14 +1767,15 @@
 !>  desired phi plane, record the r and z positions. Field line following will
 !>  also need to be performed for siesta.
 !-------------------------------------------------------------------------------
-      FUNCTION equilibrium_get_plasma_edge(this, phi, r, z)
+      FUNCTION equilibrium_get_plasma_edge(this, phi, num_theta, r, z)
 
       IMPLICIT NONE
 
 !  Declare Arguments
       INTEGER :: equilibrium_get_plasma_edge
       CLASS (equilibrium_class), INTENT(in) :: this
-      REAL (rprec), INTENT (in)             :: phi
+      REAL (rprec), INTENT(in)              :: phi
+      INTEGER, INTENT(in)                   :: num_theta
       REAL (rprec), DIMENSION(:), POINTER   :: r
       REAL (rprec), DIMENSION(:), POINTER   :: z
 

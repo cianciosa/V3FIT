@@ -66,9 +66,10 @@
 !>                        not. If true, the reconstruction tries to have the
 !>                        limiter touch the limiter. If false, the edge will
 !>                        only just fall inside the limiter.
+!>  @param[in] num_theta  Number of poloidal test points.
 !>  @returns A pointer to a constructed @ref limiter_grid_class object.
 !-------------------------------------------------------------------------------
-      FUNCTION limiter_grid_construct(lgrid_file, on_edge)
+      FUNCTION limiter_grid_construct(lgrid_file, on_edge, num_theta)
       USE ezcdf
       USE v3_utilities
 
@@ -78,6 +79,7 @@
       CLASS (limiter_grid_class), POINTER :: limiter_grid_construct
       CHARACTER (len=*), INTENT(in)       :: lgrid_file
       LOGICAL, INTENT(in)                 :: on_edge
+      INTEGER, INTENT(in)                 :: num_theta
 
 !  local variables
       REAL (rprec)                        :: r0
@@ -97,6 +99,7 @@
       ALLOCATE(limiter_grid_construct)
 
       limiter_grid_construct%on_edge = on_edge
+      limiter_grid_construct%num_theta = num_theta
 
       status = nf90_open(TRIM(lgrid_file), NF90_NOWRITE, lgrid_iou)
       CALL assert_eq(0, status, 'limiter_grid_construct: ' //                  &
