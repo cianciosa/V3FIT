@@ -27,7 +27,7 @@
  limiter_grid_file = 'limiter.dat.nc'
  lif_on_edge(1) = .true.
  sdo_data_a(1) = 0.0
- sdo_sigma_a(1) = 0.005
+ sdo_sigma_a(1) = 0.0001
  sdo_weight_a(1) = 1.0
 
 ! Total Signals
