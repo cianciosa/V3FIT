@@ -6,7 +6,7 @@
    RMAX = 1.3
    ZMIN = -0.3
    ZMAX =  0.3
-   KP = 36
+   KP = 1
    IR = 111
    JZ = 111
    /
